@@ -17,19 +17,37 @@ function posAt(pts,c,s){ if(s<=0)return pts[0].slice(); const L=c[c.length-1]; i
 function subPts(pts,c,s){ const out=[pts[0].slice()]; const L=c[c.length-1]; if(s<=0)return out; if(s>=L)return pts.map(p=>p.slice());
   let i=1; while(c[i]<=s){out.push(pts[i].slice());i++;} out.push(posAt(pts,c,s)); return out; }
 
+/* ------------ route shape ------------
+   r.pts are the control points the coach drags; r.smooth lists the ones that curve (the rest are kinks).
+   shape() returns the drawn polyline plus map[i] = index of control point i in it. Segments between two kinks
+   stay a single straight segment, so plays without curves draw exactly as before. */
+function shape(r){
+  const P=r.pts, sm=new Set(r.smooth||[]);
+  if(!sm.size) return {pts:P.map(p=>p.slice()),map:P.map((_,i)=>i)};
+  const tan=(i,a,b)=>(sm.has(i)&&i>0&&i<P.length-1)?[(P[i+1][0]-P[i-1][0])*0.5,(P[i+1][1]-P[i-1][1])*0.5]:[b[0]-a[0],b[1]-a[1]];
+  const out=[P[0].slice()], map=[0];
+  for(let i=0;i<P.length-1;i++){ const a=P[i], b=P[i+1];
+    if(!sm.has(i)&&!sm.has(i+1)){ out.push(b.slice()); map.push(out.length-1); continue; }
+    const m0=tan(i,a,b), m1=tan(i+1,a,b), N=12;                       // cubic Hermite (Catmull-Rom at curve points)
+    for(let j=1;j<=N;j++){ const t=j/N,t2=t*t,t3=t2*t,h00=2*t3-3*t2+1,h10=t3-2*t2+t,h01=-2*t3+3*t2,h11=t3-t2;
+      out.push([h00*a[0]+h10*m0[0]+h01*b[0]+h11*m1[0],h00*a[1]+h10*m0[1]+h01*b[1]+h11*m1[1]]); }
+    map.push(out.length-1); }
+  return {pts:out,map};
+}
+
 /* ------------ timeline ------------ */
 const SNAP=0.4, SPD=2.9, QSPD=2.3, HOLD=0.9;
 function timeline(play){
   const T={play,routes:{},ball:[],dur:0,events:[]};
   for(const k in play.players){
     const r=play.routes[k]; const st=play.players[k];
-    if(!r){T.routes[k]={pts:[st],c:[0],t0:0,spd:1,tend:0};continue;}
-    const pts=r.pts.map(p=>p.slice()), c=cum(pts), spd=r.spd|| (k==='Q'?QSPD:SPD), t0=SNAP+(r.delay||0);
-    T.routes[k]={pts,c,t0,spd,tend:t0+c[c.length-1]/spd,r};
+    if(!r){T.routes[k]={pts:[st],c:[0],t0:0,spd:1,tend:0,map:[0]};continue;}
+    const sh=shape(r), pts=sh.pts, c=cum(pts), spd=r.spd|| (k==='Q'?QSPD:SPD), t0=SNAP+(r.delay||0);
+    T.routes[k]={pts,c,t0,spd,tend:t0+c[c.length-1]/spd,r,map:sh.map};
   }
   const P=(k,t)=>{const R=T.routes[k]; return posAt(R.pts,R.c,(t-R.t0)*R.spd);};
   T.pos=P;
-  const tv=(k,v)=>{const R=T.routes[k]; const i=(v==null||v>=R.pts.length)?R.pts.length-1:v; return R.t0+R.c[i]/R.spd;};  // clamp: edited routes may shrink
+  const tv=(k,v)=>{const R=T.routes[k]; const i=(v==null||v>=R.map.length)?R.pts.length-1:R.map[v]; return R.t0+R.c[i]/R.spd;};  // v = control point; clamp: edited routes may shrink
   T.tv=tv;
   // ball timeline as list of segments {t0,t1,kind,from,to,holder}
   let holder='C', tcur=0; const segs=[];
@@ -106,14 +124,14 @@ function playerG(k,x,y,isStar,opacity){
 function extents(play){
   let x0=1e9,x1=-1e9;
   for(const k in play.players){const p=play.players[k];x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);}
-  for(const k in play.routes){for(const p of play.routes[k].pts){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);}}
+  for(const k in play.routes){for(const p of shape(play.routes[k]).pts){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);}}
   return [x0,x1];
 }
 function viewBox(play,aspect){
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   const add=(p)=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);};
   for(const k in play.players)add(play.players[k]);
-  for(const k in play.routes)for(const p of play.routes[k].pts)add(p);
+  for(const k in play.routes)for(const p of shape(play.routes[k]).pts)add(p);
   y0=Math.min(y0,-0.4); y1=Math.max(y1,0.4);
   const padx=0.95, pady=0.85; x0-=padx;x1+=padx;y0-=pady;y1+=pady;
   let h=Math.max(y1-y0,(x1-x0)/aspect,5.0); const w=h*aspect;
@@ -123,7 +141,8 @@ function viewBox(play,aspect){
 }
 function routeEls(k,r,opts){
   const col=COL[k]; let out='';
-  const pts=r.pts; const dotFrom=(r.dotFrom==null)?null:r.dotFrom;
+  const sh=shape(r), pts=sh.pts, at=i=>sh.map[Math.min(i,sh.map.length-1)];   // control index → drawn index
+  const dotFrom=(r.dotFrom==null)?null:at(r.dotFrom);
   const solidTo=(dotFrom==null)?pts.length-1:dotFrom;
   const draw=(seg,dashed,motionRange)=>{
     if(seg.length<2)return '';
@@ -133,7 +152,7 @@ function routeEls(k,r,opts){
   };
   let base=pts;
   if(r.motion){ // build point list with zigzag substituted
-    const [m0,m1]=r.motion; const zz=zigzag(pts,m0,m1);
+    const [m0,m1]=r.motion.map(at); const zz=zigzag(pts,m0,m1);
     base=pts.slice(0,m0).concat(zz).concat(pts.slice(m1+1)); 
     // map dotFrom index shift
     if(dotFrom!=null){ const shift=zz.length-(m1-m0)-1; var dotIdx=dotFrom+shift+ (dotFrom>m1?0:0); }
@@ -193,5 +212,5 @@ function animSVG(play,T,t,opt){
   return s+'</svg>';
 }
 
-root.PB={COL,timeline,ballAt,staticSVG,animSVG,extents,viewBox,SNAP};
+root.PB={COL,shape,timeline,ballAt,staticSVG,animSVG,extents,viewBox,SNAP};
 })(typeof window!=='undefined'?window:globalThis);

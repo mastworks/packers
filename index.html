@@ -19,6 +19,10 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 .tag{position:absolute;left:5px;bottom:5px;font-size:9px;font-weight:600;background:var(--gold);color:#111;padding:2px 5px;border-radius:4px;letter-spacing:.08em}
 .tag.up{background:var(--g);color:var(--gold)}
 .ib{position:absolute;right:5px;bottom:5px;font-size:10px;font-weight:600;background:#fff;border:1.5px solid var(--gold);border-radius:9px;padding:1px 6px}
+#coachBtn{flex:none;background:none;border:1.5px solid var(--g3);color:var(--mute);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:600;letter-spacing:.08em}
+#coachBtn.on{background:var(--gold);border-color:var(--gold);color:#111}
+#inbox{display:none;margin:8px 8px 0;background:var(--gold);color:#111;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;letter-spacing:.08em;text-decoration:none;text-align:center}
+#inbox.show{display:block}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -55,7 +59,8 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 .oside .btn{white-space:nowrap}
 @media print{ #ov,.acts,.ctl,.btn{display:none!important} }       /* buttons never print */
 </style></head><body>
-<header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div></div><div class=tabs id=tabs></div></header>
+<header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div><button id=coachBtn>🔒 COACH</button></div><div class=tabs id=tabs></div></header>
+<a id=inbox href="coach.html#review"></a>
 <main id=grid></main>
 <div class="legend" id=legend></div>
 <div id=ov>
@@ -73,6 +78,10 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
     </div>
   </div>
 </div>
+<dialog id=dCoach><h2>Coach sign-in</h2><p>Only the coach account can save plays for the whole team and review player ideas.</p>
+  <label>EMAIL</label><input type=email id=cEmail autocomplete=username autocapitalize=off><label>PASSWORD</label><input type=password id=cPass autocomplete=current-password>
+  <div id=cMsg style="color:var(--warn);font-size:13px;min-height:18px;margin-top:8px"></div>
+  <div class=row><button class="btn ghost" id=cCancel>Cancel</button><button class="btn gold" id=cGo>Sign in</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
@@ -149,6 +158,24 @@ $('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.p
 $('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,band.length-1); paintOv(); }
   $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
 
+/* ---------- coach mode: visible sign-in, inbox of player ideas ---------- */
+let PENDING=0;
+function coachUI(){ const b=$('#coachBtn'), c=isCoach();
+  b.classList.toggle('on',c); b.textContent=c?(PENDING?`📥 ${PENDING}`:'COACH ✓'):'🔒 COACH';
+  $('#inbox').classList.toggle('show',c&&PENDING>0); $('#inbox').textContent=`📥 ${PENDING} NEW PLAYER IDEA${PENDING===1?'':'S'} — TAP TO REVIEW`;
+  if($('#ov').classList.contains('show')) $('#send').textContent=c?'💾 SAVE TO TEAM':'📤 SEND TO COACH'; }
+async function coachInbox(){ if(!isCoach()) return coachUI();
+  try{ PENDING=(await PA.coachRpc('pa_coach_proposals')).filter(x=>x.status==='pending').length; }
+  catch(e){ if(e.code==='28000'||e.status===401||e.status===400){ PA.logout(); PA.toast('Coach sign-in expired. Sign in again.'); } }
+  coachUI(); }
+$('#coachBtn').onclick=()=>{ if(isCoach()) location.href=PENDING?'coach.html#review':'coach.html'; else { $('#cMsg').textContent=''; $('#dCoach').showModal(); } };
+$('#cCancel').onclick=()=>$('#dCoach').close();
+$('#cGo').onclick=async()=>{ const m=$('#cMsg'); m.style.color='var(--g)'; m.textContent='Signing in…';
+  try{ await PA.login($('#cEmail').value.trim(),$('#cPass').value);
+    try{ await PA.coachRpc('pa_coach_proposals'); }catch(e){ PA.logout(); throw new Error('That account is not the team coach.'); }
+    $('#dCoach').close(); $('#cPass').value=''; await coachInbox(); PA.toast('Coach mode on: 💾 SAVE TO TEAM on every play'); }
+  catch(e){ m.style.color='var(--warn)'; m.textContent=/Invalid login/i.test(e.message)?'Wrong email or password.':e.message; } };
+
 /* ---------- data ---------- */
 async function loadIdeas(){ try{ IDEAS=await PA.ideas(); }catch(e){ IDEAS=IDEAS||[]; } }
 async function load(first,quiet){
@@ -160,14 +187,14 @@ async function load(first,quiet){
   if(had&&r.fresh&&!quiet) PA.toast('Coach updated the plays'); if(!r.fresh) PA.toast('Offline: showing saved plays');
   return had;
 }
-document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); if(!$('#ov').classList.contains('show')) draw(); } });
-setInterval(()=>{ if(document.visibilityState==='visible') load(false); },5*60*1000);
+document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); coachInbox(); if(!$('#ov').classList.contains('show')) draw(); } });
+setInterval(()=>{ if(document.visibilityState==='visible'){ load(false); coachInbox(); } },5*60*1000);
 // Coach page: tap the title 5 times (works inside the installed app, where there is no address bar)
 let taps=[]; $('#ttl').onclick=()=>{ const n=Date.now(); taps=taps.filter(t=>n-t<2500); taps.push(n); if(taps.length>=5) location.href='coach.html'; };
 addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n=>PA.fit(n,12,7)); });
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
-  await PA.join(false); await load(true); await loadIdeas(); draw();
+  coachUI(); await PA.join(false); await load(true); await loadIdeas(); draw(); coachInbox();
   const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); const i=band.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));

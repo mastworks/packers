@@ -1,0 +1,71 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Packer Army Wristband</title>
+<link rel=stylesheet href=theme.css>
+<style>
+/* same card geometry as src/print.py: 4.25 x 2.25 in card, 4 x 2 plays, one card per Letter page */
+@page{size:8.5in 11in;margin:0}
+.ctl{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctl b{font:600 16px var(--font);letter-spacing:.06em;flex:1 1 100%}
+.ctl b span{color:var(--gold)}
+.ctl label{font:13px var(--font);color:#fff;margin:0;letter-spacing:.06em;display:flex;gap:6px;align-items:center}
+.ctl .tip{font:12px/1.3 var(--font);color:var(--mute);flex:1 1 100%}
+.pages{padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:14px;overflow-x:auto}
+.page{width:8.5in;height:11in;padding:0.55in 0.6in;background:#fff;color:#111;position:relative;box-shadow:0 1px 6px rgba(0,0,0,.25);font-family:var(--font);flex:none}
+.page h1{font:600 9pt var(--font);margin:0 0 2pt;letter-spacing:.06em}
+.sub{font:500 6.5pt var(--font);letter-spacing:.05em;color:#555;margin:0 0 10pt}
+.card{width:4.25in;height:2.25in;border:0.5pt solid #000;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);background:#fff}
+.cell{position:relative;border-right:0.4pt solid #999;border-bottom:0.4pt solid #999;overflow:hidden;display:flex;flex-direction:column}
+.cell:nth-child(4n){border-right:none}.cell:nth-child(n+5){border-bottom:none}
+.band{height:0.15in;background:#203731;color:#fff;display:flex;align-items:center;gap:0.03in;padding:0 0.03in;flex:none;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.band .num{font:600 6.6pt var(--font);flex:none}
+.band .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font:500 5pt var(--font);letter-spacing:.03em}
+.title{height:0.255in;padding:0.015in 0.035in 0;font:500 4.8pt/1.2 var(--font);letter-spacing:.03em;overflow:hidden;flex:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.title em{font-style:normal;font-weight:600}
+.cat-throw,.cat-run,.cat-redzone,.cat-trick,.legend i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.dia{flex:1;min-height:0;position:relative}
+.dia svg{position:absolute;inset:0;width:100%;height:100%}
+.big{zoom:1.8;margin-top:12pt}
+.page .legend{display:flex;gap:8pt;margin-top:8pt;font:500 6.5pt var(--font);letter-spacing:.05em;align-items:center;flex-wrap:wrap;color:#222}
+.page .legend i{display:inline-block;width:8pt;height:8pt;border-radius:50%;margin-right:3pt;vertical-align:-1pt}
+.page .legend i.sq{border-radius:2pt}
+.page .legend .k{color:#444}
+.stamp{position:absolute;right:0.6in;top:0.55in;font:500 6.5pt var(--font);color:#555}
+body.nobig .big{display:none}
+@media print{ body{background:#fff} .ctl{display:none} .pages{padding:0;gap:0;display:block} .page{box-shadow:none;page-break-after:always} }
+</style></head><body>
+<div class=ctl><b>PACKER <span>ARMY</span> · <span id=fl></span> WRISTBAND</b>
+  <button class="btn gold" onclick="print()">Print</button>
+  <label><input type=checkbox id=big checked> Enlarged review copy</label>
+  <a class=btn id=back href="coach.html" style="text-decoration:none">← Back</a>
+  <div class=tip>Print at 100% / "Actual size" (not "Fit to page") so each card is 4.25 × 2.25 in. Measure the first card with a ruler before cutting.</div></div>
+<div class=pages id=pages></div>
+<script src=config.js></script><script src=pb.js></script><script src=data.js></script>
+<script>
+const q=new URLSearchParams(location.search), FMT=q.get('fmt')||'5v5';
+document.getElementById('fl').textContent=FMT;
+document.getElementById('big').onchange=e=>document.body.classList.toggle('nobig',!e.target.checked);
+if(q.get('src')!=='coach') document.getElementById('back').href='index.html';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+(async()=>{
+  let plays=q.get('src')==='coach'?PA.store.get('pa_print_'+FMT):null;
+  if(!plays){ await PA.join(false); plays=(await PA.loadPlays()).by[FMT]||[]; }
+  const band=PA.band(plays).slice(0,24), hasH=band.some(p=>p.players.H);
+  const cell=p=>`<div class="cell"><div class="band cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm>${esc(p.name)}</span></div><div class="title">${p.sub?`<em>${esc(p.sub)}</em> · `:''}${esc(p.cue||'')}</div><div class="dia" data-n="${p.n}"></div></div>`;
+  const leg=[['Q','#1F2F6B'],['C','#0B8A8A'],['X','#C8102E'],['Y','#2F9E44'],['Z','#DB8B00']].concat(hasH?[['H','#E0567F']]:[])
+    .map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('')+PA.CATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join('');
+  const printed=new Date().toLocaleDateString();
+  let html='';
+  for(let c=0;c*8<band.length;c++){
+    const ps=band.slice(c*8,c*8+8), card='<div class="card">'+ps.map(cell).join('')+'</div>';
+    html+=`<div class="page"><h1>PACKER ARMY · ${FMT} WRISTBAND · CARD ${c+1} · PLAYS ${ps[0].n}–${ps[ps.length-1].n}</h1>
+      <div class="stamp">Printed ${printed}</div>
+      <div class="sub">Actual size 4.25 × 2.25 in (cut on outline) · enlarged review copy below</div>${card}<div class="big">${card}</div>
+      <div class="legend">${leg}<span class="k">Star = first ball option · solid = route · dotted = ball carried / thrown · ball icon = catch or hand-off point</span></div></div>`;
+  }
+  document.getElementById('pages').innerHTML=html;
+  const byN=Object.fromEntries(plays.map(p=>[p.n,p]));
+  document.querySelectorAll('.dia').forEach(d=>{ d.innerHTML=PB.staticSVG(byN[d.dataset.n],{aspect:d.clientWidth/d.clientHeight}); });
+  document.querySelectorAll('.band .nm').forEach(n=>{ let fs=5; while(n.scrollWidth>n.clientWidth+0.5&&fs>3.4){ fs-=0.1; n.style.fontSize=fs+'pt'; } });
+})();
+</script></body></html>

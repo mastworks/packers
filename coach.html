@@ -1,0 +1,209 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name=apple-mobile-web-app-capable content=yes><meta name=theme-color content="#203731">
+<link rel=manifest href=manifest.webmanifest><link rel=apple-touch-icon href=icons/icon-180.png>
+<title>Packer Army Coach</title>
+<link rel=stylesheet href=theme.css>
+<style>
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.view{display:none}.view.show{display:block}
+.pick{display:flex;gap:6px;align-items:center;padding:10px 0 8px}
+.pick select{flex:1;min-width:0;font-weight:600;font-size:15px;font-family:inherit;padding:9px 8px;border-radius:9px;border:1.5px solid var(--g3);background:#fff;color:var(--ink)}
+.pick .btn{padding:9px 13px}
+.more{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.more .btn{flex:1 1 44%;text-align:center;text-decoration:none}
+.actions{position:fixed;left:0;right:0;bottom:0;background:var(--g);padding:10px 10px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;z-index:10;box-shadow:0 -2px 10px rgba(0,0,0,.25)}
+.actions .btn{flex:1}.actions #save{flex:1.6}
+.login{max-width:420px;margin:30px auto;padding:0 14px}
+h3.sec{margin:14px 2px 6px;font-size:14px;letter-spacing:.06em;color:var(--g)}
+.idea{display:flex;gap:10px;background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:8px;margin:0 0 8px;align-items:center;cursor:pointer}
+.idea .mini{width:110px;flex:none;aspect-ratio:1.3;position:relative}.idea .mini svg,.cmp .d svg,.hist .mini svg{position:absolute;inset:0;width:100%;height:100%}
+.idea .tx{flex:1;min-width:0;font:13px/1.3 var(--font)}.idea .tx b{display:block;font-size:14px;margin-bottom:2px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}@media(max-width:520px){.cmp{grid-template-columns:1fr}}
+.cmp figure{margin:0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.cmp figcaption{background:var(--g);color:#fff;font:600 12px var(--font);letter-spacing:.05em;padding:5px 8px}.cmp figure.new figcaption{background:var(--gold);color:var(--ink)}
+.cmp .d{aspect-ratio:1.3;position:relative}
+.msg{background:#fff;border-left:4px solid var(--gold);border-radius:8px;padding:10px 12px;margin:10px 0;font:15px/1.4 var(--font)}
+.meta{font:13px/1.4 var(--font);color:#44524d}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.btns .btn{flex:1 1 40%}
+.cm{background:#fff;border-radius:8px;padding:8px 10px;margin:6px 0;font:14px/1.35 var(--font);display:flex;gap:8px}.cm div{flex:1}.cm b{color:var(--g)}
+.cm button{background:none;border:0;color:var(--warn);font-size:18px}
+.hist{display:flex;gap:10px;align-items:center;border-bottom:1px solid #e3e8e5;padding:8px 0}.hist .mini{width:90px;flex:none;aspect-ratio:1.3;position:relative}.hist div{flex:1;font:13px/1.3 var(--font)}
+dialog .radio{display:flex;gap:8px;align-items:center;font:15px var(--font);margin:8px 0}
+#histList{max-height:60vh;overflow:auto}
+</style></head><body>
+<header><div class=hrow><h1>PACKER <span>ARMY</span> · COACH</h1><div class=seg id=fmts></div></div><div class=tabs id=tabs><button data-t=book class=on>Playbook</button><button data-t=review>Review ideas</button></div></header>
+
+<div class="view login" id=vLogin>
+  <fieldset><label>COACH EMAIL</label><input type=email id=lEmail autocomplete=username autocapitalize=off>
+  <label>PASSWORD</label><input type=password id=lPass autocomplete=current-password>
+  <div id=lMsg class=meta style="color:var(--warn);min-height:20px;margin-top:8px"></div>
+  <button class="btn gold" id=lGo style="width:100%;margin-top:6px">Sign in</button></fieldset>
+  <p class=meta>Coach accounts are made in Supabase (see COACH_SETUP.md). <a href="index.html">← Player view</a></p>
+</div>
+
+<div class="view wrap" id=vBook>
+  <div class=pick><button class=btn id=prev aria-label="previous play">◀</button><select id=pick></select><button class=btn id=next aria-label="next play">▶</button></div>
+  <div id=ed></div>
+  <div class=more>
+    <button class="btn ghost" id=print5>Print 5v5 wristband</button><button class="btn ghost" id=print6>Print 6v6 wristband</button>
+    <button class="btn ghost" id=histBtn>Versions of this play</button><button class="btn ghost" id=revert>Undo all unsaved changes</button>
+    <button class="btn ghost" id=codeBtn>Team code</button><button class="btn ghost" id=out>Sign out</button>
+    <a class="btn ghost" href="index.html">← Player view</a>
+  </div>
+</div>
+
+<div class="view wrap" id=vReview><div id=rev></div></div>
+
+<div class=actions id=bar><button class=btn id=undo>Undo</button><button class="btn gold" id=save>Save</button></div>
+
+<dialog id=dNote><h2 id=nTitle></h2><p id=nText></p><div id=nPick></div><textarea id=nBody maxlength=600></textarea>
+  <div class=row><button class="btn ghost" id=nCancel>Cancel</button><button class="btn gold" id=nOk>OK</button></div></dialog>
+<dialog id=dApply><h2>Apply this idea</h2><p>Every player's app gets the result. The play it replaces is kept in its version history.</p>
+  <div id=aOpts></div><label>NOTE TO THE TEAM (optional)</label><textarea id=aNote maxlength=600></textarea>
+  <div class=row><button class="btn ghost" id=aCancel>Cancel</button><button class="btn gold" id=aOk>Apply</button></div></dialog>
+<dialog id=dHist><h2 id=hTitle>Versions</h2><div id=histList></div><div class=row><button class="btn ghost" id=hClose>Close</button></div></dialog>
+<dialog id=dCode><h2>Team code</h2><p>Players type this once to open the app. Changing it signs every player out until they enter the new one.</p>
+  <label>CURRENT CODE</label><input id=cNow readonly><label>NEW CODE</label><input id=cNew autocapitalize=characters autocomplete=off maxlength=40>
+  <div class=row><button class="btn ghost" id=cCancel>Close</button><button class="btn gold" id=cOk>Change</button></div></dialog>
+
+<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
+<script>
+const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b), P=PA.esc;
+const base={}, work={};            // base = saved playbook, work = coach's copy being edited (kept on the phone until saved)
+let FMTS=[], FMT='', idx=0, tab='book', ideas=[], openIdea=null, stops=[];
+const ed=PlayEditor($('#ed'),{onChange:()=>{ saveDraft(); refresh(); }});
+const cur=()=>work[FMT][idx];
+const changed=f=>(work[f]||[]).filter(p=>!same(p,(base[f]||[]).find(q=>q.n===p.n)));
+function saveDraft(){ for(const f of FMTS){ if(changed(f).length) PA.store.set('pa_draft_'+f,work[f]); else PA.store.del('pa_draft_'+f); } }
+function view(v){ ['vLogin','vBook','vReview'].forEach(x=>$('#'+x).classList.toggle('show',x===v)); $('#bar').style.display=v==='vBook'?'flex':'none';
+  $('#fmts').style.display=$('#tabs').style.display=v==='vLogin'?'none':'flex'; }
+const needsPlay=x=>x.kind==='new'&&!x.target_n;   // players see ideas inside a play, so new-play ideas need one to show with
+
+/* ---------- sign in + load ---------- */
+async function start(){
+  if(!PA.configured){ view('vLogin'); $('#lMsg').textContent='App not connected yet: fill in config.js (COACH_SETUP.md).'; return; }
+  try{ const by=await PA.coachPlays(); FMTS=Object.keys(by).sort();
+    for(const f of FMTS){ base[f]=by[f]; const d=PA.store.get('pa_draft_'+f); work[f]=d||clone(by[f]); if(d&&changed(f).length) PA.toast('Restored your unsaved '+f+' changes'); }
+  }catch(e){ if(e.status===401||/Coach sign-in|JWT|token/i.test(e.message)){ PA.logout(); view('vLogin'); return; } alert(e.message); return; }
+  $('#fmts').innerHTML=FMTS.map(f=>`<button>${f}</button>`).join('');
+  const s=PA.store.get('pa_coach_fmt'); FMT=FMTS.includes(s)?s:FMTS[0];
+  view(tab==='book'?'vBook':'vReview'); loadPlay(); loadIdeas();
+}
+$('#lGo').onclick=async()=>{ $('#lMsg').textContent='Signing in…';
+  try{ await PA.login($('#lEmail').value.trim(),$('#lPass').value); $('#lMsg').textContent=''; start(); }
+  catch(e){ $('#lMsg').textContent=e.message==='Invalid login credentials'?'Wrong email or password.':e.message; } };
+$('#out').onclick=()=>{ if(FMTS.some(f=>changed(f).length)&&!confirm('You have unsaved changes on this phone. They stay here until you sign back in. Sign out?')) return; PA.logout(); location.reload(); };
+
+/* ---------- playbook ---------- */
+function loadPlay(){ idx=Math.min(idx,work[FMT].length-1); ed.load(cur(),FMT+'#'+cur().n); refresh(); }
+function refresh(){
+  [...$('#fmts').children].forEach(b=>b.classList.toggle('on',b.textContent===FMT));
+  const ch=new Set(changed(FMT).map(p=>p.n));
+  $('#pick').innerHTML=work[FMT].map((p,i)=>`<option value="${i}">${ch.has(p.n)?'● ':''}#${p.n}${p.status==='spare'?' (spare)':''} ${P(p.name)}</option>`).join(''); $('#pick').value=idx;
+  const total=FMTS.reduce((a,f)=>a+changed(f).length,0);
+  $('#save').textContent=total?`Save to team (${total})`:'Saved ✓'; $('#save').disabled=!total; $('#undo').disabled=!ed.canUndo();
+  const pend=ideas.filter(x=>x.status==='pending').length; $('#tabs [data-t=review]').textContent='Review ideas'+(pend?` (${pend})`:'');
+}
+const go=i=>{ idx=(i+work[FMT].length)%work[FMT].length; loadPlay(); };
+$('#pick').onchange=e=>go(+e.target.value); $('#prev').onclick=()=>go(idx-1); $('#next').onclick=()=>go(idx+1);
+$('#fmts').onclick=e=>{ if(e.target.tagName!=='BUTTON') return; FMT=e.target.textContent; PA.store.set('pa_coach_fmt',FMT); if(tab==='book') loadPlay(); else drawReview(); refresh(); };
+$('#tabs').onclick=e=>{ const t=e.target.dataset.t; if(!t) return; tab=t; [...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.t===t)); openIdea=null;
+  view(t==='book'?'vBook':'vReview'); if(t==='review') loadIdeas(); else loadPlay(); };
+$('#undo').onclick=()=>{ if(!ed.undo()) PA.toast('Nothing to undo'); };
+$('#revert').onclick=()=>{ const b=base[FMT].find(q=>q.n===cur().n); if(!b||same(b,cur())) return PA.toast('This play has no unsaved changes');
+  if(!confirm(`Put play #${cur().n} back to the saved version?`)) return; work[FMT][idx]=clone(b); saveDraft(); loadPlay(); };
+$('#save').onclick=async()=>{
+  $('#save').disabled=true; $('#save').textContent='Saving…'; const today=new Date().toISOString().slice(0,10);
+  try{ for(const f of FMTS) for(const p of changed(f)){ p.updated=today; await PA.coachRpc('pa_save_play',{fmt:f,n:p.n,data:p,reason:'Coach edit'});
+         const i=base[f].findIndex(q=>q.n===p.n); if(i>=0) base[f][i]=clone(p); else base[f].push(clone(p)); }
+       saveDraft(); PA.toast('Saved! Players get it next time they open the app.',3500); }
+  catch(e){ alert('Save failed. Your changes are still on this phone.\n\n'+e.message); }
+  refresh(); };
+function printFmt(f){ PA.store.set('pa_print_'+f,work[f]); location.href='print.html?fmt='+f+'&src=coach'; }
+$('#print5').onclick=()=>printFmt('5v5'); $('#print6').onclick=()=>printFmt('6v6');
+$('#histBtn').onclick=async()=>{ const p=cur(); $('#hTitle').textContent=`Versions of #${p.n}`; $('#histList').innerHTML='<p class=meta>Loading…</p>'; $('#dHist').showModal();
+  try{ const h=await PA.coachRpc('pa_history',{fmt:FMT,n:p.n});
+    $('#histList').innerHTML=h.length?h.map((v,i)=>`<div class=hist><div class=mini data-i="${i}"></div><div><b>${P(v.data.name)}</b><br>replaced ${new Date(v.replaced_at).toLocaleString()}<br><span class=meta>${P(v.reason||'')}</span></div><button class=btn data-r="${i}">Restore</button></div>`).join(''):'<p class=meta>No earlier versions yet.</p>';
+    $('#histList').querySelectorAll('.mini').forEach(m=>m.innerHTML=PB.staticSVG(h[+m.dataset.i].data,{aspect:1.3}));
+    $('#histList').onclick=e=>{ const r=e.target.dataset.r; if(r==null) return; const d=clone(h[+r].data); d.n=p.n; work[FMT][idx]=d; saveDraft(); $('#dHist').close(); loadPlay(); PA.toast('Restored here. Tap Save to send it to the team.',3500); };
+  }catch(e){ $('#histList').textContent=e.message; } };
+$('#hClose').onclick=()=>$('#dHist').close();
+$('#codeBtn').onclick=async()=>{ $('#cNew').value=''; $('#dCode').showModal(); try{ $('#cNow').value=await PA.coachRpc('pa_get_code'); }catch(e){ $('#cNow').value=e.message; } };
+$('#cCancel').onclick=()=>$('#dCode').close();
+$('#cOk').onclick=async()=>{ const c=$('#cNew').value.trim(); if(c.length<4) return alert('Use at least 4 characters');
+  try{ await PA.coachRpc('pa_set_code',{new_code:c}); PA.store.set('pa_code',c); $('#cNow').value=c; PA.toast('Team code changed'); }catch(e){ alert(e.message); } };
+
+/* ---------- review ideas ---------- */
+async function loadIdeas(){ try{ ideas=(await PA.coachRpc('pa_coach_proposals')).map(x=>(PA.norm(x.play),x)); }catch(e){ ideas=[]; $('#rev').innerHTML='<p class=meta>'+P(e.message)+'</p>'; return; }
+  refresh(); if(tab==='review') openIdea?drawIdea(ideas.find(x=>x.id===openIdea)):drawReview(); }
+const LBL={pending:'NEW — NEEDS YOU',shared:'TEAM VOTING',applied:'APPLIED',declined:'DECLINED'};
+function drawReview(){
+  const list=ideas.filter(x=>x.fmt===FMT), card=x=>`<div class=idea data-id="${x.id}"><div class=mini data-id="${x.id}"></div><div class=tx><b>${P(x.play.name||'Untitled')}</b>
+    <span class="pill ${x.status}">${LBL[x.status]}</span> ${x.kind==='new'?'New play':'Change #'+x.target_n} · ${P(x.author)} · ${PA.ago(x.created_at)}<div class=meta>👍 ${x.yes} · 👎 ${x.no} · 💬 ${x.comments}</div></div></div>`;
+  const sec=(t,a)=>a.length?`<h3 class=sec>${t}</h3>`+a.map(card).join(''):'';
+  $('#rev').innerHTML=(sec('NEEDS YOUR REVIEW',list.filter(x=>x.status==='pending'))+sec('TEAM IS VOTING',list.filter(x=>x.status==='shared'))
+    +sec('DECIDED',list.filter(x=>x.status==='applied'||x.status==='declined').slice(0,30)))||`<p class=meta>No ${FMT} ideas yet. Players send them from any play (“Suggest a change”) or the 💡 Ideas tab.</p>`;
+  $('#rev').querySelectorAll('.mini').forEach(m=>m.innerHTML=PB.staticSVG(ideas.find(x=>x.id===m.dataset.id).play,{aspect:1.3}));
+  $('#rev').onclick=e=>{ const c=e.target.closest('.idea'); if(c){ openIdea=c.dataset.id; drawIdea(ideas.find(x=>x.id===openIdea)); scrollTo(0,0); } };
+}
+async function drawIdea(x){
+  if(!x){ openIdea=null; return drawReview(); }
+  stops.forEach(s=>s()); stops=[];
+  const now=x.target_n?base[x.fmt].find(p=>p.n===x.target_n):null;
+  $('#rev').innerHTML=`<div class=btns style="margin:10px 0 0"><button class=btn id=back style="flex:0 0 auto">← All ideas</button><span class="pill ${x.status}" style="align-self:center">${LBL[x.status]}</span></div>
+    <h2 style="margin:8px 0 2px;font-size:19px">${P(x.play.name||'Untitled')}</h2>
+    <div class=meta>${x.fmt} · ${x.kind==='new'?('New play'+(x.target_n?`, suggests replacing #${x.target_n}`:'')):`Change to #${x.target_n}`} · by <b>${P(x.author)}</b> · ${PA.ago(x.created_at)}</div>
+    ${x.message?`<div class=msg>“${P(x.message)}”</div>`:''}${x.coach_note?`<div class=meta><b>Your note:</b> ${P(x.coach_note)}</div>`:''}
+    <div class=cmp>${now&&x.status!=='applied'?`<figure><figcaption>NOW · #${now.n} ${P(now.name)}</figcaption><div class=d id=cmpNow></div></figure>`:''}<figure class=new><figcaption>IDEA</figcaption><div class=d id=cmpIdea></div></figure></div>
+    <button class="btn gold" id=pb style="width:100%">▶ Play ${now?'both':''}</button>
+    <div class=btns>
+      ${x.status==='pending'?'<button class="btn gold" id=share>Share with team</button>':''}
+      ${x.status==='pending'||x.status==='shared'?'<button class=btn id=apply>Apply…</button><button class=btn id=edit>Edit idea first</button><button class="btn ghost" id=decline>Decline</button>':''}
+      ${x.status==='shared'?'<button class="btn ghost" id=unshare>Stop voting</button>':''}
+      ${x.status==='declined'?'<button class=btn id=reopen>Reopen</button>':''}
+    </div>
+    <div class=meta>👍 ${x.yes} yes · 👎 ${x.no} no</div>
+    <h3 class=sec>COMMENTS</h3><div id=cms class=meta>Loading…</div>`;
+  const dI=$('#cmpIdea'), dN=$('#cmpNow'); dI.innerHTML=PB.staticSVG(x.play,{aspect:1.3}); if(dN) dN.innerHTML=PB.staticSVG(now,{aspect:1.3});
+  $('#pb').onclick=()=>{ stops.forEach(s=>s()); stops=[PA.animate(dI,x.play)]; if(dN) stops.push(PA.animate(dN,now)); };
+  $('#back').onclick=()=>{ openIdea=null; drawReview(); };
+  const B=(id,fn)=>{ const b=$('#'+id); if(b) b.onclick=fn; };
+  B('share',()=>note('Share with the team','Optional note the team will see (e.g. “Should X line up wider?”).',(t,w)=>setStatus(x,'shared',t,w),needsPlay(x)?base[x.fmt]:null));
+  B('decline',()=>note('Decline this idea',`Optional note to ${x.author} (e.g. “Great thinking, but it breaks the no-run-zone rule”).`,t=>setStatus(x,'declined',t)));
+  B('unshare',()=>setStatus(x,'pending',null)); B('reopen',()=>setStatus(x,'pending',null));
+  B('apply',()=>applyDlg(x)); B('edit',()=>editIdea(x));
+  try{ const c=await PA.coachRpc('pa_coach_comments',{pid:x.id});
+    $('#cms').className=''; $('#cms').innerHTML=c.length?c.map(m=>`<div class=cm><div><b>${P(m.author)}</b> <small class=meta>${PA.ago(m.created_at)}</small><br>${P(m.body)}</div><button data-c="${m.id}" aria-label="delete">×</button></div>`).join(''):'<p class=meta>No comments yet.</p>';
+    $('#cms').onclick=async e=>{ const id=e.target.dataset.c; if(!id||!confirm('Delete this comment?')) return; await PA.coachRpc('pa_delete_comment',{cid:+id}); loadIdeas(); };
+  }catch(e){ $('#cms').textContent=e.message; }
+}
+function note(title,text,ok,pickFrom){ $('#nTitle').textContent=title; $('#nText').textContent=text; $('#nBody').value='';
+  $('#nPick').innerHTML=pickFrom?`<label>SHOW IT TO THE TEAM WITH PLAY</label><select class=f id=nWith>${pickFrom.map(p=>`<option value="${p.n}">#${p.n} ${P(p.name)}</option>`).join('')}</select><label>NOTE</label>`:'';
+  $('#dNote').showModal();
+  $('#nOk').onclick=()=>{ $('#dNote').close(); ok($('#nBody').value,pickFrom?+$('#nWith').value:null); }; }
+$('#nCancel').onclick=()=>$('#dNote').close();
+async function setStatus(x,s,t,w){ try{ await PA.coachRpc('pa_set_status',{pid:x.id,new_status:s,note:t,show_with:w||null}); PA.toast({shared:'Shared with the team',declined:'Declined',pending:'Moved back to review'}[s]); loadIdeas(); }catch(e){ alert(e.message); } }
+function applyDlg(x){
+  const plays=base[x.fmt], opt=(v,l,on)=>`<label class=radio><input type=radio name=ap value="${v}" ${on?'checked':''}> ${l}</label>`;
+  $('#aOpts').innerHTML=(x.kind==='modify'?opt(x.target_n,`Change play #${x.target_n} (${P(plays.find(p=>p.n===x.target_n)?.name||'')})`,true):'')
+    +`<label class=radio><input type=radio name=ap value=pick ${x.kind==='new'?'checked':''}> Replace play <select class=f id=aPick style="width:auto;flex:1">${plays.map(p=>`<option value="${p.n}" ${p.n===x.target_n?'selected':''}>#${p.n} ${P(p.name)}</option>`).join('')}</select></label>`
+    +opt(0,'Add as a new spare play',false);
+  $('#aNote').value=''; $('#dApply').showModal();
+  $('#aOk').onclick=async()=>{ const v=document.querySelector('input[name=ap]:checked').value, into=v==='pick'?+$('#aPick').value:+v;
+    if(into && changed(x.fmt).some(p=>p.n===into) && !confirm(`You have unsaved edits to #${into}. Applying replaces them. Continue?`)) return;
+    try{ const n=await PA.coachRpc('pa_apply',{pid:x.id,into_n:into,note:$('#aNote').value}); $('#dApply').close();
+      const by=await PA.coachPlays(); base[x.fmt]=by[x.fmt]; const w=work[x.fmt], fresh=by[x.fmt].find(p=>p.n===n); const i=w.findIndex(p=>p.n===n); if(i>=0) w[i]=clone(fresh); else { w.push(clone(fresh)); w.sort((a,b)=>a.n-b.n); }
+      saveDraft(); PA.toast(`Applied as play #${n}. Players get it next time they open the app.`,4000); loadIdeas(); }
+    catch(e){ alert(e.message); } };
+}
+$('#aCancel').onclick=()=>$('#dApply').close();
+function editIdea(x){
+  const copy=clone(x.play);
+  $('#rev').innerHTML=`<div class=btns style="margin:10px 0"><button class=btn id=eBack style="flex:0 0 auto">← Cancel</button><button class="btn gold" id=eSave>Save changes to idea</button></div><p class=meta>Editing ${P(x.author)}’s idea before the team sees it.</p><div id=ied></div>`;
+  const e2=PlayEditor($('#ied')); e2.load(copy,'idea-'+x.id);
+  $('#eBack').onclick=()=>drawIdea(x);
+  $('#eSave').onclick=async()=>{ try{ await PA.coachRpc('pa_update_proposal',{pid:x.id,play:copy}); PA.toast('Idea updated'); loadIdeas(); }catch(e){ alert(e.message); } };
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&PA.coachEmail()) loadIdeas(); });
+start();
+</script></body></html>

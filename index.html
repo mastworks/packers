@@ -1,0 +1,174 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name=apple-mobile-web-app-capable content=yes><meta name=mobile-web-app-capable content=yes>
+<meta name=apple-mobile-web-app-title content="Packer Army"><meta name=theme-color content="#203731">
+<link rel=manifest href=manifest.webmanifest><link rel=apple-touch-icon href=icons/icon-180.png>
+<title>Packer Army Playbook</title>
+<link rel=stylesheet href=theme.css>
+<style>
+main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:1100px;margin:0 auto}
+@media(min-width:700px),(orientation:landscape){main{grid-template-columns:repeat(4,1fr)}}      /* iPad, computer, phone sideways: 4 across like the wristband */
+.tile{background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18);position:relative;user-select:none;-webkit-user-select:none;cursor:pointer}
+.tile .b{height:24px;display:flex;align-items:center;gap:6px;padding:0 7px;background:var(--g);color:#fff;white-space:nowrap}   /* same height as before */
+.tile .b .num{font-size:14px;font-weight:600;flex:none}
+.tile .b .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:500;letter-spacing:.05em}
+.tile .t{height:31px;padding:3px 7px 0;font-size:10.5px;line-height:1.3;letter-spacing:.05em;color:#2b3632;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile .t em{font-style:normal;font-weight:600;color:var(--g)}
+.tile .d{aspect-ratio:1.3;position:relative}
+.tile .d svg{position:absolute;inset:0;width:100%;height:100%}
+.tag{position:absolute;left:5px;bottom:5px;font-size:9px;font-weight:600;background:var(--gold);color:#111;padding:2px 5px;border-radius:4px;letter-spacing:.08em}
+.tag.up{background:var(--g);color:var(--gold)}
+.ib{position:absolute;right:5px;bottom:5px;font-size:10px;font-weight:600;background:#fff;border:1.5px solid var(--gold);border-radius:9px;padding:1px 6px}
+#legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
+/* full screen */
+#ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
+#ov.show{display:flex}
+.otop{display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 10px;flex:none}
+.otop .badge{border-radius:6px;padding:2px 8px;font-size:15px;font-weight:600}
+.otop .n{flex:1;min-width:0;color:#fff;font-size:14px;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.otop button{background:none;border:0;color:#fff;font-size:26px;padding:0 8px;line-height:1}
+.obody{display:flex;flex-direction:column;gap:10px;padding:0 8px 12px}
+.stage{background:#fff;border-radius:12px;aspect-ratio:1.3;position:relative;width:100%;max-width:900px;align-self:center}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+#edbox{background:var(--paper);border-radius:12px;padding:8px;display:none}
+.oside{display:flex;flex-direction:column;gap:8px;color:#fff;max-width:900px;width:100%;align-self:center}
+.ocue{font-size:13px;letter-spacing:.06em;color:#fff}.ocue em{font-style:normal;color:var(--gold);font-weight:600}
+.ctl{display:flex;gap:8px;align-items:center}
+.ctl input[type=range]{flex:1;accent-color:var(--gold)}
+.ctl .btn.on{background:var(--gold);color:#111}
+.acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.acts .btn{padding:11px 4px}
+.acts .btn.on{background:var(--gold);color:#111}
+.oside .note{color:var(--mute);font-size:12px;line-height:1.4;letter-spacing:.05em}
+.oideas h4{margin:4px 0;font-size:12px;letter-spacing:.1em;color:var(--gold);font-weight:600}
+.oideas a{display:flex;gap:8px;align-items:center;color:#fff;text-decoration:none;background:#1c3029;border-radius:8px;padding:7px 9px;margin:4px 0;font-size:12px;letter-spacing:.05em}
+.oideas a span{flex:1}
+.onav{display:flex;justify-content:space-between}.onav button{background:none;border:0;color:#fff;font-size:14px;letter-spacing:.08em;padding:6px 2px}
+@media (orientation:landscape) and (max-height:520px){
+  .obody{flex-direction:row;align-items:flex-start}
+  .ofield{flex:0 0 58%;position:sticky;top:0}
+  .stage{max-height:calc(100vh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom));width:auto;height:calc(100vh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+  .oside{flex:1;min-width:0}
+  #ov.editing .ofield{flex:0 0 62%;position:static}
+  .ctl{flex-wrap:wrap}.ctl input[type=range]{flex-basis:100%}
+  .acts{grid-template-columns:1fr 1fr}.acts #send{grid-column:1/-1;order:-1}
+}
+.oside .btn{white-space:nowrap}
+@media print{ #ov,.acts,.ctl,.btn{display:none!important} }       /* buttons never print */
+</style></head><body>
+<header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div></div><div class=tabs id=tabs></div></header>
+<main id=grid></main>
+<div class="legend" id=legend></div>
+<div id=ov>
+  <div class=otop><b class=badge id=ovn></b><div class=n id=ovt></div><button id=ovc aria-label="close">&times;</button></div>
+  <div class=obody>
+    <div class=ofield><div class=stage id=stage></div><div id=edbox></div></div>
+    <div class=oside>
+      <div class=ocue id=ovcue></div>
+      <div class=ctl id=ctl><button class=btn id=anim>▶ ANIMATE</button><button class=btn id=sl>0.5×</button><input id=sc type=range min=0 max=1000 value=0 aria-label="scrub"></div>
+      <div class=acts><button class=btn id=edit>✏️ EDIT</button><button class="btn gold" id=send>📤 SEND TO COACH</button><button class=btn id=sync>🔄 SYNC</button></div>
+      <div class=note id=ovnote></div>
+      <div class=oideas id=ovideas></div>
+      <a class="btn ghost" id=newfrom style="text-align:center;text-decoration:none;color:#fff;border-color:#3d6155">＋ NEW PLAY FROM THIS</a>
+      <div class=onav><button id=pv>&larr; PREV</button><button id=nx>NEXT &rarr;</button></div>
+    </div>
+  </div>
+</div>
+<dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
+  <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
+<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
+<script>
+const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], tab=0, IDEAS=[];
+const grid=$('#grid'), TL={}, tl=p=>TL[p.n]||(TL[p.n]=PB.timeline(p));
+const isCoach=()=>!!PA.coachEmail();
+
+/* ---------- grid ---------- */
+function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
+$('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
+function buildTabs(){ const n=Math.ceil(band.length/8); if(tab>=n) tab=0;
+  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join(''); }
+$('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ tab=i; draw(); } };
+function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
+const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
+function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
+function draw(){
+  [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
+  band.slice(tab*8,tab*8+8).forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
+    t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
+    t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(band.indexOf(p)); grid.appendChild(t);
+    PA.fit(t.querySelector('.nm'),12,7); });
+  $('#legend').innerHTML=PA.legend();
+}
+function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
+
+/* ---------- full screen ---------- */
+let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
+const P=()=>band[cur], DKEY=()=>'pa_idea_'+FMT+'_'+P().n;
+function stop(){ if(stopA){ stopA(); stopA=null; } $('#anim').textContent='▶ ANIMATE'; }
+function openOv(i){ cur=i; stop(); endEdit(); $('#ov').classList.add('show'); paintOv(); runAnim(); }
+function paintOv(){ const p=editing?work:P();
+  $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; $('#ovt').textContent=p.name;
+  $('#ovcue').innerHTML=cueHTML(p); $('#ovnote').textContent=p.note||'';
+  if(!editing) $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3});
+  $('#send').textContent=isCoach()?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
+  $('#edit').textContent=editing?'✓ DONE':'✏️ EDIT'; $('#edit').classList.toggle('on',editing);
+  $('#newfrom').href=`edit.html?fmt=${encodeURIComponent(FMT)}&new=1&from=${P().n}`;
+  const mineIds=new Set(PA.mine()), list=IDEAS.filter(x=>x.fmt===FMT&&x.target_n===P().n&&(x.status==='shared'||mineIds.has(x.id)));
+  const L={pending:'WAITING FOR COACH',shared:'VOTE NOW',applied:'ADDED',declined:'NOT USED'};
+  $('#ovideas').innerHTML=list.length?`<h4>💡 IDEAS FOR THIS PLAY (${list.length})</h4>`+list.map(x=>`<a href="idea.html?id=${x.id}"><span>${PA.esc(x.play.name||'Idea')} · ${PA.esc(x.author)}</span><span class="pill ${x.status}" style="flex:none">${L[x.status]}</span> 👍${x.yes} 👎${x.no}</a>`).join(''):'';
+}
+function runAnim(){ stop(); if(editing) return; const p=P(); $('#anim').textContent='■ STOP';
+  const T=tl(p), vb=PB.viewBox(p,1.3), t0=performance.now(), speed=slow?0.5:1; let raf=0, dead=false;
+  const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
+    if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='▶ ANIMATE'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); } },700); };
+  raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); }; }
+$('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
+$('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
+$('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3}); };
+$('#ovc').onclick=()=>{ if(editing&&!confirm('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
+$('#pv').onclick=()=>{ if(!editing) openOv((cur+band.length-1)%band.length); };
+$('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%band.length); };
+function startEdit(){ stop(); editing=true; const d=PA.store.get(DKEY()); work=d&&d.play?d.play:clone(P());
+  if(!ed) ed=PlayEditor($('#edbox'),{onChange:()=>{ PA.store.set(DKEY(),{play:work}); paintOv(); }});
+  $('#stage').style.display='none'; $('#ctl').style.display='none'; $('#edbox').style.display='block'; $('#ov').classList.add('editing');
+  ed.load(work,DKEY()); paintOv(); }
+function endEdit(){ editing=false; $('#stage').style.display=''; $('#ctl').style.display=''; $('#edbox').style.display='none'; $('#ov').classList.remove('editing'); }
+$('#edit').onclick=()=>{ if(editing){ endEdit(); paintOv(); } else startEdit(); };
+$('#send').onclick=async()=>{
+  const d=PA.store.get(DKEY()), mine=editing?work:(d&&d.play);
+  if(!mine||same(mine,P())) return PA.toast('Tap ✏️ EDIT and change something first');
+  if(isCoach()){ try{ mine.updated=new Date().toISOString().slice(0,10);
+      await PA.coachRpc('pa_save_play',{fmt:FMT,n:P().n,data:mine,reason:'Coach edit'}); PA.store.del(DKEY()); endEdit(); await load(false,true); PA.toast('Saved to the team'); }
+    catch(e){ alert('Save failed: '+e.message+'\nSign in again on the Coach page (tap the title 5 times).'); } return; }
+  if(!await PA.join(true)) return; $('#sMsg').value=''; $('#dSend').showModal();
+};
+$('#sCancel').onclick=()=>$('#dSend').close();
+$('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.play;
+  try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); PA.toast('Sent! Coach will look at it.',3000); }
+  catch(e){ alert('Could not send: '+e.message); } };
+$('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,band.length-1); paintOv(); }
+  $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
+
+/* ---------- data ---------- */
+async function loadIdeas(){ try{ IDEAS=await PA.ideas(); }catch(e){ IDEAS=IDEAS||[]; } }
+async function load(first,quiet){
+  let r; try{ r=await PA.loadPlays(); }
+  catch(e){ if(PA.badCode(e)){ PA.store.del('pa_code'); await PA.join(false); return load(first,quiet); } if(first) grid.textContent='Could not load plays: '+e.message; return false; }
+  const txt=JSON.stringify(r.by); if(txt===SEEN) return false; const had=!!SEEN; SEEN=txt; BY=r.by; FMTS=Object.keys(BY).sort();
+  const s=PA.store.get('pa_fmt'); if(!FMT||!FMTS.includes(FMT)) FMT=FMTS.includes(s)?s:FMTS[0];
+  const open=$('#ov').classList.contains('show'); show(FMT); if(open&&!editing) paintOv();
+  if(had&&r.fresh&&!quiet) PA.toast('Coach updated the plays'); if(!r.fresh) PA.toast('Offline: showing saved plays');
+  return had;
+}
+document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); if(!$('#ov').classList.contains('show')) draw(); } });
+setInterval(()=>{ if(document.visibilityState==='visible') load(false); },5*60*1000);
+// Coach page: tap the title 5 times (works inside the installed app, where there is no address bar)
+let taps=[]; $('#ttl').onclick=()=>{ const n=Date.now(); taps=taps.filter(t=>n-t<2500); taps.push(n); if(taps.length>=5) location.href='coach.html'; };
+addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n=>PA.fit(n,12,7)); });
+(async()=>{
+  if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
+  await PA.join(false); await load(true); await loadIdeas(); draw();
+  const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); const i=band.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
+})();
+if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>

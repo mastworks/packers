@@ -1,0 +1,66 @@
+<!doctype html><html lang=en><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name=apple-mobile-web-app-capable content=yes><meta name=theme-color content="#203731">
+<link rel=manifest href=manifest.webmanifest><link rel=apple-touch-icon href=icons/icon-180.png>
+<title>Packer Army Idea</title>
+<link rel=stylesheet href=theme.css>
+<style>
+.hd{display:flex;align-items:center;gap:8px;padding:10px 0 4px}.hd h2{flex:1;margin:0;font-size:18px}
+.meta{font:13px/1.4 var(--font);color:#44524d}
+.msg{background:#fff;border-left:4px solid var(--gold);border-radius:8px;padding:10px 12px;margin:10px 0;font:15px/1.4 var(--font)}
+.coachnote{background:var(--g);color:#fff;border-radius:8px;padding:10px 12px;margin:10px 0;font:14px/1.4 var(--font)}.coachnote b{color:var(--gold)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+@media(max-width:520px){.cmp{grid-template-columns:1fr}}
+.cmp figure{margin:0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.cmp figcaption{background:var(--g);color:#fff;font:600 12px var(--font);letter-spacing:.05em;padding:5px 8px}.cmp figure.new figcaption{background:var(--gold);color:var(--ink)}
+.cmp .d{aspect-ratio:1.3;position:relative}.cmp .d svg{position:absolute;inset:0;width:100%;height:100%}
+.votes{display:flex;gap:8px;margin:12px 0}.votes .btn{flex:1;font-size:17px;padding:12px}
+.votes .btn.on{background:var(--gold);color:var(--ink)}
+.cm{background:#fff;border-radius:8px;padding:8px 10px;margin:6px 0;font:14px/1.35 var(--font)}.cm b{color:var(--g)}.cm small{color:#889}
+.say{display:flex;gap:8px;margin:8px 0 30px}.say input{flex:1}
+</style></head><body>
+<header><div class=hrow><h1>PACKER <span>ARMY</span> · IDEA</h1></div></header>
+<div class=wrap id=main><p class=meta>Loading…</p></div>
+<script src=config.js></script><script src=pb.js></script><script src=data.js></script>
+<script>
+const id=new URLSearchParams(location.search).get('id'), main=document.getElementById('main');
+const LABEL={pending:'WAITING FOR COACH',shared:'TEAM VOTE',applied:'ADDED TO PLAYBOOK',declined:'NOT USED'};
+let idea=null, now=null, stops=[];
+async function load(){
+  await PA.join(false);
+  const [list,pl]=await Promise.all([PA.ideas(),PA.loadPlays()]);
+  idea=list.find(x=>x.id===id); if(!idea){ main.innerHTML='<p class=meta>This idea is not available (it may still be waiting for Coach).</p><a class=btn href="index.html">← Plays</a>'; return; }
+  const plays=pl.by[idea.fmt]||[]; now=(idea.status!=='applied'&&idea.target_n)?plays.find(p=>p.n===idea.target_n):null;   // once applied, "now" is the idea itself
+  render();
+}
+function render(){
+  const x=idea, P=PA.esc, what=x.kind==='new'?(x.target_n?`New play, would replace #${x.target_n}`:'New play'):`Change to play #${x.target_n}`;
+  main.innerHTML=`<div class=hd><a class=btn href="index.html${x.target_n?`#play=${x.fmt}-${x.target_n}`:''}" style="text-decoration:none">←</a><h2>${P(x.play.name||'Untitled')}</h2><span class="pill ${x.status}">${LABEL[x.status]}</span></div>
+    <div class=meta>${x.fmt} · ${what} · idea by <b>${P(x.author)}</b> · ${PA.ago(x.created_at)}</div>
+    ${x.message?`<div class=msg>“${P(x.message)}”</div>`:''}
+    ${x.coach_note?`<div class=coachnote><b>Coach:</b> ${P(x.coach_note)}</div>`:''}
+    ${x.status==='applied'?`<div class=coachnote><b>Now in the playbook as play #${x.applied_as}.</b></div>`:''}
+    <div class=cmp>${now?`<figure><figcaption>NOW · #${now.n} ${P(now.name)}</figcaption><div class=d id=dNow></div></figure>`:''}
+      <figure class=new><figcaption>IDEA</figcaption><div class=d id=dIdea></div></figure></div>
+    <button class="btn gold" id=playBoth style="width:100%">▶ Play ${now?'both':'it'}</button>
+    ${x.status==='shared'?`<div class=votes><button class="btn ${x.my_vote>0?'on':''}" id=up>👍 Yes <b>${x.yes}</b></button><button class="btn ${x.my_vote<0?'on':''}" id=down>👎 No <b>${x.no}</b></button></div>`
+      :`<p class=meta>👍 ${x.yes} · 👎 ${x.no}</p>`}
+    <h3 style="color:var(--g);font-size:14px;letter-spacing:.06em;margin:14px 0 4px">COMMENTS</h3><div id=cms class=meta>Loading…</div>
+    ${x.status==='shared'?`<div class=say><input id=say maxlength=600 placeholder="What do you think?"><button class="btn gold" id=send>Post</button></div>`:''}`;
+  const dI=document.getElementById('dIdea'), dN=document.getElementById('dNow');
+  dI.innerHTML=PB.staticSVG(x.play,{aspect:1.3}); if(dN) dN.innerHTML=PB.staticSVG(now,{aspect:1.3});
+  document.getElementById('playBoth').onclick=()=>{ stops.forEach(s=>s()); stops=[PA.animate(dI,x.play)]; if(dN) stops.push(PA.animate(dN,now)); };
+  const vote=async v=>{ if(!await PA.join(true)) return; const nv=x.my_vote===v?0:v;
+    try{ await PA.vote(x.id,nv); x.yes+=(nv>0)-(x.my_vote>0); x.no+=(nv<0)-(x.my_vote<0); x.my_vote=nv; render(); }catch(e){ alert(e.message); } };
+  if(x.status==='shared'){ document.getElementById('up').onclick=()=>vote(1); document.getElementById('down').onclick=()=>vote(-1);
+    document.getElementById('send').onclick=async()=>{ const i=document.getElementById('say'), t=i.value.trim(); if(!t) return; if(!await PA.join(true)) return;
+      try{ await PA.comment(x.id,t); i.value=''; loadComments(); }catch(e){ alert(e.message); } }; }
+  loadComments();
+}
+async function loadComments(){
+  const box=document.getElementById('cms');
+  try{ const c=await PA.comments(idea.id); box.className=''; box.innerHTML=c.length?c.map(m=>`<div class=cm><b>${PA.esc(m.author)}</b> <small>${PA.ago(m.created_at)}</small><br>${PA.esc(m.body)}</div>`).join(''):'<p class=meta>No comments yet.</p>'; }
+  catch(e){ box.textContent=e.message; }
+}
+load().catch(e=>{ main.innerHTML='<p class=meta>Could not load: '+PA.esc(e.message)+'</p>'; });
+</script></body></html>

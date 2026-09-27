@@ -40,6 +40,19 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 .gx .btn{margin-top:10px}
 #dGame .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;border-radius:8px;border:1.5px solid #c9d2ce;background:#fff;color:var(--ink);font-family:inherit}
+/* rules */
+.rules{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.rdiv{background:var(--g);color:#fff;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.45;letter-spacing:.04em}
+.rdiv b{display:block;color:var(--gold);font-size:14px;margin-bottom:4px;letter-spacing:.1em}
+.rdiv span{display:inline-block;min-width:78px;color:var(--gold);font-weight:600;font-size:11px;letter-spacing:.1em}
+.rsec{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.rsec summary{padding:11px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none;font-size:13px;letter-spacing:.08em;color:var(--g)}
+.rsec summary::-webkit-details-marker{display:none}
+.rsec summary small{color:#889;font-size:11px}
+.rsec ul{margin:0;padding:0 14px 12px 28px;font-size:12.5px;line-height:1.45;letter-spacing:.03em}.rsec li{margin:3px 0}
+.rnote{font-size:11.5px;line-height:1.4;color:#44524d;margin:4px 2px}
+.rules .btn{text-align:center;text-decoration:none;margin-bottom:14px}
+.game.ppd{border-left-color:#C8102E}.game.ppd .gres{background:#C8102E;color:#fff}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -101,6 +114,7 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=row><button class="btn ghost" id=cCancel>Cancel</button><button class="btn gold" id=cGo>Sign in</button></div></dialog>
 <dialog id=dGame><h2 id=gTitle>Game</h2>
   <div class=g2><div><label>PACKERS SCORE</label><input type=number id=gOurs min=0 max=199 inputmode=numeric></div><div><label>OPPONENT SCORE</label><input type=number id=gTheirs min=0 max=199 inputmode=numeric></div></div>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=gPpd style="width:20px;height:20px"> POSTPONED · NEW DATE TBD</label>
   <label>NOTES (before the game: meet time, jerseys, reminders)</label><textarea id=gNotes maxlength=600></textarea>
   <label>RECAP (after the game)</label><textarea id=gRecap maxlength=4000 style="min-height:110px"></textarea>
   <details id=gMore style="margin-top:8px"><summary style="font-size:12px;letter-spacing:.08em;color:var(--g);cursor:pointer">CHANGE DATE / TIME / FIELD / TEAMS</summary>
@@ -110,7 +124,7 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=row><button class="btn ghost" id=gDel>Delete</button><button class="btn ghost" id=gCancel>Cancel</button><button class="btn gold" id=gSave>Save</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
-<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
+<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
@@ -120,8 +134,8 @@ const isCoach=()=>!!PA.coachEmail();
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; SCHED=n+1; if(tab>SCHED) tab=0;
-  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button>`; }
+function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; SCHED=n+1; RULE=n+2; if(tab>RULE) tab=0;
+  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button><button class="${tab===RULE?'on':''}">RULES</button>`; }
 $('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ tab=i; draw(); } };
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
@@ -129,6 +143,7 @@ function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.
 function draw(){
   [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
   if(tab===SCHED){ $('#legend').innerHTML=''; return drawSchedule(); }
+  if(tab===RULE){ $('#legend').innerHTML=''; grid.insertAdjacentHTML('beforeend',rulesHTML(FMT)); return; }
   const isDef=tab===DEF, list=isDef?defs:band.slice(tab*8,tab*8+8); VIEW=isDef?defs:band;
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
@@ -139,21 +154,24 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let DEF=3, SCHED=4, GAMES=[], openGame=null;
+let DEF=3, SCHED=4, RULE=5, GAMES=[], openGame=null;
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const dOf=s=>{ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };            // local date, no time-zone shift
 const todayISO=()=>{ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); };
 function result(g){ if(g.ours==null||g.theirs==null) return null; return g.ours>g.theirs?'w':g.ours<g.theirs?'l':'t'; }
 function drawSchedule(){
-  const mine=GAMES.filter(g=>g.fmt===FMT), reg=mine.filter(g=>g.stage!=='playoff').sort((a,b)=>a.gdate<b.gdate?-1:a.gdate>b.gdate?1:0),
+  const when=g=>g.gdate||g.orig_gdate||'9999';   // postponed games keep their original place in the list
+  const mine=GAMES.filter(g=>g.fmt===FMT), reg=mine.filter(g=>g.stage!=='playoff').sort((a,b)=>when(a)<when(b)?-1:when(a)>when(b)?1:0),
         po=mine.filter(g=>g.stage==='playoff').sort((a,b)=>(a.week||0)-(b.week||0));
   const tally=l=>{ const r={w:0,l:0,t:0}; l.forEach(g=>{ const x=result(g); if(x) r[x]++; }); return `${r.w}–${r.l}${r.t?'–'+r.t:''}`; };
-  const next=[...reg,...po].find(g=>!result(g)&&g.gdate&&dOf(g.gdate)>=todayISO()), E=PA.esc;
+  const next=[...reg,...po].find(g=>!result(g)&&!g.postponed&&g.gdate&&dOf(g.gdate)>=todayISO()), E=PA.esc;
+  const short=s=>{ const d=dOf(s); return `${MON[d.getMonth()]} ${d.getDate()}`; };
   const card=g=>{ const tbd=!g.home||!g.away, home=PA.isUs(g.home), opp=tbd?'OPPONENT TBD':(home?g.away:g.home), r=result(g), d=g.gdate?dOf(g.gdate):null;
-    const res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:(g===next?'NEXT':'');
-    return `<div class="game ${r||''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
-      <div class=grow><div class=gwhen>${g.label?`<b style="color:var(--g)">${E(g.label)}</b>`:''}<b>${d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD'}</b>${E(g.gtime||'')}${g.week!=null&&!g.label?' · WK '+g.week:''}</div>
-        <div class=gmid><div class=gopp>${tbd?'':(home?'VS ':'@ ')}${E(opp)}</div><div class=gsub>${E(g.field||'FIELD TBD')}${tbd?'':' · '+(home?'HOME':'AWAY')}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
+    const ppd=g.postponed&&!r, res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:ppd?'PPD':(g===next?'NEXT':'');
+    const moved=!g.postponed&&g.orig_gdate&&g.gdate&&g.orig_gdate!==g.gdate;
+    return `<div class="game ${r||''} ${ppd?'ppd':''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
+      <div class=grow><div class=gwhen>${g.label?`<b style="color:var(--g)">${E(g.label)}</b>`:''}<b ${ppd?'style="color:#C8102E"':''}>${ppd?'POSTPONED':d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD'}</b>${ppd?`NEW DATE TBD${g.orig_gdate?' · WAS '+short(g.orig_gdate):''}<br>`:''}${E(g.gtime||'')}${g.week!=null&&!g.label?' · WK '+g.week:''}</div>
+        <div class=gmid><div class=gopp>${tbd?'':(home?'VS ':'@ ')}${E(opp)}</div><div class=gsub>${E(g.field||'FIELD TBD')}${tbd?'':' · '+(home?'HOME':'AWAY')}${moved?' · RESCHEDULED FROM '+short(g.orig_gdate):''}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
         ${res?`<span class=gres>${res}</span>`:''}</div>
       <div class=gx><div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
         ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
@@ -173,12 +191,17 @@ let editing_game=null;
 function editGame(g){ editing_game=g; const v=(id,x)=>$('#'+id).value=x==null?'':x;
   $('#gTitle').textContent=(!g.home||!g.away)?(g.label||'Playoff game'):g.id?`${PA.isUs(g.home)?'VS':'@'} ${PA.isUs(g.home)?g.away:g.home}`:'New game';
   $('#gMore').open=!g.home||!g.away;   // blank playoff slot: open the teams / date section
-  v('gLabel',g.label); v('gOurs',g.ours); v('gTheirs',g.theirs); v('gNotes',g.notes); v('gRecap',g.recap); v('gWeek',g.week); v('gDate',g.gdate); v('gTime',g.gtime); v('gField',g.field); v('gHome',g.home); v('gAway',g.away);
+  $('#gPpd').checked=!!g.postponed; v('gLabel',g.label); v('gOurs',g.ours); v('gTheirs',g.theirs); v('gNotes',g.notes); v('gRecap',g.recap); v('gWeek',g.week); v('gDate',g.gdate); v('gTime',g.gtime); v('gField',g.field); v('gHome',g.home); v('gAway',g.away);
   $('#gDel').style.display=g.id?'':'none'; $('#dGame').showModal(); }
 $('#gCancel').onclick=()=>$('#dGame').close();
 $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).value.trim(); return x===''?null:+x; };
-  const out={...g,ours:n('gOurs'),theirs:n('gTheirs'),notes:$('#gNotes').value,recap:$('#gRecap').value,week:n('gWeek'),gdate:$('#gDate').value,gtime:$('#gTime').value.trim(),field:$('#gField').value.trim(),home:$('#gHome').value.trim(),away:$('#gAway').value.trim(),label:$('#gLabel').value.trim()};
-  if(out.stage!=='playoff'&&(!out.gdate||!out.home||!out.away)) return alert('Date, home and away are needed.');
+  const out={...g,ours:n('gOurs'),theirs:n('gTheirs'),notes:$('#gNotes').value,recap:$('#gRecap').value,week:n('gWeek'),gdate:$('#gDate').value,gtime:$('#gTime').value.trim(),field:$('#gField').value.trim(),home:$('#gHome').value.trim(),away:$('#gAway').value.trim(),label:$('#gLabel').value.trim(),postponed:$('#gPpd').checked};
+  if(out.postponed){ if(g.gdate&&out.gdate===g.gdate){ out.orig_gdate=g.orig_gdate||g.gdate; out.gdate=''; } }   // postponed: keep the original date, new date TBD
+  else if(g.postponed&&out.gdate){ out.orig_gdate=g.orig_gdate||''; }                                               // new date entered: show "rescheduled from"
+  else if(g.gdate&&out.gdate&&out.gdate!==g.gdate&&!g.orig_gdate){ out.orig_gdate=g.gdate; }                        // moved directly to a new date
+  if(g.postponed&&!out.postponed&&!out.gdate&&out.stage!=='playoff') return alert('Enter the new date (or keep it marked postponed).');
+  if(out.stage!=='playoff'&&!out.postponed&&(!out.gdate||!out.home||!out.away)) return alert('Date, home and away are needed.');
+  if(out.postponed&&out.ours!=null) return alert('A postponed game has no score yet.');
   if(out.ours!=null&&(!out.home||!out.away)) return alert('Enter both teams before a score.');
   if((out.ours==null)!==(out.theirs==null)) return alert('Enter both scores (or neither).');
   try{ await PA.coachRpc('pa_save_game',{g:out}); $('#dGame').close(); await loadGames(); draw(); PA.toast('Saved. Players see it next time they open the app.'); }

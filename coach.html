@@ -46,6 +46,7 @@ dialog .radio{display:flex;gap:8px;align-items:center;font:15px var(--font);marg
   <div id=ed></div>
   <div class=more>
     <button class="btn ghost" id=print5>Print 5v5 wristband</button><button class="btn ghost" id=print6>Print 6v6 wristband</button>
+    <button class="btn ghost" id=printD5>Print 5v5 defense</button><button class="btn ghost" id=printD6>Print 6v6 defense</button>
     <button class="btn ghost" id=histBtn>Versions of this play</button><button class="btn ghost" id=revert>Undo all unsaved changes</button>
     <button class="btn ghost" id=codeBtn>Team code</button><button class="btn ghost" id=out>Sign out</button>
     <a class="btn ghost" href="index.html">← Player view</a>
@@ -100,7 +101,7 @@ function loadPlay(){ idx=Math.min(idx,work[FMT].length-1); ed.load(cur(),FMT+'#'
 function refresh(){
   [...$('#fmts').children].forEach(b=>b.classList.toggle('on',b.textContent===FMT));
   const ch=new Set(changed(FMT).map(p=>p.n));
-  $('#pick').innerHTML=work[FMT].map((p,i)=>`<option value="${i}">${ch.has(p.n)?'● ':''}#${p.n}${p.status==='spare'?' (spare)':''} ${P(p.name)}</option>`).join(''); $('#pick').value=idx;
+  $('#pick').innerHTML=work[FMT].map((p,i)=>`<option value="${i}">${ch.has(p.n)?'● ':''}#${p.n}${p.side==='D'?' (defense)':''} ${P(p.name)}</option>`).join(''); $('#pick').value=idx;
   const total=FMTS.reduce((a,f)=>a+changed(f).length,0);
   $('#save').textContent=total?`Save to team (${total})`:'Saved ✓'; $('#save').disabled=!total; $('#undo').disabled=!ed.canUndo();
   const pend=ideas.filter(x=>x.status==='pending').length; $('#tabs [data-t=review]').textContent='Review ideas'+(pend?` (${pend})`:'');
@@ -120,8 +121,8 @@ $('#save').onclick=async()=>{
        saveDraft(); PA.toast('Saved! Players get it next time they open the app.',3500); }
   catch(e){ alert('Save failed. Your changes are still on this phone.\n\n'+e.message); }
   refresh(); };
-function printFmt(f){ PA.store.set('pa_print_'+f,work[f]); location.href='print.html?fmt='+f+'&src=coach'; }
-$('#print5').onclick=()=>printFmt('5v5'); $('#print6').onclick=()=>printFmt('6v6');
+function printFmt(f,side){ PA.store.set('pa_print_'+f,work[f]); location.href='print.html?fmt='+f+'&src=coach'+(side?'&side='+side:''); }
+$('#print5').onclick=()=>printFmt('5v5'); $('#print6').onclick=()=>printFmt('6v6'); $('#printD5').onclick=()=>printFmt('5v5','D'); $('#printD6').onclick=()=>printFmt('6v6','D');
 $('#histBtn').onclick=async()=>{ const p=cur(); $('#hTitle').textContent=`Versions of #${p.n}`; $('#histList').innerHTML='<p class=meta>Loading…</p>'; $('#dHist').showModal();
   try{ const h=await PA.coachRpc('pa_history',{fmt:FMT,n:p.n});
     $('#histList').innerHTML=h.length?h.map((v,i)=>`<div class=hist><div class=mini data-i="${i}"></div><div><b>${P(v.data.name)}</b><br>replaced ${new Date(v.replaced_at).toLocaleString()}<br><span class=meta>${P(v.reason||'')}</span></div><button class=btn data-r="${i}">Restore</button></div>`).join(''):'<p class=meta>No earlier versions yet.</p>';
@@ -188,7 +189,7 @@ function applyDlg(x){
   const plays=base[x.fmt], opt=(v,l,on)=>`<label class=radio><input type=radio name=ap value="${v}" ${on?'checked':''}> ${l}</label>`;
   $('#aOpts').innerHTML=(x.kind==='modify'?opt(x.target_n,`Change play #${x.target_n} (${P(plays.find(p=>p.n===x.target_n)?.name||'')})`,true):'')
     +`<label class=radio><input type=radio name=ap value=pick ${x.kind==='new'?'checked':''}> Replace play <select class=f id=aPick style="width:auto;flex:1">${plays.map(p=>`<option value="${p.n}" ${p.n===x.target_n?'selected':''}>#${p.n} ${P(p.name)}</option>`).join('')}</select></label>`
-    +opt(0,'Add as a new spare play',false);
+    ;   // no spares: every idea changes or replaces one of the 24 plays / 8 defenses
   $('#aNote').value=''; $('#dApply').showModal();
   $('#aOk').onclick=async()=>{ const v=document.querySelector('input[name=ap]:checked').value, into=v==='pick'?+$('#aPick').value:+v;
     if(into && changed(x.fmt).some(p=>p.n===into) && !confirm(`You have unsaved edits to #${into}. Applying replaces them. Continue?`)) return;

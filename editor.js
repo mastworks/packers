@@ -111,8 +111,8 @@ function PlayEditor(root,opt){
     if(document.activeElement!==fl('name')) fl('name').value=play.name||'';
     if(document.activeElement!==fl('note')) fl('note').value=play.note||'';
     if(document.activeElement!==fl('cue')) fl('cue').value=play.cue||'';
-    fl('cat').innerHTML=PA.CATS.map(([v,l])=>`<option value="${v}" ${play.cat===v?'selected':''}>${l}</option>`).join('');
-    fl('sub').innerHTML='<option value="">—</option>'+PA.SUBS.map(v=>`<option ${play.sub===v?'selected':''}>${v}</option>`).join('');
+    fl('cat').innerHTML=PA.catsFor(play).map(([v,l])=>`<option value="${v}" ${play.cat===v?'selected':''}>${l}</option>`).join('');
+    fl('sub').innerHTML='<option value="">—</option>'+PA.subsFor(play).map(v=>`<option ${play.sub===v?'selected':''}>${v}</option>`).join('');
     fl('star').innerHTML='<option value="">— none —</option>'+ks.map(k=>`<option ${play.star===k?'selected':''}>${k}</option>`).join('');
   }
 

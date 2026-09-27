@@ -42,7 +42,7 @@ body.nobig .big{display:none}
 <div class=pages id=pages></div>
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script>
 <script>
-const q=new URLSearchParams(location.search), FMT=q.get('fmt')||'5v5';
+const q=new URLSearchParams(location.search), FMT=q.get('fmt')||'5v5', DEFN=q.get('side')==='D';   // side=D → the defense card
 document.getElementById('fl').textContent=FMT;
 document.getElementById('big').onchange=e=>document.body.classList.toggle('nobig',!e.target.checked);
 if(q.get('src')!=='coach') document.getElementById('back').href='index.html';
@@ -50,18 +50,18 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 (async()=>{
   let plays=q.get('src')==='coach'?PA.store.get('pa_print_'+FMT):null;
   if(!plays){ await PA.join(false); plays=(await PA.loadPlays()).by[FMT]||[]; }
-  const band=PA.band(plays).slice(0,24), hasH=band.some(p=>p.players.H);
+  const band=DEFN?PA.defense(plays).slice(0,8):PA.band(plays).slice(0,24), hasH=!DEFN&&band.some(p=>p.players.H);
   const cell=p=>`<div class="cell"><div class="band cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm>${esc(p.name)}</span></div><div class="title">${p.sub?`<em>${esc(p.sub)}</em> · `:''}${esc(p.cue||'')}</div><div class="dia" data-n="${p.n}"></div></div>`;
-  const leg=[['Q','#1F2F6B'],['C','#0B8A8A'],['X','#C8102E'],['Y','#2F9E44'],['Z','#DB8B00']].concat(hasH?[['H','#E0567F']]:[])
+  const leg=DEFN?'<span><i style="background:#203731;border:1pt solid #FFB612"></i>P PUNCH · S / F SAFETY · M MIDDLE · B BACKER · L / K CORNERS</span><span><i style="background:#b3bdb9"></i>OUR OFFENSE (GRAY)</span>'+PA.DCATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join(''):[['Q','#1F2F6B'],['C','#0B8A8A'],['X','#C8102E'],['Y','#2F9E44'],['Z','#DB8B00']].concat(hasH?[['H','#E0567F']]:[])
     .map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('')+PA.CATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join('');
   const printed=new Date().toLocaleDateString();
   let html='';
   for(let c=0;c*8<band.length;c++){
     const ps=band.slice(c*8,c*8+8), card='<div class="card">'+ps.map(cell).join('')+'</div>';
-    html+=`<div class="page"><h1>PACKER ARMY · ${FMT} WRISTBAND · CARD ${c+1} · PLAYS ${ps[0].n}–${ps[ps.length-1].n}</h1>
+    html+=`<div class="page"><h1>PACKER ARMY · ${FMT} ${DEFN?'DEFENSE CARD':`WRISTBAND · CARD ${c+1} · PLAYS ${ps[0].n}–${ps[ps.length-1].n}`}</h1>
       <div class="stamp">Printed ${printed}</div>
       <div class="sub">Actual size 4.25 × 2.25 in (cut on outline) · enlarged review copy below</div>${card}<div class="big">${card}</div>
-      <div class="legend">${leg}<span class="k">Star = first ball option · solid = route · dotted = ball carried / thrown · ball icon = catch or hand-off point</span></div></div>`;
+      <div class="legend">${leg}<span class="k">${DEFN?'Shaded = zone to cover · dashed line = rush line · P rushes from the rush line':'Star = first ball option · solid = route · dotted = ball carried / thrown · ball icon = catch or hand-off point'}</span></div></div>`;
   }
   document.getElementById('pages').innerHTML=html;
   const byN=Object.fromEntries(plays.map(p=>[p.n,p]));

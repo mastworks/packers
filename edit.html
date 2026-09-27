@@ -18,7 +18,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   <div id=ed></div>
   <fieldset>
     <label>WHY IS THIS BETTER? (Coach and the team will see this)</label><textarea id=msg maxlength=600 placeholder="e.g. X gets open faster if he lines up wider"></textarea>
-    <div id=replaceBox style="display:none"><label>SHOULD IT REPLACE A PLAY? (optional)</label><select class=f id=repl></select></div>
+    <div id=replaceBox style="display:none"><label>WHICH PLAY SHOULD IT REPLACE? (each team has exactly 24 plays)</label><select class=f id=repl></select></div>
   </fieldset>
   <p style="font:12px/1.4 var(--font);color:#44524d">Coach checks every idea against the league rules before the team sees it.</p>
 </div>
@@ -49,7 +49,7 @@ function startFrom(p){ work=clone(p); ed.load(work,DKEY); save(); }
     $('#top').innerHTML=`<div class=start><label style="margin:0">START FROM</label><select class=f id=from><option value="">Blank formation</option>${plays.map(p=>`<option value="${p.n}">Copy of #${p.n} ${PA.esc(p.name)}</option>`).join('')}</select></div>`;
     $('#from').onchange=e=>{ if(work&&ed.canUndo()&&!confirm('Start over? Your drawing will be replaced.')) return; const p=plays.find(x=>x.n==e.target.value); const s=p?clone(p):blank(); if(p){ s.name='My version of '+p.name; } startFrom(s); };
     $('#replaceBox').style.display='block';
-    $('#repl').innerHTML='<option value="">No — add it as an extra play</option>'+plays.map(p=>`<option value="${p.n}">Replace #${p.n} ${PA.esc(p.name)}</option>`).join('');
+    $('#repl').innerHTML='<option value="">Not sure: let Coach pick</option>'+plays.map(p=>`<option value="${p.n}">Replace #${p.n} ${PA.esc(p.name)}</option>`).join('');
   } else {
     base=plays.find(p=>p.n===N); if(!base) return alert('Play #'+N+' not found');
     $('#hd').innerHTML=`PACKER <span>ARMY</span> · CHANGE #${N}`;

@@ -63,7 +63,8 @@ const PA=(()=>{
   const vote=(pid,v)=>rpc('pa_vote',{code:code(),pid,voter:nick(),vote:v});
 
   /* ---- helpers ---- */
-  const band=plays=>plays.filter(p=>p.status!=='spare');                  // the 24 wristband plays
+  const band=plays=>plays.filter(p=>p.status!=='spare'&&p.side!=='D');   // the 24 offensive wristband plays
+  const defense=plays=>plays.filter(p=>p.side==='D');                    // the 8 defenses (plays 51-58)
   const recent=(p,days)=>p.updated && (Date.now()-Date.parse(p.updated))<days*864e5;
   const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function toast(msg,ms){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),ms||2600); }
@@ -93,9 +94,12 @@ const PA=(()=>{
   }
   const CATS=[['throw','THROW'],['run','RUN'],['redzone','RED ZONE'],['trick','TRICK']];
   const SUBS=['VS MAN','VS ZONE','VS RUSH','SHORT YARDAGE','OPEN FIELD','GOAL LINE'];
+  const DCATS=[['throw','VS PASS'],['run','VS RUN'],['redzone','RED ZONE'],['trick','TRICK / DISGUISE']];   // defense: color = what it stops
+  const DSUBS=['VS LONG THROWS','VS SHORT PASSES','VS RUNS','VS FAKE HAND-OFFS','RED ZONE','3RD DOWN'];
+  const catsFor=p=>p&&p.side==='D'?DCATS:CATS, subsFor=p=>p&&p.side==='D'?DSUBS:SUBS;
   const catOf=p=>CATS.some(c=>c[0]===p.cat)?p.cat:'throw';
-  const legend=()=>CATS.map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('');
+  const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>P PUNCH · S / F SAFETY · M MIDDLE · B BACKER · L / K CORNERS</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

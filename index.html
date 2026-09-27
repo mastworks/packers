@@ -103,25 +103,25 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=g2><div><label>PACKERS SCORE</label><input type=number id=gOurs min=0 max=199 inputmode=numeric></div><div><label>OPPONENT SCORE</label><input type=number id=gTheirs min=0 max=199 inputmode=numeric></div></div>
   <label>NOTES (before the game: meet time, jerseys, reminders)</label><textarea id=gNotes maxlength=600></textarea>
   <label>RECAP (after the game)</label><textarea id=gRecap maxlength=4000 style="min-height:110px"></textarea>
-  <details style="margin-top:8px"><summary style="font-size:12px;letter-spacing:.08em;color:var(--g);cursor:pointer">CHANGE DATE / TIME / FIELD / TEAMS</summary>
+  <details id=gMore style="margin-top:8px"><summary style="font-size:12px;letter-spacing:.08em;color:var(--g);cursor:pointer">CHANGE DATE / TIME / FIELD / TEAMS</summary>
     <div class=g2><div><label>WEEK</label><input type=number id=gWeek min=0 max=30></div><div><label>DATE</label><input type=date id=gDate></div></div>
     <div class=g2><div><label>TIME</label><input id=gTime maxlength=20 placeholder="1:15 PM"></div><div><label>FIELD</label><input id=gField maxlength=60></div></div>
-    <label>HOME</label><input id=gHome maxlength=60><label>AWAY</label><input id=gAway maxlength=60></details>
+    <label>HOME</label><input id=gHome maxlength=60 placeholder="Packers Barber"><label>AWAY</label><input id=gAway maxlength=60><label>LABEL (e.g. SEMIFINAL)</label><input id=gLabel maxlength=40></details>
   <div class=row><button class="btn ghost" id=gDel>Delete</button><button class="btn ghost" id=gCancel>Cancel</button><button class="btn gold" id=gSave>Save</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], tab=0, IDEAS=[];
+let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
 const grid=$('#grid'), TL={}, tl=p=>TL[p.n]||(TL[p.n]=PB.timeline(p));
 const isCoach=()=>!!PA.coachEmail();
 
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); SCHED=n; if(tab>n) tab=0;
-  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===n?'on':''}">SCHEDULE</button>`; }
+function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; SCHED=n+1; if(tab>SCHED) tab=0;
+  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button>`; }
 $('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ tab=i; draw(); } };
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
@@ -129,52 +129,57 @@ function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.
 function draw(){
   [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
   if(tab===SCHED){ $('#legend').innerHTML=''; return drawSchedule(); }
-  band.slice(tab*8,tab*8+8).forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
+  const isDef=tab===DEF, list=isDef?defs:band.slice(tab*8,tab*8+8); VIEW=isDef?defs:band;
+  list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
-    t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(band.indexOf(p)); grid.appendChild(t);
+    t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
     PA.fit(t.querySelector('.nm'),12,7); });
-  $('#legend').innerHTML=PA.legend();
+  $('#legend').innerHTML=PA.legend(isDef);
 }
-function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
+function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let SCHED=3, GAMES=[], openGame=null;
+let DEF=3, SCHED=4, GAMES=[], openGame=null;
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const dOf=s=>{ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };            // local date, no time-zone shift
 const todayISO=()=>{ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); };
 function result(g){ if(g.ours==null||g.theirs==null) return null; return g.ours>g.theirs?'w':g.ours<g.theirs?'l':'t'; }
 function drawSchedule(){
-  const list=GAMES.filter(g=>g.fmt===FMT).sort((a,b)=>a.gdate<b.gdate?-1:a.gdate>b.gdate?1:0);
-  const rec={w:0,l:0,t:0}; list.forEach(g=>{ const r=result(g); if(r) rec[r]++; });
-  const next=list.find(g=>!result(g)&&dOf(g.gdate)>=todayISO()), E=PA.esc;
+  const mine=GAMES.filter(g=>g.fmt===FMT), reg=mine.filter(g=>g.stage!=='playoff').sort((a,b)=>a.gdate<b.gdate?-1:a.gdate>b.gdate?1:0),
+        po=mine.filter(g=>g.stage==='playoff').sort((a,b)=>(a.week||0)-(b.week||0));
+  const tally=l=>{ const r={w:0,l:0,t:0}; l.forEach(g=>{ const x=result(g); if(x) r[x]++; }); return `${r.w}–${r.l}${r.t?'–'+r.t:''}`; };
+  const next=[...reg,...po].find(g=>!result(g)&&g.gdate&&dOf(g.gdate)>=todayISO()), E=PA.esc;
+  const card=g=>{ const tbd=!g.home||!g.away, home=PA.isUs(g.home), opp=tbd?'OPPONENT TBD':(home?g.away:g.home), r=result(g), d=g.gdate?dOf(g.gdate):null;
+    const res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:(g===next?'NEXT':'');
+    return `<div class="game ${r||''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
+      <div class=grow><div class=gwhen>${g.label?`<b style="color:var(--g)">${E(g.label)}</b>`:''}<b>${d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD'}</b>${E(g.gtime||'')}${g.week!=null&&!g.label?' · WK '+g.week:''}</div>
+        <div class=gmid><div class=gopp>${tbd?'':(home?'VS ':'@ ')}${E(opp)}</div><div class=gsub>${E(g.field||'FIELD TBD')}${tbd?'':' · '+(home?'HOME':'AWAY')}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
+        ${res?`<span class=gres>${res}</span>`:''}</div>
+      <div class=gx><div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
+        ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
+        ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
+        ${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((list[0]||{}).division||FMT)}</b><span>RECORD ${rec.w}–${rec.l}${rec.t?'–'+rec.t:''}</span></div>`+
-    (list.length?list.map(g=>{ const home=PA.isUs(g.home), opp=home?g.away:g.home, r=result(g), d=dOf(g.gdate);
-      const res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:(g===next?'NEXT':'');
-      return `<div class="game ${r||''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
-        <div class=grow><div class=gwhen><b>${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}</b>${E(g.gtime||'')}${g.week!=null?' · WK '+g.week:''}</div>
-          <div class=gmid><div class=gopp>${home?'VS':'@'} ${E(opp)}</div><div class=gsub>${E(g.field||'')} · ${home?'HOME':'AWAY'}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
-          ${res?`<span class=gres>${res}</span>`:''}</div>
-        <div class=gx><div><b>HOME</b> ${E(g.home)} &nbsp; <b>AWAY</b> ${E(g.away)}</div><div><b>FIELD</b> ${E(g.field||'')} &nbsp; <b>TIME</b> ${E(g.gtime||'')}</div>
-          ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
-          ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
-          ${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ SCORE / NOTES / RECAP</button>`:''}</div></div>`; }).join('')
-      :'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+
+    (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
+    (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
   grid.appendChild(box);
   box.onclick=e=>{ const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
-    if(e.target.id==='addGame'){ const last=list[list.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:''}); }
+    if(e.target.id==='addGame'){ const last=reg[reg.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:'',stage:'regular'}); }
     const c=e.target.closest('.game'); if(c){ openGame=openGame===c.dataset.id?null:c.dataset.id; draw(); } };
 }
 let editing_game=null;
 function editGame(g){ editing_game=g; const v=(id,x)=>$('#'+id).value=x==null?'':x;
-  $('#gTitle').textContent=g.id?`${PA.isUs(g.home)?'VS':'@'} ${PA.isUs(g.home)?g.away:g.home}`:'New game';
-  v('gOurs',g.ours); v('gTheirs',g.theirs); v('gNotes',g.notes); v('gRecap',g.recap); v('gWeek',g.week); v('gDate',g.gdate); v('gTime',g.gtime); v('gField',g.field); v('gHome',g.home); v('gAway',g.away);
+  $('#gTitle').textContent=(!g.home||!g.away)?(g.label||'Playoff game'):g.id?`${PA.isUs(g.home)?'VS':'@'} ${PA.isUs(g.home)?g.away:g.home}`:'New game';
+  $('#gMore').open=!g.home||!g.away;   // blank playoff slot: open the teams / date section
+  v('gLabel',g.label); v('gOurs',g.ours); v('gTheirs',g.theirs); v('gNotes',g.notes); v('gRecap',g.recap); v('gWeek',g.week); v('gDate',g.gdate); v('gTime',g.gtime); v('gField',g.field); v('gHome',g.home); v('gAway',g.away);
   $('#gDel').style.display=g.id?'':'none'; $('#dGame').showModal(); }
 $('#gCancel').onclick=()=>$('#dGame').close();
 $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).value.trim(); return x===''?null:+x; };
-  const out={...g,ours:n('gOurs'),theirs:n('gTheirs'),notes:$('#gNotes').value,recap:$('#gRecap').value,week:n('gWeek'),gdate:$('#gDate').value,gtime:$('#gTime').value.trim(),field:$('#gField').value.trim(),home:$('#gHome').value.trim(),away:$('#gAway').value.trim()};
-  if(!out.gdate||!out.home||!out.away) return alert('Date, home and away are needed.');
+  const out={...g,ours:n('gOurs'),theirs:n('gTheirs'),notes:$('#gNotes').value,recap:$('#gRecap').value,week:n('gWeek'),gdate:$('#gDate').value,gtime:$('#gTime').value.trim(),field:$('#gField').value.trim(),home:$('#gHome').value.trim(),away:$('#gAway').value.trim(),label:$('#gLabel').value.trim()};
+  if(out.stage!=='playoff'&&(!out.gdate||!out.home||!out.away)) return alert('Date, home and away are needed.');
+  if(out.ours!=null&&(!out.home||!out.away)) return alert('Enter both teams before a score.');
   if((out.ours==null)!==(out.theirs==null)) return alert('Enter both scores (or neither).');
   try{ await PA.coachRpc('pa_save_game',{g:out}); $('#dGame').close(); await loadGames(); draw(); PA.toast('Saved. Players see it next time they open the app.'); }
   catch(e){ alert('Could not save: '+e.message); } };
@@ -184,7 +189,7 @@ async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES|
 
 /* ---------- full screen ---------- */
 let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
-const P=()=>band[cur], DKEY=()=>'pa_idea_'+FMT+'_'+P().n;
+const P=()=>VIEW[cur], DKEY=()=>'pa_idea_'+FMT+'_'+P().n;
 function stop(){ if(stopA){ stopA(); stopA=null; } $('#anim').textContent='▶ ANIMATE'; }
 function openOv(i){ cur=i; stop(); endEdit(); $('#ov').classList.add('show'); paintOv(); runAnim(); }
 function paintOv(){ const p=editing?work:P();
@@ -207,8 +212,8 @@ $('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
 $('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
 $('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3}); };
 $('#ovc').onclick=()=>{ if(editing&&!confirm('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
-$('#pv').onclick=()=>{ if(!editing) openOv((cur+band.length-1)%band.length); };
-$('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%band.length); };
+$('#pv').onclick=()=>{ if(!editing) openOv((cur+VIEW.length-1)%VIEW.length); };
+$('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%VIEW.length); };
 function startEdit(){ stop(); editing=true; const d=PA.store.get(DKEY()); work=d&&d.play?d.play:clone(P());
   if(!ed) ed=PlayEditor($('#edbox'),{onChange:()=>{ PA.store.set(DKEY(),{play:work}); paintOv(); }});
   $('#stage').style.display='none'; $('#ctl').style.display='none'; $('#edbox').style.display='block'; $('#ov').classList.add('editing');
@@ -227,7 +232,7 @@ $('#sCancel').onclick=()=>$('#dSend').close();
 $('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.play;
   try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); PA.toast('Sent! Coach will look at it.',3000); }
   catch(e){ alert('Could not send: '+e.message); } };
-$('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); await loadGames(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,band.length-1); paintOv(); }
+$('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); await loadGames(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,VIEW.length-1); paintOv(); }
   $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
 
 /* ---------- coach mode: visible sign-in, inbox of player ideas ---------- */
@@ -268,7 +273,7 @@ addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
   coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]); draw(); coachInbox();
-  const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); const i=band.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
+  const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script></body></html>

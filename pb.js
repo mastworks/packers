@@ -130,9 +130,15 @@ function playerG(k,x,y,isStar,opacity,ghost){
 function fieldExtras(play,vb){
   if(!isD(play)) return '';
   let s='';
+  if(play.field){ const F=play.field, yd=F.yd, hw=F.halfW;               // to-scale field: sidelines + faint lines every 5 yards
+    for(let y=-10;y<=25;y+=5){ if(!y) continue; s+=`<line x1="${f(-hw)}" x2="${f(hw)}" y1="${f(-y*yd)}" y2="${f(-y*yd)}" stroke="#dfe5e2" stroke-width="${f(0.04*S)}"/>`; }
+    s+=`<line x1="${f(-hw)}" x2="${f(-hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/><line x1="${f(hw)}" x2="${f(hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/>`;
+    if(F.label) s+=`<text x="${f(-hw+0.2*S)}" y="${f(vb.y+0.55*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.38*S)}" fill="#7d8a85" letter-spacing="0.04">${F.label}</text>`; }
   const lbl=(y,t,col)=>`<text x="${f(vb.x+0.25*S)}" y="${f(-y-0.12*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.36*S)}" fill="${col}" letter-spacing="0.04">${t}</text>`;
   if(play.goalLine!=null){ const y=play.goalLine;
-    s+=`<rect x="${f(vb.x)}" y="${f(vb.y)}" width="${f(vb.w)}" height="${f(-y-vb.y)}" fill="#C8102E" opacity="0.06"/><line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(y,'GOAL LINE · END ZONE','#C8102E'); }
+    const top=(play.field&&play.field.endBack!=null)?-play.field.endBack:vb.y;   // to-scale end zone: goal line → end line
+    if(play.field&&play.field.endBack!=null) s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(top)}" y2="${f(top)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(-top,'END LINE','#C8102E');
+    s+=`<rect x="${f(vb.x)}" y="${f(top)}" width="${f(vb.w)}" height="${f(-y-top)}" fill="#C8102E" opacity="0.07"/><line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(y,'GOAL LINE · END ZONE','#C8102E'); }
   for(const z of play.zones||[]) s+=`<ellipse cx="${f(z.x)}" cy="${f(-z.y)}" rx="${f(z.rx)}" ry="${f(z.ry)}" fill="${DEF}" fill-opacity="0.10" stroke="${DEF}" stroke-opacity="0.35" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.15*S)} ${f(0.12*S)}"/>`;
   if(play.rushLine!=null){ const y=play.rushLine;
     s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="${DEF}" stroke-opacity="0.55" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.3*S)} ${f(0.2*S)}"/>`+lbl(y,play.rushLabel||'RUSH LINE',DEF); }
@@ -155,6 +161,7 @@ function viewBox(play,aspect){
   for(const k in play.routes)for(const p of shape(play.routes[k]).pts)add(p);
   for(const z of play.zones||[]){ add([z.x-z.rx,z.y-z.ry]); add([z.x+z.rx,z.y+z.ry]); }
   if(play.rushLine!=null) add([0,play.rushLine]); if(play.goalLine!=null) add([0,play.goalLine+0.6]);
+  if(play.field){ add([-play.field.halfW,0]); add([play.field.halfW,0]); if(play.field.endBack!=null) add([0,play.field.endBack]); }
   y0=Math.min(y0,-0.4); y1=Math.max(y1,0.4);
   const padx=0.95, pady=0.85; x0-=padx;x1+=padx;y0-=pady;y1+=pady;
   let h=Math.max(y1-y0,(x1-x0)/aspect,5.0); const w=h*aspect;

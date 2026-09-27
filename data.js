@@ -53,6 +53,11 @@ const PA=(()=>{
     const id=await rpc('pa_propose',{code:code(),author:nick(),fmt,kind,target_n,play,message});
     store.set('pa_mine',[...mine(),id].slice(-100)); return id;
   }
+  // schedule: games for both teams, cached for offline
+  async function games(){
+    try{ const g=await rpc('pa_games',{code:code()}); store.set('pa_games_cache',g); return g; }
+    catch(e){ const g=store.get('pa_games_cache'); if(g&&!badCode(e)) return g; throw e; } }
+  const isUs=name=>/^packers\b/i.test(name||'');                           // our team is listed as "Packers Barber"
   const comments=pid=>rpc('pa_comments',{code:code(),pid});
   const comment=(pid,body)=>rpc('pa_comment',{code:code(),pid,author:nick(),body});
   const vote=(pid,v)=>rpc('pa_vote',{code:code(),pid,voter:nick(),vote:v});
@@ -92,5 +97,5 @@ const PA=(()=>{
   const legend=()=>CATS.map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

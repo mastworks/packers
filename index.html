@@ -23,6 +23,23 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 #coachBtn.on{background:var(--gold);border-color:var(--gold);color:#111}
 #inbox{display:none;margin:8px 8px 0;background:var(--gold);color:#111;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;letter-spacing:.08em;text-decoration:none;text-align:center}
 #inbox.show{display:block}
+/* schedule */
+.sched{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;max-width:760px;width:100%;margin:0 auto}
+.shead{display:flex;justify-content:space-between;align-items:baseline;padding:2px 2px 0;font-size:13px;letter-spacing:.08em;color:var(--g)}
+.shead b{font-size:14px}
+.game{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:9px 11px;cursor:pointer;border-left:5px solid #cfd8d4}
+.game.next{border-left-color:var(--gold)}.game.w{border-left-color:#2E8B3A}.game.l{border-left-color:#C8102E}.game.t{border-left-color:#888}
+.grow{display:flex;align-items:center;gap:10px}
+.gwhen{flex:none;width:92px;font-size:11px;line-height:1.35;letter-spacing:.06em;color:#44524d}.gwhen b{display:block;font-size:12px;color:var(--ink)}
+.gmid{flex:1;min-width:0}.gopp{font-size:15px;font-weight:600;letter-spacing:.04em}.gsub{font-size:11px;letter-spacing:.06em;color:#44524d;margin-top:2px}
+.gres{flex:none;font-size:13px;font-weight:600;letter-spacing:.06em;padding:4px 8px;border-radius:6px;background:#eef1ef}
+.game.w .gres{background:#2E8B3A;color:#fff}.game.l .gres{background:#C8102E;color:#fff}.game.t .gres{background:#888;color:#fff}.game.next .gres{background:var(--gold);color:#111}
+.gx{display:none;margin-top:9px;padding-top:9px;border-top:1px solid #e6ebe8;font-size:12.5px;line-height:1.45;letter-spacing:.04em}
+.game.open .gx{display:block}
+.gx h5{margin:8px 0 2px;font-size:11px;letter-spacing:.1em;color:var(--g)}.gx p{margin:0;white-space:pre-wrap}
+.gx .btn{margin-top:10px}
+#dGame .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;border-radius:8px;border:1.5px solid #c9d2ce;background:#fff;color:var(--ink);font-family:inherit}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -82,6 +99,15 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
   <label>EMAIL</label><input type=email id=cEmail autocomplete=username autocapitalize=off><label>PASSWORD</label><input type=password id=cPass autocomplete=current-password>
   <div id=cMsg style="color:var(--warn);font-size:13px;min-height:18px;margin-top:8px"></div>
   <div class=row><button class="btn ghost" id=cCancel>Cancel</button><button class="btn gold" id=cGo>Sign in</button></div></dialog>
+<dialog id=dGame><h2 id=gTitle>Game</h2>
+  <div class=g2><div><label>PACKERS SCORE</label><input type=number id=gOurs min=0 max=199 inputmode=numeric></div><div><label>OPPONENT SCORE</label><input type=number id=gTheirs min=0 max=199 inputmode=numeric></div></div>
+  <label>NOTES (before the game: meet time, jerseys, reminders)</label><textarea id=gNotes maxlength=600></textarea>
+  <label>RECAP (after the game)</label><textarea id=gRecap maxlength=4000 style="min-height:110px"></textarea>
+  <details style="margin-top:8px"><summary style="font-size:12px;letter-spacing:.08em;color:var(--g);cursor:pointer">CHANGE DATE / TIME / FIELD / TEAMS</summary>
+    <div class=g2><div><label>WEEK</label><input type=number id=gWeek min=0 max=30></div><div><label>DATE</label><input type=date id=gDate></div></div>
+    <div class=g2><div><label>TIME</label><input id=gTime maxlength=20 placeholder="1:15 PM"></div><div><label>FIELD</label><input id=gField maxlength=60></div></div>
+    <label>HOME</label><input id=gHome maxlength=60><label>AWAY</label><input id=gAway maxlength=60></details>
+  <div class=row><button class="btn ghost" id=gDel>Delete</button><button class="btn ghost" id=gCancel>Cancel</button><button class="btn gold" id=gSave>Save</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
@@ -94,14 +120,15 @@ const isCoach=()=>!!PA.coachEmail();
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); if(tab>=n) tab=0;
-  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join(''); }
+function buildTabs(){ const n=Math.ceil(band.length/8); SCHED=n; if(tab>n) tab=0;
+  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===n?'on':''}">SCHEDULE</button>`; }
 $('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ tab=i; draw(); } };
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
 function draw(){
   [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
+  if(tab===SCHED){ $('#legend').innerHTML=''; return drawSchedule(); }
   band.slice(tab*8,tab*8+8).forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
     t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(band.indexOf(p)); grid.appendChild(t);
@@ -109,6 +136,51 @@ function draw(){
   $('#legend').innerHTML=PA.legend();
 }
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
+
+/* ---------- schedule ---------- */
+let SCHED=3, GAMES=[], openGame=null;
+const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const dOf=s=>{ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };            // local date, no time-zone shift
+const todayISO=()=>{ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); };
+function result(g){ if(g.ours==null||g.theirs==null) return null; return g.ours>g.theirs?'w':g.ours<g.theirs?'l':'t'; }
+function drawSchedule(){
+  const list=GAMES.filter(g=>g.fmt===FMT).sort((a,b)=>a.gdate<b.gdate?-1:a.gdate>b.gdate?1:0);
+  const rec={w:0,l:0,t:0}; list.forEach(g=>{ const r=result(g); if(r) rec[r]++; });
+  const next=list.find(g=>!result(g)&&dOf(g.gdate)>=todayISO()), E=PA.esc;
+  const box=document.createElement('div'); box.className='sched';
+  box.innerHTML=`<div class=shead><b>${E((list[0]||{}).division||FMT)}</b><span>RECORD ${rec.w}–${rec.l}${rec.t?'–'+rec.t:''}</span></div>`+
+    (list.length?list.map(g=>{ const home=PA.isUs(g.home), opp=home?g.away:g.home, r=result(g), d=dOf(g.gdate);
+      const res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:(g===next?'NEXT':'');
+      return `<div class="game ${r||''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
+        <div class=grow><div class=gwhen><b>${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}</b>${E(g.gtime||'')}${g.week!=null?' · WK '+g.week:''}</div>
+          <div class=gmid><div class=gopp>${home?'VS':'@'} ${E(opp)}</div><div class=gsub>${E(g.field||'')} · ${home?'HOME':'AWAY'}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
+          ${res?`<span class=gres>${res}</span>`:''}</div>
+        <div class=gx><div><b>HOME</b> ${E(g.home)} &nbsp; <b>AWAY</b> ${E(g.away)}</div><div><b>FIELD</b> ${E(g.field||'')} &nbsp; <b>TIME</b> ${E(g.gtime||'')}</div>
+          ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
+          ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
+          ${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ SCORE / NOTES / RECAP</button>`:''}</div></div>`; }).join('')
+      :'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
+    (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
+  grid.appendChild(box);
+  box.onclick=e=>{ const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
+    if(e.target.id==='addGame'){ const last=list[list.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:''}); }
+    const c=e.target.closest('.game'); if(c){ openGame=openGame===c.dataset.id?null:c.dataset.id; draw(); } };
+}
+let editing_game=null;
+function editGame(g){ editing_game=g; const v=(id,x)=>$('#'+id).value=x==null?'':x;
+  $('#gTitle').textContent=g.id?`${PA.isUs(g.home)?'VS':'@'} ${PA.isUs(g.home)?g.away:g.home}`:'New game';
+  v('gOurs',g.ours); v('gTheirs',g.theirs); v('gNotes',g.notes); v('gRecap',g.recap); v('gWeek',g.week); v('gDate',g.gdate); v('gTime',g.gtime); v('gField',g.field); v('gHome',g.home); v('gAway',g.away);
+  $('#gDel').style.display=g.id?'':'none'; $('#dGame').showModal(); }
+$('#gCancel').onclick=()=>$('#dGame').close();
+$('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).value.trim(); return x===''?null:+x; };
+  const out={...g,ours:n('gOurs'),theirs:n('gTheirs'),notes:$('#gNotes').value,recap:$('#gRecap').value,week:n('gWeek'),gdate:$('#gDate').value,gtime:$('#gTime').value.trim(),field:$('#gField').value.trim(),home:$('#gHome').value.trim(),away:$('#gAway').value.trim()};
+  if(!out.gdate||!out.home||!out.away) return alert('Date, home and away are needed.');
+  if((out.ours==null)!==(out.theirs==null)) return alert('Enter both scores (or neither).');
+  try{ await PA.coachRpc('pa_save_game',{g:out}); $('#dGame').close(); await loadGames(); draw(); PA.toast('Saved. Players see it next time they open the app.'); }
+  catch(e){ alert('Could not save: '+e.message); } };
+$('#gDel').onclick=async()=>{ if(!confirm('Delete this game from the schedule?')) return;
+  try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ alert(e.message); } };
+async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } }
 
 /* ---------- full screen ---------- */
 let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
@@ -155,7 +227,7 @@ $('#sCancel').onclick=()=>$('#dSend').close();
 $('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.play;
   try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); PA.toast('Sent! Coach will look at it.',3000); }
   catch(e){ alert('Could not send: '+e.message); } };
-$('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,band.length-1); paintOv(); }
+$('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); await loadGames(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,band.length-1); paintOv(); }
   $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
 
 /* ---------- coach mode: visible sign-in, inbox of player ideas ---------- */
@@ -163,7 +235,8 @@ let PENDING=0;
 function coachUI(){ const b=$('#coachBtn'), c=isCoach();
   b.classList.toggle('on',c); b.textContent=c?(PENDING?`📥 ${PENDING}`:'COACH ✓'):'🔒 COACH';
   $('#inbox').classList.toggle('show',c&&PENDING>0); $('#inbox').textContent=`📥 ${PENDING} NEW PLAYER IDEA${PENDING===1?'':'S'} — TAP TO REVIEW`;
-  if($('#ov').classList.contains('show')) $('#send').textContent=c?'💾 SAVE TO TEAM':'📤 SEND TO COACH'; }
+  if($('#ov').classList.contains('show')) $('#send').textContent=c?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
+  if(tab===SCHED&&band.length) draw(); }   // show / hide the coach's score buttons
 async function coachInbox(){ if(!isCoach()) return coachUI();
   try{ PENDING=(await PA.coachRpc('pa_coach_proposals')).filter(x=>x.status==='pending').length; }
   catch(e){ if(e.code==='28000'||e.status===401||e.status===400){ PA.logout(); PA.toast('Coach sign-in expired. Sign in again.'); } }
@@ -187,14 +260,14 @@ async function load(first,quiet){
   if(had&&r.fresh&&!quiet) PA.toast('Coach updated the plays'); if(!r.fresh) PA.toast('Offline: showing saved plays');
   return had;
 }
-document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); coachInbox(); if(!$('#ov').classList.contains('show')) draw(); } });
+document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); await loadGames(); coachInbox(); if(!$('#ov').classList.contains('show')) draw(); } });
 setInterval(()=>{ if(document.visibilityState==='visible'){ load(false); coachInbox(); } },5*60*1000);
 // Coach page: tap the title 5 times (works inside the installed app, where there is no address bar)
 let taps=[]; $('#ttl').onclick=()=>{ const n=Date.now(); taps=taps.filter(t=>n-t<2500); taps.push(n); if(taps.length>=5) location.href='coach.html'; };
 addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n=>PA.fit(n,12,7)); });
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
-  coachUI(); await PA.join(false); await load(true); await loadIdeas(); draw(); coachInbox();
+  coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]); draw(); coachInbox();
   const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); const i=band.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));

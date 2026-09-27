@@ -275,5 +275,5 @@ addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n
   coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]); draw(); coachInbox();
   const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
-if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// the service worker (offline + automatic app updates) is registered in data.js for every page
 </script></body></html>

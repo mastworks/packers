@@ -1,5 +1,24 @@
 /* Shared data layer: Supabase calls, team code + nickname, coach sign-in, offline cache, small UI helpers.
    Players call team-code-protected pa_* functions; the coach calls coach-only pa_* functions with a sign-in token. */
+/* App updates reach every phone by themselves: check for a new version whenever the app comes back on screen
+   (and every 30 min), then refresh into it as soon as nobody is mid-edit. Drafts are saved on the phone, so nothing is lost. */
+(()=>{
+  if(!('serviceWorker' in navigator)) return;
+  const had=!!navigator.serviceWorker.controller;                  // first visit: no refresh needed
+  const busy=()=>!!document.querySelector('dialog[open]')||!!document.querySelector('#ov.editing')||
+                 (document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+  let pending=false;
+  const refresh=()=>{ if(busy()){ pending=true; return; } try{ sessionStorage.setItem('pa_updated','1'); }catch(e){} location.reload(); };
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(had&&!pending) refresh(); });
+  setInterval(()=>{ if(pending&&!busy()){ pending=false; refresh(); } },3000);
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    const check=()=>reg.update().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') check(); });
+    setInterval(check,30*60*1000);
+  }).catch(()=>{});
+  addEventListener('load',()=>{ try{ if(sessionStorage.getItem('pa_updated')){ sessionStorage.removeItem('pa_updated'); setTimeout(()=>PA.toast('Updated to the latest version',3000),400); } }catch(e){} });
+})();
+
 const PA=(()=>{
   const C=window.PA_CONFIG||{};
   const configured=!!(C.supabaseUrl&&C.supabaseAnonKey&&!/YOUR-/.test(C.supabaseUrl+C.supabaseAnonKey));

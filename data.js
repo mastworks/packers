@@ -94,23 +94,53 @@ const PA=(()=>{
       if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ el.innerHTML=PB.staticSVG(play,{aspect:1.3}); opt.done&&opt.done(); } },700); };
     raf=requestAnimationFrame(step); return ()=>{ dead=true; cancelAnimationFrame(raf); el.innerHTML=PB.staticSVG(play,{aspect:1.3}); }; }
   // player-facing flow: make sure we have a working team code (and nickname when needed)
-  async function join(needNick){
-    if(code() && (!needNick||nick())) return true;
+  /* ---- roster + attendance: each phone keeps the roster spots it claimed ({id, token, name, fmt}) ---- */
+  const members=()=>store.get('pa_members',[]);
+  async function joinRoster(fmt,name){
+    const m=await rpc('pa_join',{code:code(),fmt,name});
+    store.set('pa_members',[...members().filter(x=>x.id!==m.id),m]); if(!nick()) store.set('pa_nick',m.name); return m;
+  }
+  const roster=()=>rpc('pa_roster',{code:code()});
+  const attendance=()=>rpc('pa_attendance',{code:code()});
+  function setAtt(memberId,gameId,status){
+    const m=members().find(x=>x.id===memberId);
+    return m ? rpc('pa_set_attendance',{code:code(),member:m.id,token:m.token,game:gameId,status})
+             : coachRpc('pa_coach_set_attendance',{member:memberId,game:gameId,status});
+  }
+  // first-time setup: team code + the player's own name and team (claims a roster spot); parents / fans can skip the roster
+  function dialogHTML(withCode,fmtDefault,skipLabel){
+    return `<h2>${withCode?'Join the team':'Add your name to the roster'}</h2>
+      <p>${withCode?'Ask your coach for the team code. ':''}Your name goes on the team roster so you can say if you're coming to each game.</p>
+      ${withCode?`<label>TEAM CODE</label><input id=jc autocapitalize=characters autocomplete=off value="${esc(code())}">`:''}
+      <label>PLAYER NAME</label><input id=jn maxlength=30 autocomplete=off placeholder="first name (add a last initial if needed)">
+      <label>TEAM</label><div class=seg id=jt style="background:#e9eeec"><button type=button data-f=5v5 class="${fmtDefault!=='6v6'?'on':''}">5V5</button><button type=button data-f=6v6 class="${fmtDefault==='6v6'?'on':''}">6V6 SENIOR</button></div>
+      <div id=jm style="color:var(--warn);font-size:13px;min-height:18px;margin-top:8px"></div>
+      <div class=row><button class="btn ghost" id=jskip>${skipLabel}</button><button class="btn gold" id=jgo>Join</button></div>`;
+  }
+  function openDialog(withCode,fmtDefault,skipLabel,onSkip){
     return new Promise(res=>{
-      const d=document.createElement('dialog'); d.className='join';
-      d.innerHTML=`<h2>Join the team</h2><p>Ask your coach for the team code.</p>
-        <label>TEAM CODE</label><input id=jc autocapitalize=characters autocomplete=off value="${esc(code())}">
-        <label>YOUR NICKNAME ${needNick?'':'<span style="font-weight:400">(for ideas and votes)</span>'}</label><input id=jn maxlength=24 autocomplete=off value="${esc(nick())}" placeholder="first name or jersey #">
-        <div id=jm style="color:var(--warn);font:700 13px sans-serif;min-height:18px;margin-top:8px"></div>
-        <div class=row><button class="btn gold" id=jgo>Join</button></div>`;
+      const d=document.createElement('dialog'); d.className='join'; d.innerHTML=dialogHTML(withCode,fmtDefault,skipLabel);
       document.body.appendChild(d); d.showModal(); d.addEventListener('cancel',e=>e.preventDefault());
-      d.querySelector('#jgo').onclick=async()=>{ const c=d.querySelector('#jc').value.trim(), n=d.querySelector('#jn').value.trim(), m=d.querySelector('#jm');
-        if(needNick&&!n){ m.textContent='Add a nickname'; return; }
-        m.style.color='var(--g)'; m.textContent='Checking…';
-        try{ await rpc('pa_plays',{code:c}); store.set('pa_code',c); if(n) store.set('pa_nick',n); d.close(); d.remove(); res(true); }
-        catch(e){ m.style.color='var(--warn)'; m.textContent=badCode(e)?'That team code is not right.':e.message; } };
+      let fmt=fmtDefault==='6v6'?'6v6':'5v5';
+      d.querySelector('#jt').onclick=e=>{ const f=e.target.dataset.f; if(!f) return; fmt=f; d.querySelectorAll('#jt button').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); };
+      const m=d.querySelector('#jm'), done=v=>{ d.close(); d.remove(); res(v); };
+      const checkCode=async()=>{ if(!withCode) return true; const c=d.querySelector('#jc').value.trim();
+        try{ await rpc('pa_plays',{code:c}); store.set('pa_code',c); return true; }catch(e){ m.style.color='var(--warn)'; m.textContent=badCode(e)?'That team code is not right.':e.message; return false; } };
+      d.querySelector('#jgo').onclick=async()=>{ const n=d.querySelector('#jn').value.trim(); m.style.color='var(--g)'; m.textContent='Checking…';
+        if(!await checkCode()) return;
+        if(!n){ m.style.color='var(--warn)'; m.textContent='Enter the player\'s name'; return; }
+        try{ const mem=await joinRoster(fmt,n); store.set('pa_nick',nick()||mem.name); done(mem); }catch(e){ m.style.color='var(--warn)'; m.textContent=e.message; } };
+      d.querySelector('#jskip').onclick=async()=>{ if(!await checkCode()) return; onSkip&&onSkip(); done(null); };
     });
   }
+  async function join(needNick){
+    if(code() && (!needNick||nick())) return true;
+    if(!code()) await openDialog(true,store.get('pa_fmt'),'Skip: parent / fan',()=>store.set('pa_roster_skip',true));
+    if(needNick&&!nick()){   // ideas need a name: skipped the roster → ask for a nickname only
+      const n=prompt('Your name for ideas and votes (first name or jersey #)'); if(!n||!n.trim()) return false; store.set('pa_nick',n.trim().slice(0,24)); }
+    return true;
+  }
+  const addPlayer=(fmt,skipLabel,onSkip)=>openDialog(false,fmt,skipLabel||'Cancel',onSkip);
   const CATS=[['throw','THROW'],['run','RUN'],['redzone','RED ZONE'],['trick','TRICK']];
   const SUBS=['VS MAN','VS ZONE','VS RUSH','SHORT YARDAGE','OPEN FIELD','GOAL LINE'];
   const DCATS=[['throw','VS PASS'],['run','VS RUN'],['redzone','RED ZONE'],['trick','TRICK / DISGUISE']];   // defense: color = what it stops
@@ -120,5 +150,5 @@ const PA=(()=>{
   const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>P PUNCH · S / F SAFETY · M MIDDLE · B BACKER · L / K CORNERS</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

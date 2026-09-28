@@ -53,6 +53,22 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 .rnote{font-size:11.5px;line-height:1.4;color:#44524d;margin:4px 2px}
 .rules .btn{text-align:center;text-decoration:none;margin-bottom:14px}
 .game.ppd{border-left-color:#C8102E}.game.ppd .gres{background:#C8102E;color:#fff}
+/* roster + attendance */
+.roster{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.roster summary{padding:10px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;font-size:13px;letter-spacing:.08em;color:var(--g)}
+.roster summary::-webkit-details-marker{display:none}
+.rlist{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:6px}
+.rname{display:inline-flex;align-items:center;gap:5px;background:#eef1ef;border-radius:14px;padding:4px 10px;font-size:12px;letter-spacing:.05em}
+.rname.me{background:var(--gold)}.rname.coach{background:var(--g);color:var(--gold)}
+.rname button{background:none;border:0;padding:0 2px;font-size:13px;color:#555}
+.rbtns{padding:0 12px 12px;display:flex;flex-wrap:wrap;gap:6px}.rbtns .btn{padding:7px 10px;font-size:12px}
+.att{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:11.5px;letter-spacing:.06em;color:#44524d}
+.att .who{font-weight:600;color:var(--ink);min-width:60px}
+.att button{border:1.5px solid #c9d2ce;background:#fff;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:600;letter-spacing:.06em}
+.att button.yes.on{background:#2E8B3A;border-color:#2E8B3A;color:#fff}.att button.maybe.on{background:var(--gold);border-color:var(--gold)}.att button.no.on{background:#C8102E;border-color:#C8102E;color:#fff}
+.acount{font-size:11px;letter-spacing:.06em;color:#44524d;margin-top:6px}
+.alist b{display:inline-block;min-width:92px;font-size:11px;color:var(--g)}
+.alist span.cyc{cursor:pointer;text-decoration:underline dotted}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -154,7 +170,34 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let DEF=3, SCHED=4, RULE=5, GAMES=[], openGame=null;
+let DEF=3, SCHED=4, RULE=5, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
+const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
+const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
+const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
+function attRow(g){                                   // counts + this phone's player(s): YES / MAYBE / NO
+  if(!ROSTER_OK) return '';
+  const team=teamRoster(), c={yes:0,maybe:0,no:0}; team.forEach(m=>{ const s=attOf(g.id,m.id); if(s) c[s]++; });
+  const none=team.length-c.yes-c.maybe-c.no, mine=PA.members().filter(m=>m.fmt===FMT&&team.some(t=>t.id===m.id));
+  let h=`<div class=acount>✅ ${c.yes} COMING · ❔ ${c.maybe} MAYBE · ❌ ${c.no} OUT${none?` · ${none} NO REPLY`:''}</div>`;
+  if(upcoming(g)) for(const m of mine){ const s=attOf(g.id,m.id);
+    h+=`<div class=att><span class=who>${PA.esc(m.name)}</span>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}">${v.toUpperCase()}</button>`).join('')}</div>`; }
+  return h;
+}
+function attList(g){                                  // opened game: who's coming (coach can tap a name to change it)
+  if(!ROSTER_OK) return ''; const team=teamRoster(), E=PA.esc, grp={yes:[],maybe:[],no:[],'':[]};
+  team.forEach(m=>grp[attOf(g.id,m.id)].push(m));
+  const nm=m=>isCoach()?`<span class=cyc data-cyc="${m.id}" data-g="${g.id}">${E(m.name)}</span>`:E(m.name);
+  return `<h5>ATTENDANCE${isCoach()?' <small style="font-weight:400">(tap a name to change it)</small>':''}</h5><div class=alist>`+
+    [['yes','COMING'],['maybe','MAYBE'],['no','NOT COMING'],['','NO REPLY']].map(([k,l])=>`<div><b>${l}</b> ${grp[k].map(nm).join(', ')||'—'}</div>`).join('')+`</div>`;
+}
+function rosterPanel(){
+  if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(PA.members().map(m=>m.id)), E=PA.esc;
+  const chip=m=>`<span class="rname ${m.kind==='coach'?'coach':''} ${mine.has(m.id)?'me':''}">${m.kind==='coach'?'COACH ':''}${E(m.name)}${isCoach()?`<button data-rren="${m.id}" aria-label="rename">✏️</button><button data-rdel="${m.id}" aria-label="remove">✕</button>`:''}</span>`;
+  return `<details class=roster ${isCoach()?'open':''}><summary><b>TEAM ROSTER</b><span>${pl.length}/12 PLAYERS · ${co.length}/2 COACHES</span></summary>
+    <div class=rlist>${[...co,...pl].map(chip).join('')||'<span style="font-size:12px;color:#44524d">No one yet.</span>'}</div>
+    <div class=rbtns>${pl.length<12?'<button class="btn ghost" data-radd=me>+ ADD A PLAYER ON THIS PHONE</button>':''}${isCoach()&&pl.length<12?'<button class="btn ghost" data-radd=player>+ PLAYER (COACH)</button>':''}${isCoach()&&co.length<2?'<button class="btn ghost" data-radd=coach>+ COACH</button>':''}</div></details>`;
+}
+async function loadRoster(){ try{ [ROSTER,ATT]=await Promise.all([PA.roster(),PA.attendance()]); ROSTER_OK=true; }catch(e){ ROSTER_OK=false; } }
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const dOf=s=>{ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };            // local date, no time-zone shift
 const todayISO=()=>{ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); };
@@ -173,17 +216,32 @@ function drawSchedule(){
       <div class=grow><div class=gwhen>${g.label?`<b style="color:var(--g)">${E(g.label)}</b>`:''}<b ${ppd?'style="color:#C8102E"':''}>${ppd?'POSTPONED':d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD'}</b>${ppd?`NEW DATE TBD${g.orig_gdate?' · WAS '+short(g.orig_gdate):''}<br>`:''}${E(g.gtime||'')}${g.week!=null&&!g.label?' · WK '+g.week:''}</div>
         <div class=gmid><div class=gopp>${tbd?'':(home?'VS ':'@ ')}${E(opp)}</div><div class=gsub>${E(g.field||'FIELD TBD')}${tbd?'':' · '+(home?'HOME':'AWAY')}${moved?' · RESCHEDULED FROM '+short(g.orig_gdate):''}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
         ${res?`<span class=gres>${res}</span>`:''}</div>
+      ${g.stage!=='playoff'||!(!g.home||!g.away)?attRow(g):''}
       <div class=gx><div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
         ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
         ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
-        ${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
+        ${attList(g)}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+rosterPanel()+
     (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
     (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
   grid.appendChild(box);
-  box.onclick=e=>{ const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
+  box.onclick=async e=>{
+    const at=e.target.closest('[data-att]'), cy=e.target.closest('[data-cyc]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
+    if(at||cy){ e.stopPropagation(); const mid=(at||cy).dataset.m||cy.dataset.cyc, gid=(at||cy).dataset.g, cur=attOf(gid,mid);
+      const nxt=at?(cur===at.dataset.att?'':at.dataset.att):({'':'yes',yes:'maybe',maybe:'no',no:''}[cur]);
+      try{ await PA.setAtt(mid,gid,nxt||null); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
+      catch(err){ alert(err.message); } return; }
+    if(ra){ e.preventDefault(); const k=ra.dataset.radd;
+      if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }
+      const n=prompt(k==='coach'?'Coach name':'Player name'); if(!n||!n.trim()) return;
+      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:FMT,kind:k,name:n.trim()}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
+    if(rr){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rr.dataset.rren), n=prompt('New name',m.name); if(!n||!n.trim()) return;
+      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:m.fmt,kind:m.kind,name:n.trim(),mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
+    if(rd){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rd.dataset.rdel); if(!confirm(`Remove ${m.name} from the ${m.fmt} roster? Their attendance answers are removed too.`)) return;
+      try{ await PA.coachRpc('pa_coach_roster_delete',{mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
+    const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
     if(e.target.id==='addGame'){ const last=reg[reg.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:'',stage:'regular'}); }
     const c=e.target.closest('.game'); if(c){ openGame=openGame===c.dataset.id?null:c.dataset.id; draw(); } };
 }
@@ -208,7 +266,7 @@ $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).v
   catch(e){ alert('Could not save: '+e.message); } };
 $('#gDel').onclick=async()=>{ if(!confirm('Delete this game from the schedule?')) return;
   try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ alert(e.message); } };
-async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } }
+async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await loadRoster(); }
 
 /* ---------- full screen ---------- */
 let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
@@ -296,6 +354,8 @@ addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
   coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]); draw(); coachInbox();
+  if(ROSTER_OK&&!PA.members().length&&!isCoach()&&!PA.store.get('pa_roster_skip')){   // installed before the roster existed: add your name once
+    const m=await PA.addPlayer(FMT,'Skip: parent / fan',()=>PA.store.set('pa_roster_skip',true)); if(m){ await loadRoster(); draw(); PA.toast('Welcome, '+m.name+'!'); } }
   const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 // the service worker (offline + automatic app updates) is registered in data.js for every page

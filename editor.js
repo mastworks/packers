@@ -4,6 +4,7 @@
           Routes — drag route dots; drag a segment's middle handle to bend/stretch it; curve or kink any dot;
                    turn / lengthen the whole route; arrow, dotted (ball carried), motion, timing, draw / clear
           Ball   — the ball plan (pass / hand-off, who, where, backup receivers); drag a football onto any route */
+const ek=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));   // player keys can come from old player ideas
 function PlayEditor(root,opt){
   opt=opt||{};
   const ASP=1.3, SNAP=0.1, clone=o=>JSON.parse(JSON.stringify(o)), round=v=>Math.round(v*100)/100, snap=v=>round(Math.round(v/SNAP)*SNAP);
@@ -75,7 +76,7 @@ function PlayEditor(root,opt){
     root.querySelectorAll('.ed-modes [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     root.querySelectorAll('.ed-tools').forEach(t=>t.classList.toggle('show',t.dataset.for===mode));
     const ks=Object.keys(play.players);
-    $('.ed-chips').innerHTML=ks.map(k=>`<button class="chip ${k===selK?'on':''}" data-k="${k}" style="background:${PB.COL[k]}">${k}</button>`).join('');
+    $('.ed-chips').innerHTML=ks.map(k=>`<button class="chip ${k===selK?'on':''}" data-k="${ek(k)}" style="background:${PB.COL[k]}">${ek(k)}</button>`).join('');
     const r=selK&&play.routes[selK], B=a=>$(`[data-a=${a}]`), mid=r&&selPt>=1&&selPt<r.pts.length-1;
     B('add').disabled=!selK; B('add').textContent=r?'+ Point':'Draw route';
     B('del').disabled=!(r&&selPt>=1&&r.pts.length>2);
@@ -95,9 +96,9 @@ function PlayEditor(root,opt){
     // ball plan
     const plan=play.ball||[];
     $('.ed-plan').innerHTML=plan.length?plan.map((e,i)=>{ const to=evTo(e), from=holderBefore(i), pts=ptsOf(to);
-      const opts=ks.filter(k=>k!==from).map(k=>`<option ${k===to?'selected':''}>${k}</option>`).join('');
+      const opts=ks.filter(k=>k!==from).map(k=>`<option ${k===to?'selected':''}>${ek(k)}</option>`).join('');
       const at=`<option value="">end of route</option>`+pts.slice(1,-1).map((_,j)=>`<option value="${j+1}" ${e.v===j+1?'selected':''}>dot ${j+1}</option>`).join('');
-      const alts=e.pass?`<div class=ed-alts>Also open: ${ks.filter(k=>k!==to&&k!==from).map(k=>`<button class="chip sm ${(e.alt||[]).some(a=>a.pass===k)?'on':''}" data-alt="${k}" data-i="${i}" style="background:${PB.COL[k]}">${k}</button>`).join('')}</div>`:'';
+      const alts=e.pass?`<div class=ed-alts>Also open: ${ks.filter(k=>k!==to&&k!==from).map(k=>`<button class="chip sm ${(e.alt||[]).some(a=>a.pass===k)?'on':''}" data-alt="${ek(k)}" data-i="${i}" style="background:${PB.COL[k]}">${ek(k)}</button>`).join('')}</div>`:'';
       return `<div class="ed-ev ${i===selEv?'on':''}" data-i="${i}"><b>${i+1}</b> <span>${from} →</span>
         <select class=f data-ev=type data-i="${i}"><option value=pass ${e.pass?'selected':''}>pass</option><option value=give ${e.give?'selected':''}>hand-off</option></select>
         <span>to</span><select class=f data-ev=to data-i="${i}">${opts}</select>
@@ -113,7 +114,7 @@ function PlayEditor(root,opt){
     if(document.activeElement!==fl('cue')) fl('cue').value=play.cue||'';
     fl('cat').innerHTML=PA.catsFor(play).map(([v,l])=>`<option value="${v}" ${play.cat===v?'selected':''}>${l}</option>`).join('');
     fl('sub').innerHTML='<option value="">—</option>'+PA.subsFor(play).map(v=>`<option ${play.sub===v?'selected':''}>${v}</option>`).join('');
-    fl('star').innerHTML='<option value="">— none —</option>'+ks.map(k=>`<option ${play.star===k?'selected':''}>${k}</option>`).join('');
+    fl('star').innerHTML='<option value="">— none —</option>'+ks.map(k=>`<option ${play.star===k?'selected':''}>${ek(k)}</option>`).join('');
   }
 
   /* ---------- index bookkeeping when route dots are added/removed (ball spots, dotted line, motion, curves) ---------- */

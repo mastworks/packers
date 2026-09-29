@@ -26,7 +26,8 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
 <script>
 const $=s=>document.querySelector(s), q=new URLSearchParams(location.search);
-const FMT=q.get('fmt')||'5v5', N=q.get('n')?+q.get('n'):null, NEW=!N, FROM=q.get('from')?+q.get('from'):null;
+const FMT=/^[0-9a-z]{3,4}$/i.test(q.get('fmt')||'')?q.get('fmt'):'5v5',   // only a real format name (never markup from a link)
+      N=q.get('n')?+q.get('n'):null, NEW=!N, FROM=q.get('from')?+q.get('from'):null;
 const BACK='index.html'+((N||FROM)?`#play=${FMT}-${N||FROM}`:'');
 document.getElementById('cancel').href=BACK;
 const DKEY='pa_idea_'+FMT+'_'+(N||'new');
@@ -40,7 +41,7 @@ function save(){ PA.store.set(DKEY,{play:work,msg:$('#msg').value,repl:$('#repl'
 function startFrom(p){ work=clone(p); ed.load(work,DKEY); save(); }
 (async()=>{
   if(!PA.configured) return document.body.append('App not connected (config.js).');
-  await PA.join(true);
+  if(!await PA.join(true)){ location.href=BACK; return; }
   try{ plays=(await PA.loadPlays()).by[FMT]||[]; }catch(e){ return alert('Could not load plays: '+e.message); }
   ed=PlayEditor($('#ed'),{onChange:save});
   const d=PA.store.get(DKEY);
@@ -63,7 +64,7 @@ $('#undo').onclick=()=>{ if(!ed.undo()) PA.toast('Nothing to undo'); };
 $('#send').onclick=async()=>{
   if(!NEW && JSON.stringify(work)===JSON.stringify(base)) return PA.toast('Change something first');
   if(!(work.ball||[]).length && !confirm('Your play has no pass or hand-off yet (Ball button). Send anyway?')) return;
-  await PA.join(true);
+  if(!await PA.join(true)) return;
   $('#send').disabled=true; $('#send').textContent='Sending…';
   try{
     const repl=$('#repl').value?+$('#repl').value:null;

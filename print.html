@@ -42,7 +42,7 @@ body.nobig .big{display:none}
 <div class=pages id=pages></div>
 <script src=config.js></script><script src=pb.js></script><script src=data.js></script>
 <script>
-const q=new URLSearchParams(location.search), FMT=q.get('fmt')||'5v5', DEFN=q.get('side')==='D';   // side=D → the defense card
+const q=new URLSearchParams(location.search), FMT=/^[0-9a-z]{3,4}$/i.test(q.get('fmt')||'')?q.get('fmt'):'5v5', DEFN=q.get('side')==='D';   // side=D → the defense card
 document.getElementById('fl').textContent=FMT;
 document.getElementById('big').onchange=e=>document.body.classList.toggle('nobig',!e.target.checked);
 if(q.get('src')!=='coach') document.getElementById('back').href='index.html';

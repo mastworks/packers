@@ -69,6 +69,31 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 .acount{font-size:11px;letter-spacing:.06em;color:#44524d;margin-top:6px}
 .alist b{display:inline-block;min-width:92px;font-size:11px;color:var(--g)}
 .alist span.cyc{cursor:pointer;text-decoration:underline dotted}
+/* announcements, contact, field map */
+.ann{background:var(--g);color:#fff;border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.45;letter-spacing:.04em}
+.ann b{color:var(--gold);letter-spacing:.1em;font-size:11px}.ann h4{margin:2px 0;font-size:14px;letter-spacing:.06em}.ann p{margin:2px 0 0;white-space:pre-wrap}
+.ann small{color:#b9cbc4;font-size:10.5px}.ann button{float:right;background:none;border:0;color:#b9cbc4;font-size:14px}
+.sbtns{display:flex;flex-wrap:wrap;gap:6px}.sbtns .btn{flex:1;padding:9px 8px;font-size:12px;text-align:center;text-decoration:none}
+.fmap{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.fmap summary{padding:10px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;font-size:13px;letter-spacing:.08em;color:var(--g)}
+.fmap summary::-webkit-details-marker{display:none}
+.fmap div{padding:0 12px 12px;font-size:12.5px;line-height:1.5;letter-spacing:.03em}.fmap a{color:var(--g);font-weight:600}
+/* practice */
+.prac{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.45;letter-spacing:.03em}
+.pnext{background:var(--g);color:#fff;border-radius:10px;padding:10px 12px}.pnext b{color:var(--gold);font-size:11px;letter-spacing:.12em}.pnext h3{margin:2px 0;font-size:17px;letter-spacing:.05em}.pnext span{font-size:12px;color:#d7e2de}
+.ptheme,.pblock,.psess,.pdet{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12);padding:10px 12px}
+.ptheme b,.pblock h4,.psess h4{color:var(--g);font-size:12px;letter-spacing:.1em;margin:0 0 4px}.ptheme p,.pblock p{margin:2px 0}
+.pnote{color:#44524d;font-size:11.5px}
+.psessions{display:grid;grid-template-columns:1fr;gap:8px}@media(min-width:620px){.psessions{grid-template-columns:1fr 1fr}}
+.psess h4 small,.psess li small{color:#6b7a75;font-weight:400}.psess ol{margin:0;padding-left:20px}.psess li{margin:2px 0}.psess a{color:var(--ink)}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.pplay{border:1.5px solid #c9d2ce;background:#f6f8f7;border-radius:14px;padding:5px 10px;font-size:11.5px;letter-spacing:.04em;text-align:left}.pplay b{color:var(--g)}
+.pdet{padding:0}.pdet>summary{padding:10px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;font-size:13px;letter-spacing:.08em;color:var(--g)}.pdet>summary::-webkit-details-marker{display:none}.pdet>summary span{font-size:11px;color:#6b7a75}
+.pweeks,.pdrills{padding:0 12px 12px;display:flex;flex-direction:column;gap:6px}
+.pwk{border:1.5px solid #c9d2ce;background:#fff;border-radius:8px;padding:8px 10px;text-align:left;font-size:12px;letter-spacing:.05em}.pwk.on{background:var(--gold);border-color:var(--gold)}
+.pdrill{border:1px solid #e1e7e4;border-radius:8px;padding:7px 10px}.pdrill summary{cursor:pointer;font-weight:600;color:var(--ink)}.pdrill summary small{font-weight:400;color:#6b7a75}.pdrill p{margin:5px 0}.pdrill b{color:var(--g);font-size:11px;letter-spacing:.08em}.pdrill ul{margin:4px 0;padding-left:18px}
+.pback{margin-top:8px;background:var(--gold);color:#111;border:0;border-radius:8px;padding:8px 12px;font-weight:600;letter-spacing:.06em;font-size:12px}
+.psess .pdrill{border:0;padding:2px 0}.psess .pdrill summary{font-weight:500}
+.pvid{display:block;margin:4px 0;padding:7px 10px;border-radius:8px;background:#C8102E0d;border:1px solid #e3c9ce;color:#8a0f22;text-decoration:none;font-weight:600;font-size:12px}.pvid small{color:#6b7a75;font-weight:400}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -97,10 +122,27 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   .obody{flex-direction:row;align-items:flex-start}
   .ofield{flex:0 0 58%;position:sticky;top:0}
   .stage{max-height:calc(100vh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom));width:auto;height:calc(100vh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
-  .oside{flex:1;min-width:0}
+  .oside{flex:1;min-width:0;align-self:flex-start;position:sticky;top:0}   /* actions at the top of the side column, always visible */
   #ov.editing .ofield{flex:0 0 62%;position:static}
   .ctl{flex-wrap:wrap}.ctl input[type=range]{flex-basis:100%}
   .acts{grid-template-columns:1fr 1fr}.acts #send{grid-column:1/-1;order:-1}
+}
+@media (orientation:landscape) and (max-height:520px){   /* phone sideways while editing: field + mode buttons fit the screen */
+  #ov.editing .ed-stage{height:calc(100vh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom));width:auto;max-width:100%;margin:0 auto}
+}
+@media (orientation:landscape) and (min-width:900px) and (min-height:521px){   /* iPad sideways: big field on the left, controls beside it */
+  .obody{flex-direction:row;align-items:flex-start}
+  .ofield{flex:0 0 auto;position:sticky;top:0}
+  .stage{width:min(70vw,calc((100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom))*1.3));max-width:none}
+  #ov.editing .ofield{flex:0 0 62%;position:static}
+  #ov.editing .ed-stage{height:calc(100vh - 200px);width:auto;max-width:100%;margin:0 auto}
+  .oside{flex:1;min-width:0;align-self:flex-start;position:sticky;top:0}
+  .oside .btn{white-space:normal}
+  .acts{grid-template-columns:1fr 1fr}.acts #send{grid-column:1/-1;order:-1}
+}
+@media (orientation:portrait){   /* phone upright while editing: ✓ DONE / 📤 SEND pinned to the bottom, always in reach */
+  #ov.editing .acts{position:fixed;left:0;right:0;bottom:0;z-index:25;background:#0f1d19;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.4)}
+  #ov.editing{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
 }
 .oside .btn{white-space:nowrap}
 @media print{ #ov,.acts,.ctl,.btn{display:none!important} }       /* buttons never print */
@@ -138,9 +180,15 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
     <div class=g2><div><label>TIME</label><input id=gTime maxlength=20 placeholder="1:15 PM"></div><div><label>FIELD</label><input id=gField maxlength=60></div></div>
     <label>HOME</label><input id=gHome maxlength=60 placeholder="Packers Barber"><label>AWAY</label><input id=gAway maxlength=60><label>LABEL (e.g. SEMIFINAL)</label><input id=gLabel maxlength=40></details>
   <div class=row><button class="btn ghost" id=gDel>Delete</button><button class="btn ghost" id=gCancel>Cancel</button><button class="btn gold" id=gSave>Save</button></div></dialog>
+<dialog id=dMsg><h2>📣 Message the team</h2><p>Shows in everyone's app (Schedule tab). Then your Mail app opens with every parent email in BCC, so you can send it as an email too.</p>
+  <label>TEAM</label><div class=seg id=mTeam style="background:#e9eeec"><button type=button data-f="" class=on>BOTH</button><button type=button data-f=5v5>5V5</button><button type=button data-f=6v6>6V6</button></div>
+  <label>TITLE</label><input id=mTitle maxlength=80 placeholder="Practice Thursday 5 PM"><label>MESSAGE</label><textarea id=mBody maxlength=2000 style="min-height:110px"></textarea>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=mMail checked style="width:20px;height:20px"> ALSO EMAIL PARENTS (opens Mail)</label>
+  <div id=mInfo style="font-size:12px;color:#44524d;min-height:16px;margin-top:6px"></div>
+  <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Post</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
-<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script>
+<script src=intro.js></script><script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
@@ -150,9 +198,10 @@ const isCoach=()=>!!PA.coachEmail();
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; SCHED=n+1; RULE=n+2; if(tab>RULE) tab=0;
-  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button><button class="${tab===RULE?'on':''}">RULES</button>`; }
-$('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ tab=i; draw(); } };
+function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; PRAC=n+1; SCHED=n+2; RULE=n+3; if(tab>RULE) tab=0;
+  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===PRAC?'on':''}">PRACTICE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button><button class="${tab===RULE?'on':''}">RULES</button>`; }
+$('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ if(i!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=i===SCHED&&tab!==SCHED; tab=i; draw();
+  if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } } };   // practice returns to the next game; schedule opens at the next game
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
@@ -160,6 +209,7 @@ function draw(){
   [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
   if(tab===SCHED){ $('#legend').innerHTML=''; return drawSchedule(); }
   if(tab===RULE){ $('#legend').innerHTML=''; grid.insertAdjacentHTML('beforeend',rulesHTML(FMT)); return; }
+  if(tab===PRAC){ $('#legend').innerHTML=''; return drawPractice(); }
   const isDef=tab===DEF, list=isDef?defs:band.slice(tab*8,tab*8+8); VIEW=isDef?defs:band;
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
@@ -170,32 +220,32 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let DEF=3, SCHED=4, RULE=5, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
+let DEF=3, PRAC=4, SCHED=5, RULE=6, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
 const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
 const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
 const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
 function attRow(g){                                   // counts + this phone's player(s): YES / MAYBE / NO
-  if(!ROSTER_OK) return '';
+  if(!ROSTER_OK||!upcoming(g)||g.postponed) return '';   // no RSVP for past games or postponed games with no new date
   const team=teamRoster(), c={yes:0,maybe:0,no:0}; team.forEach(m=>{ const s=attOf(g.id,m.id); if(s) c[s]++; });
-  const none=team.length-c.yes-c.maybe-c.no, mine=PA.members().filter(m=>m.fmt===FMT&&team.some(t=>t.id===m.id));
-  let h=`<div class=acount>✅ ${c.yes} COMING · ❔ ${c.maybe} MAYBE · ❌ ${c.no} OUT${none?` · ${none} NO REPLY`:''}</div>`;
+  const none=team.length-c.yes-c.maybe-c.no, mine=team.filter(m=>PA.canAnswer(m.id));
+  let h=`<div class=acount>✅ ${c.yes} COMING · 🤔 ${c.maybe} MAYBE · ❌ ${c.no} OUT${none?` · ${none} NO REPLY`:''}</div>`;
   if(upcoming(g)) for(const m of mine){ const s=attOf(g.id,m.id);
     h+=`<div class=att><span class=who>${PA.esc(m.name)}</span>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}">${v.toUpperCase()}</button>`).join('')}</div>`; }
   return h;
 }
 function attList(g){                                  // opened game: who's coming (coach can tap a name to change it)
-  if(!ROSTER_OK) return ''; const team=teamRoster(), E=PA.esc, grp={yes:[],maybe:[],no:[],'':[]};
+  if(!ROSTER_OK||(!isCoach()&&(!upcoming(g)||g.postponed))) return ''; const team=teamRoster(), E=PA.esc, grp={yes:[],maybe:[],no:[],'':[]};
   team.forEach(m=>grp[attOf(g.id,m.id)].push(m));
   const nm=m=>isCoach()?`<span class=cyc data-cyc="${m.id}" data-g="${g.id}">${E(m.name)}</span>`:E(m.name);
   return `<h5>ATTENDANCE${isCoach()?' <small style="font-weight:400">(tap a name to change it)</small>':''}</h5><div class=alist>`+
     [['yes','COMING'],['maybe','MAYBE'],['no','NOT COMING'],['','NO REPLY']].map(([k,l])=>`<div><b>${l}</b> ${grp[k].map(nm).join(', ')||'—'}</div>`).join('')+`</div>`;
 }
 function rosterPanel(){
-  if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(PA.members().map(m=>m.id)), E=PA.esc;
+  if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(team.filter(m=>PA.canAnswer(m.id)).map(m=>m.id)), E=PA.esc;
   const chip=m=>`<span class="rname ${m.kind==='coach'?'coach':''} ${mine.has(m.id)?'me':''}">${m.kind==='coach'?'COACH ':''}${E(m.name)}${isCoach()?`<button data-rren="${m.id}" aria-label="rename">✏️</button><button data-rdel="${m.id}" aria-label="remove">✕</button>`:''}</span>`;
   return `<details class=roster ${isCoach()?'open':''}><summary><b>TEAM ROSTER</b><span>${pl.length}/12 PLAYERS · ${co.length}/2 COACHES</span></summary>
     <div class=rlist>${[...co,...pl].map(chip).join('')||'<span style="font-size:12px;color:#44524d">No one yet.</span>'}</div>
-    <div class=rbtns>${pl.length<12?'<button class="btn ghost" data-radd=me>+ ADD A PLAYER ON THIS PHONE</button>':''}${isCoach()&&pl.length<12?'<button class="btn ghost" data-radd=player>+ PLAYER (COACH)</button>':''}${isCoach()&&co.length<2?'<button class="btn ghost" data-radd=coach>+ COACH</button>':''}</div></details>`;
+    <div class=rbtns>${pl.length<12&&!PA.isParent()&&!isCoach()?'<button class="btn ghost" data-radd=me>+ ADD A PLAYER ON THIS PHONE</button>':''}${PA.isParent()&&pl.length?'<button class="btn ghost" data-radd=child>+ LINK MY CHILD (ATTENDANCE)</button>':''}${isCoach()&&pl.length<12?'<button class="btn ghost" data-radd=player>+ PLAYER (COACH)</button>':''}${isCoach()&&co.length<2?'<button class="btn ghost" data-radd=coach>+ COACH</button>':''}</div></details>`;
 }
 async function loadRoster(){ try{ [ROSTER,ATT]=await Promise.all([PA.roster(),PA.attendance()]); ROSTER_OK=true; }catch(e){ ROSTER_OK=false; } }
 const MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
@@ -220,9 +270,9 @@ function drawSchedule(){
       <div class=gx><div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
         ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
         ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
-        ${attList(g)}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
+        ${attList(g)}${upcoming(g)&&!g.postponed?`<button class="btn ghost" data-prac="${g.id}" style="margin-right:6px">🏈 PRACTICE PLAN</button>`:''}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+rosterPanel()+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+annHTML()+contactHTML()+rosterPanel()+fieldMapHTML()+
     (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
     (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
@@ -233,7 +283,11 @@ function drawSchedule(){
       const nxt=at?(cur===at.dataset.att?'':at.dataset.att):({'':'yes',yes:'maybe',maybe:'no',no:''}[cur]);
       try{ await PA.setAtt(mid,gid,nxt||null); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
       catch(err){ alert(err.message); } return; }
+    const ad=e.target.closest('[data-adel]'); if(ad){ e.stopPropagation(); if(!confirm('Remove this message from everyone\'s app?')) return;
+      try{ await PA.coachRpc('pa_coach_announce_delete',{aid:+ad.dataset.adel}); await loadAnn(); draw(); }catch(err){ alert(err.message); } return; }
+    if(e.target.id==='msgTeam'){ return openMsg(); }
     if(ra){ e.preventDefault(); const k=ra.dataset.radd;
+      if(k==='child'){ const r=await PA.addChildLink(FMT); if(r){ await loadRoster(); draw(); PA.toast('Linked. You can answer attendance now.'); } return; }
       if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }
       const n=prompt(k==='coach'?'Coach name':'Player name'); if(!n||!n.trim()) return;
       try{ await PA.coachRpc('pa_coach_roster_save',{fmt:FMT,kind:k,name:n.trim()}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
@@ -241,9 +295,29 @@ function drawSchedule(){
       try{ await PA.coachRpc('pa_coach_roster_save',{fmt:m.fmt,kind:m.kind,name:n.trim(),mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
     if(rd){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rd.dataset.rdel); if(!confirm(`Remove ${m.name} from the ${m.fmt} roster? Their attendance answers are removed too.`)) return;
       try{ await PA.coachRpc('pa_coach_roster_delete',{mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
+    const pr=e.target.closest('[data-prac]'); if(pr){ e.stopPropagation(); PRAC_GAME=pr.dataset.prac; PRAC_WK=null; tab=PRAC; window.scrollTo(0,0); return draw(); }
     const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
     if(e.target.id==='addGame'){ const last=reg[reg.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:'',stage:'regular'}); }
     const c=e.target.closest('.game'); if(c){ openGame=openGame===c.dataset.id?null:c.dataset.id; draw(); } };
+}
+/* ---------- practice: plan for the next game (or the one picked from the schedule / season plan) ---------- */
+let PRAC_GAME=null, PRAC_WK=null;
+function seasonGames(){ const when=g=>g.gdate||g.orig_gdate||'9999', mine=GAMES.filter(g=>g.fmt===FMT);
+  const reg=mine.filter(g=>g.stage!=='playoff').sort((a,b)=>when(a)<when(b)?-1:when(a)>when(b)?1:0), po=mine.filter(g=>g.stage==='playoff').sort((a,b)=>(a.week||0)-(b.week||0));
+  return {reg,po,next:[...reg,...po].find(g=>!result(g)&&!g.postponed&&g.gdate&&dOf(g.gdate)>=todayISO())}; }
+function gameInfo(g){ if(!g) return null; const tbd=!g.home||!g.away, home=PA.isUs(g.home), d=g.gdate?dOf(g.gdate):null;
+  const days=d?Math.round((d-todayISO())/864e5):null;
+  return {title:(g.label?g.label+' · ':'')+(tbd?'OPPONENT TBD':(home?'VS ':'@ ')+(home?g.away:g.home)),
+    when:[d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD',g.gtime,g.field,days==null?'':days===0?'TODAY':days===1?'TOMORROW':days>0?`IN ${days} DAYS`:''].filter(Boolean).join(' · ')}; }
+function drawPractice(){ const {reg,po,next}=seasonGames(); let g=GAMES.find(x=>x.id===PRAC_GAME&&x.fmt===FMT)||next, idx, playoff;
+  if(PRAC_WK!=null){ playoff=PRAC_WK==='po'; idx=playoff?0:+PRAC_WK; g=playoff?(po.find(x=>!result(x))||po[0]):reg[idx]; }
+  else if(g){ playoff=g.stage==='playoff'; idx=playoff?0:reg.indexOf(g); }
+  else { idx=0; playoff=false; }
+  grid.insertAdjacentHTML('beforeend',practiceHTML({game:gameInfo(g),idx,playoff,plays:band,defs,picked:PRAC_WK!=null||(!!PRAC_GAME&&g!==next)}));
+  const box=grid.querySelector('.prac');
+  box.onclick=e=>{ const o=e.target.closest('[data-open]'), w=e.target.closest('[data-wk]');
+    if(o){ const n=+o.dataset.open; VIEW=n>50?defs:band; const i=VIEW.findIndex(p=>p.n===n); if(i>=0) openOv(i); return; }
+    if(w){ PRAC_WK=w.dataset.wk==='next'?null:w.dataset.wk; PRAC_GAME=null; draw(); window.scrollTo(0,0); return; } };
 }
 let editing_game=null;
 function editGame(g){ editing_game=g; const v=(id,x)=>$('#'+id).value=x==null?'':x;
@@ -266,18 +340,59 @@ $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).v
   catch(e){ alert('Could not save: '+e.message); } };
 $('#gDel').onclick=async()=>{ if(!confirm('Delete this game from the schedule?')) return;
   try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ alert(e.message); } };
-async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await loadRoster(); }
+async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn()]); }
+let ANN=[];
+async function loadAnn(){ try{ ANN=await PA.announcements(); }catch(e){ ANN=ANN||[]; } }
+const annFor=()=>ANN.filter(a=>!a.fmt||a.fmt===FMT);
+function annHTML(){ const l=annFor().slice(0,3), E=PA.esc; if(!l.length) return '';
+  return l.map(a=>`<div class=ann>${isCoach()?`<button data-adel="${a.id}" aria-label="remove">✕</button>`:''}<b>📣 FROM COACH${a.fmt?' · '+a.fmt.toUpperCase():''}</b> <small>${PA.ago(a.created_at)}</small><h4>${E(a.title)}</h4>${a.body?`<p>${E(a.body)}</p>`:''}</div>`).join(''); }
+function contactHTML(){
+  const sub=encodeURIComponent('Packer Army '+FMT+' — question for Coach');
+  return `<div class=sbtns><a class="btn ghost" href="mailto:${PA.COACH_EMAIL}?subject=${sub}">✉️ EMAIL COACH</a>${isCoach()?'<button class="btn gold" id=msgTeam>📣 MESSAGE TEAM</button>':''}</div>`; }
+const MAPS=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
+function fieldMapHTML(){
+  return `<details class=fmap><summary><b>🗺️ FIELD MAP</b><span>PROSPECT PARK · RED HOOK</span></summary><div>
+    <b>PROSPECT PARK</b> (fields A–F, R1–R3): enter at 9th St &amp; Prospect Park West, walk east past the Bandshell.<br>
+    <a href="https://sfxyouthsports.com/wp-content/uploads/2026/09/Soccer-Football-Fields-2026.png" target=_blank rel=noopener>SFX field map (which field is which)</a> ·
+    <a href="${MAPS('9th Street and Prospect Park West, Brooklyn, NY')}" target=_blank rel=noopener>Directions</a><br>
+    <b>RED HOOK</b> ball fields: Columbia St &amp; Halleck St.
+    <a href="${MAPS('Columbia Street and Halleck Street, Brooklyn, NY')}" target=_blank rel=noopener>Directions</a><br>
+    <a href="https://sfxyouthsports.com/fields/" target=_blank rel=noopener>All SFX fields</a> · <a href="https://sfxyouthsports.com/field-status/" target=_blank rel=noopener>Field status (rain-outs)</a></div></details>`; }
+/* coach: post an announcement, then open Mail with every parent email in BCC */
+let MSG_FMT='';
+function openMsg(){ MSG_FMT=''; $('#mTitle').value=''; $('#mBody').value=''; $('#mInfo').textContent=''; paintMsgTeam(); $('#dMsg').showModal(); }
+function paintMsgTeam(){ $('#mTeam').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.f===MSG_FMT)); }
+$('#mTeam').onclick=e=>{ const b=e.target.closest('button'); if(b){ MSG_FMT=b.dataset.f; paintMsgTeam(); } };
+$('#mCancel').onclick=()=>$('#dMsg').close();
+$('#mGo').onclick=async()=>{ const t=$('#mTitle').value.trim(), body=$('#mBody').value.trim(); if(!t) return alert('Add a title.');
+  try{ await PA.coachRpc('pa_coach_announce',{fmt:MSG_FMT,title:t,body}); }catch(e){ return alert('Could not post: '+e.message); }
+  $('#dMsg').close(); await loadAnn(); draw(); PA.toast('Posted in the app');
+  if(!$('#mMail').checked) return;
+  let emails=[]; try{ emails=[...new Set((await PA.coachRpc('pa_coach_contacts',{fmt:MSG_FMT||null})).map(x=>x.email).filter(PA.okEmail))]; }
+  catch(e){ return alert('Posted in the app, but the parent emails could not be loaded: '+e.message); }
+  if(!emails.length) return alert('Posted in the app. No parent emails yet: they are added when players join.');
+  mailBatches(emails,'Packer Army: '+t,body); };
+/* Mail apps drop very long mailto links: send in batches of 20 BCC, each from a tap; "copy all" as a fallback */
+function mailBatches(emails,subject,body){ const B=20, n=Math.ceil(emails.length/B), d=document.createElement('dialog');
+  const href=i=>`mailto:${PA.COACH_EMAIL}?bcc=${emails.slice(i*B,i*B+B).map(encodeURIComponent).join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.slice(0,1500))}`;
+  d.innerHTML=`<h2>Email ${emails.length} parent${emails.length===1?'':'s'}</h2><p>${n>1?`Tap each batch (${B} per email) and press Send in Mail each time.`:'Tap to open Mail, then press Send.'}</p>
+    <div class=row style="flex-direction:column">${[...Array(n)].map((_,i)=>`<a class="btn gold" style="text-align:center;text-decoration:none" href="${href(i)}">✉️ ${n>1?`BATCH ${i+1} OF ${n}`:'OPEN MAIL'}</a>`).join('')}
+    <button class="btn ghost" id=mCopy>COPY ALL EMAILS</button><button class="btn ghost" id=mDone>DONE</button></div>`;
+  document.body.appendChild(d); d.showModal(); d.addEventListener('close',()=>d.remove());
+  d.querySelector('#mCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(emails.join(', ')); PA.toast('Copied'); }catch(e){ prompt('Copy these emails:',emails.join(', ')); } };
+  d.querySelector('#mDone').onclick=()=>{ d.close(); d.remove(); }; }
 
 /* ---------- full screen ---------- */
 let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
 const P=()=>VIEW[cur], DKEY=()=>'pa_idea_'+FMT+'_'+P().n;
 function stop(){ if(stopA){ stopA(); stopA=null; } $('#anim').textContent='▶ ANIMATE'; }
-function openOv(i){ cur=i; stop(); endEdit(); $('#ov').classList.add('show'); paintOv(); runAnim(); }
+function openOv(i){ cur=i; stop(); endEdit(); $('#ov').classList.add('show'); $('#ov').scrollTop=0; paintOv(); runAnim(); }   // new play: back to the top so the whole field shows
 function paintOv(){ const p=editing?work:P();
   $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; $('#ovt').textContent=p.name;
   $('#ovcue').innerHTML=cueHTML(p); $('#ovnote').textContent=p.note||'';
   if(!editing) $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3});
   $('#send').textContent=isCoach()?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
+  const ro=PA.isParent()&&!isCoach(); ['#edit','#send','#newfrom'].forEach(k=>$(k).style.display=ro?'none':'');
   $('#edit').textContent=editing?'✓ DONE':'✏️ EDIT'; $('#edit').classList.toggle('on',editing);
   $('#newfrom').href=`edit.html?fmt=${encodeURIComponent(FMT)}&new=1&from=${P().n}`;
   const mineIds=new Set(PA.mine()), list=IDEAS.filter(x=>x.fmt===FMT&&x.target_n===P().n&&(x.status==='shared'||mineIds.has(x.id)));
@@ -295,6 +410,12 @@ $('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.anim
 $('#ovc').onclick=()=>{ if(editing&&!confirm('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
 $('#pv').onclick=()=>{ if(!editing) openOv((cur+VIEW.length-1)%VIEW.length); };
 $('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%VIEW.length); };
+{ let sx=null, sy=0;   // swipe the play left / right for NEXT / PREV. Listens on #ov: the animation redraws #stage every frame
+  const inStage=(x,y)=>{ const r=$('#stage').getBoundingClientRect(); return $('#stage').style.display!=='none'&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; };
+  $('#ov').addEventListener('touchstart',e=>{ sx=null; if(e.touches.length===1&&inStage(e.touches[0].clientX,e.touches[0].clientY)){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; } },{passive:true});
+  $('#ov').addEventListener('touchcancel',()=>{ sx=null; });
+  $('#ov').addEventListener('touchend',e=>{ if(sx==null||editing||e.touches.length) return; const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy; sx=null;
+    if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy)) (dx<0?$('#nx'):$('#pv')).click(); }); }
 function startEdit(){ stop(); editing=true; const d=PA.store.get(DKEY()); work=d&&d.play?d.play:clone(P());
   if(!ed) ed=PlayEditor($('#edbox'),{onChange:()=>{ PA.store.set(DKEY(),{play:work}); paintOv(); }});
   $('#stage').style.display='none'; $('#ctl').style.display='none'; $('#edbox').style.display='block'; $('#ov').classList.add('editing');
@@ -311,7 +432,7 @@ $('#send').onclick=async()=>{
 };
 $('#sCancel').onclick=()=>$('#dSend').close();
 $('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.play;
-  try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); PA.toast('Sent! Coach will look at it.',3000); }
+  try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); $('#ov').scrollTop=0; PA.toast('Sent! Coach will look at it.',3000); }
   catch(e){ alert('Could not send: '+e.message); } };
 $('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); await loadGames(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,VIEW.length-1); paintOv(); }
   $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
@@ -319,7 +440,7 @@ $('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await 
 /* ---------- coach mode: visible sign-in, inbox of player ideas ---------- */
 let PENDING=0;
 function coachUI(){ const b=$('#coachBtn'), c=isCoach();
-  b.classList.toggle('on',c); b.textContent=c?(PENDING?`📥 ${PENDING}`:'COACH ✓'):'🔒 COACH';
+  b.classList.toggle('on',c); b.textContent=c?(PENDING?(innerWidth<360?`✓ 📥 ${PENDING}`:`COACH ✓ · 📥 ${PENDING}`):'COACH ✓'):'🔒 COACH';   // short on small phones so the title fits
   $('#inbox').classList.toggle('show',c&&PENDING>0); $('#inbox').textContent=`📥 ${PENDING} NEW PLAYER IDEA${PENDING===1?'':'S'} — TAP TO REVIEW`;
   if($('#ov').classList.contains('show')) $('#send').textContent=c?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
   if(tab===SCHED&&band.length) draw(); }   // show / hide the coach's score buttons
@@ -353,9 +474,13 @@ let taps=[]; $('#ttl').onclick=()=>{ const n=Date.now(); taps=taps.filter(t=>n-t
 addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n=>PA.fit(n,12,7)); });
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
-  coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]); draw(); coachInbox();
-  if(ROSTER_OK&&!PA.members().length&&!isCoach()&&!PA.store.get('pa_roster_skip')){   // installed before the roster existed: add your name once
-    const m=await PA.addPlayer(FMT,'Skip: parent / fan',()=>PA.store.set('pa_roster_skip',true)); if(m){ await loadRoster(); draw(); PA.toast('Welcome, '+m.name+'!'); } }
+  coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]);
+  const parentHome=()=>{ if(PA.isParent()&&!isCoach()&&!location.hash){ const l=PA.links()[0]; if(l&&FMTS.includes(l.fmt)&&l.fmt!==FMT) show(l.fmt); tab=SCHED; } };   // parents start on their child's schedule
+  parentHome(); draw(); coachInbox();
+  if(ROSTER_OK&&!PA.role()&&!isCoach()){   // installed before roles existed: player or parent / fan, once
+    const m=await PA.setup(FMT); await loadRoster(); parentHome(); draw(); if(m&&m.name) PA.toast('Welcome, '+m.name+'!'); }
+  if(PA.members().some(m=>!m.pe)&&!isCoach()) await PA.askParentEmail();
+  const nw=annFor()[0]; if(nw&&PA.store.get('pa_ann_seen')!==nw.id){ PA.store.set('pa_ann_seen',nw.id); PA.toast('📣 Coach: '+nw.title,4000); }
   const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 // the service worker (offline + automatic app updates) is registered in data.js for every page

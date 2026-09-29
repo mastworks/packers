@@ -115,10 +115,11 @@ function football(x,y,ang,sc){
   sc=(sc||1)*S; const deg=-(ang||0.6)*180/Math.PI;
   return `<g transform="translate(${f(x)} ${f(-y)}) rotate(${f(deg)}) scale(${sc})"><ellipse rx="0.4" ry="0.25" fill="${BALL}" stroke="#4a2410" stroke-width="0.04"/><path d="M-0.16 0H0.16M-0.08 -0.07V0.07M0 -0.07V0.07M0.08 -0.07V0.07" stroke="#fff" stroke-width="0.04" fill="none"/></g>`;
 }
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));   // play data can come from player ideas: never trust it as markup
 function starPath(cx,cy,R){ const r=R*0.48; let d=''; for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5; const rr=i%2?r:R; d+=(i?'L':'M')+f(cx+Math.cos(a)*rr)+' '+f(cy+Math.sin(a)*rr);} return d+'Z'; }
 function playerG(k,x,y,isStar,opacity,ghost){
   const c=ghost?GHOST:COL[k], ink=ghost?'#fff':INK[k]; const cx=f(x), cy=f(-y); let shape;
-  const lab=`<text x="${cx}" y="${f(-y+0.24*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,Helvetica,Arial,sans-serif" font-weight="700" font-size="${f(0.72*S)}" fill="${ink}">${k}</text>`;
+  const lab=`<text x="${cx}" y="${f(-y+0.24*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,Helvetica,Arial,sans-serif" font-weight="700" font-size="${f(0.72*S)}" fill="${ink}">${esc(k)}</text>`;
   if(isStar) shape=`<path d="${starPath(cx,cy-0.02*S,0.98*S)}" fill="${c}" stroke="#fff" stroke-width="${f(0.05*S)}" stroke-linejoin="round"/>`;
   else if(k==='C') shape=`<rect x="${f(cx-0.46*S)}" y="${f(cy-0.46*S)}" width="${f(0.92*S)}" height="${f(0.92*S)}" rx="${f(0.1*S)}" fill="${c}"/>`;
   else if(c===DEF) shape=`<circle cx="${cx}" cy="${cy}" r="${f(R_P*S)}" fill="${c}" stroke="${DINK}" stroke-width="${f(0.06*S)}"/>`;
@@ -133,8 +134,8 @@ function fieldExtras(play,vb){
   if(play.field){ const F=play.field, yd=F.yd, hw=F.halfW;               // to-scale field: sidelines + faint lines every 5 yards
     for(let y=-10;y<=25;y+=5){ if(!y) continue; s+=`<line x1="${f(-hw)}" x2="${f(hw)}" y1="${f(-y*yd)}" y2="${f(-y*yd)}" stroke="#dfe5e2" stroke-width="${f(0.04*S)}"/>`; }
     s+=`<line x1="${f(-hw)}" x2="${f(-hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/><line x1="${f(hw)}" x2="${f(hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/>`;
-    if(F.label) s+=`<text x="${f(-hw+0.2*S)}" y="${f(vb.y+0.55*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.38*S)}" fill="#7d8a85" letter-spacing="0.04">${F.label}</text>`; }
-  const lbl=(y,t,col)=>`<text x="${f(vb.x+0.25*S)}" y="${f(-y-0.12*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.36*S)}" fill="${col}" letter-spacing="0.04">${t}</text>`;
+    if(F.label) s+=`<text x="${f(-hw+0.2*S)}" y="${f(vb.y+0.55*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.38*S)}" fill="#7d8a85" letter-spacing="0.04">${esc(F.label)}</text>`; }
+  const lbl=(y,t,col)=>`<text x="${f(vb.x+0.25*S)}" y="${f(-y-0.12*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.36*S)}" fill="${col}" letter-spacing="0.04">${esc(t)}</text>`;
   if(play.goalLine!=null){ const y=play.goalLine;
     const top=(play.field&&play.field.endBack!=null)?-play.field.endBack:vb.y;   // to-scale end zone: goal line → end line
     if(play.field&&play.field.endBack!=null) s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(top)}" y2="${f(top)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(-top,'END LINE','#C8102E');
@@ -204,20 +205,27 @@ function staticSVG(play,opt){
   for(const k of extraKeys(play,order)) s+=routeEls(k,play.routes[k],opt);
   // ball paths (dotted) for passes not already drawn as dotted route
   const Q=play.routes.Q; const qrel=(Q?Q.pts[Q.pts.length-1]:play.players.Q);
-  const drawPass=(e,alt)=>{
+  // ONE football per play: only the final receiver gets it. Backup receivers keep a faint dotted line + read-order number;
+  // an earlier hand-off spot (reverse, hand-off-then-pass) gets a small dot.
+  const drawPass=(e,alt,order)=>{
     const R=play.routes[e.pass]||{pts:[play.players[e.pass]]}; if(!R.pts[0])return '';   // receiver without a route: catch at their spot
     const i=(e.v==null||e.v>=R.pts.length)?R.pts.length-1:e.v; const cp=R.pts[i];
     let o='';
     const viaRoute=(R.dotFrom!=null && R.dotFrom<=i);
-    if(!viaRoute){ const col=ghostK(play,e.pass)?GHOST:COL[e.pass]; o+=`<path d="M${f(qrel[0])} ${f(-qrel[1])}L${f(cp[0])} ${f(-cp[1])}" stroke="${col}" stroke-width="${f(SW*0.95*S)}" stroke-dasharray="${f(0.02*S)} ${f(0.24*S)}" stroke-linecap="round" fill="none" ${alt?'opacity="0.85"':''}/>`; }
+    if(!viaRoute){ const col=ghostK(play,e.pass)?GHOST:COL[e.pass]; o+=`<path d="M${f(qrel[0])} ${f(-qrel[1])}L${f(cp[0])} ${f(-cp[1])}" stroke="${col}" stroke-width="${f(SW*(alt?0.8:0.95)*S)}" stroke-dasharray="${f(0.02*S)} ${f(0.24*S)}" stroke-linecap="round" fill="none" ${alt?'opacity="0.45"':''}/>`; }
+    if(alt){ o+=`<g><circle cx="${f(cp[0])}" cy="${f(-cp[1])}" r="${f(0.24*S)}" fill="#fff" stroke="#7d8a85" stroke-width="${f(0.04*S)}"/><text x="${f(cp[0])}" y="${f(-cp[1]+0.1*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="${f(0.28*S)}" fill="#44524d">${order}</text></g>`; return o; }
     const prev=R.pts[Math.max(0,i-1)]; const ang=Math.atan2(cp[1]-prev[1],cp[0]-prev[0]);
     o+=football(cp[0],cp[1],ang,1);
     return o;
   };
-  for(const e of (play.ball||[])){
-    if(e.pass){ s+=drawPass(e,false); for(const a of (e.alt||[])) s+=drawPass(a,true); }
-    if(e.give){ const R=play.routes[e.give]||{pts:[play.players[e.give]]}; const p=R.pts[(e.v==null||e.v>=R.pts.length)?R.pts.length-1:e.v]; if(p) s+=football(p[0]+0.05,p[1]+0.05,0.5,1); }
-  }
+  const evs=play.ball||[];
+  evs.forEach((e,ix)=>{
+    const last=ix===evs.length-1;
+    if(e.pass){ if(last){ s+=drawPass(e,false); (e.alt||[]).forEach((a,j)=>{ s+=drawPass(a,true,j+2); }); }
+                else { const R=play.routes[e.pass]||{pts:[play.players[e.pass]]}; const p=R.pts[(e.v==null||e.v>=R.pts.length)?R.pts.length-1:e.v]; if(p) s+=`<circle cx="${f(p[0])}" cy="${f(-p[1])}" r="${f(0.13*S)}" fill="${BALL}"/>`; } }
+    if(e.give){ const R=play.routes[e.give]||{pts:[play.players[e.give]]}; const p=R.pts[(e.v==null||e.v>=R.pts.length)?R.pts.length-1:e.v];
+      if(p) s+= last ? football(p[0]+0.05,p[1]+0.05,0.5,1) : `<circle cx="${f(p[0])}" cy="${f(-p[1])}" r="${f(0.13*S)}" fill="${BALL}"/>`; }
+  });
   for(const k of drawOrder(play)){ const p=play.players[k]; s+=playerG(k,p[0],p[1],play.star===k,null,ghostK(play,k)); }
   
   return s+'</svg>';

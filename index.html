@@ -94,6 +94,27 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 .pback{margin-top:8px;background:var(--gold);color:#111;border:0;border-radius:8px;padding:8px 12px;font-weight:600;letter-spacing:.06em;font-size:12px}
 .psess .pdrill{border:0;padding:2px 0}.psess .pdrill summary{font-weight:500}
 .pvid{display:block;margin:4px 0;padding:7px 10px;border-radius:8px;background:#C8102E0d;border:1px solid #e3c9ce;color:#8a0f22;text-decoration:none;font-weight:600;font-size:12px}.pvid small{color:#6b7a75;font-weight:400}
+/* plays card switcher, messages, practice manage */
+.cards{grid-column:1/-1;display:flex;align-items:center;gap:10px;justify-content:center;font-size:12px;letter-spacing:.12em;color:var(--g);font-weight:600}
+.cards .seg{background:#e3e9e6}.cards .seg button{min-width:44px;min-height:36px;font-size:15px}
+.mcard .ann h4{color:#fff;font-size:14px;letter-spacing:.06em;margin:2px 0}.mcard .ann+.ann{margin-top:6px}
+.nbadge{display:inline-block;min-width:17px;padding:1px 5px;border-radius:9px;background:#C8102E;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:0;line-height:15px;text-align:center}
+.msgs{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.mcard{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12);padding:10px 12px}.mcard h4{margin:0 0 6px;color:var(--g);font-size:12px;letter-spacing:.1em}.mcard h4 small{font-weight:400;color:#6b7a75;letter-spacing:.02em}
+.mcard>summary{cursor:pointer;list-style:none;color:var(--g);font-size:12px;letter-spacing:.08em}.mcard>summary::-webkit-details-marker{display:none}
+.mthread{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow:auto;padding:2px}
+.bub{align-self:flex-start;max-width:85%;background:#eef1ef;border-radius:12px 12px 12px 3px;padding:6px 10px;white-space:pre-wrap}.bub.me{align-self:flex-end;background:#fff4d6;border-radius:12px 12px 3px 12px}
+.bub b{font-size:10.5px;letter-spacing:.08em;color:var(--g)}.bub small{color:#889;font-size:10px}
+.say{display:flex;gap:6px;margin-top:8px;align-items:flex-end}.say textarea,.say input{flex:1;min-height:42px;font-size:16px;padding:8px;border-radius:8px;border:1.5px solid #c9d2ce;font-family:inherit}.say .btn{flex:none}
+.mrow{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;width:100%;text-align:left;background:#f6f8f7;border:1px solid #e1e7e4;border-radius:8px;padding:8px 10px;margin:4px 0;font-size:13px}.mrow span:last-child{flex-basis:100%;color:#44524d;font-size:12px}
+.mrow2{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:6px 0;border-bottom:1px solid #eef1ef;font-size:12.5px}.mrow2 span{flex:1;min-width:120px;color:#44524d}
+.mnote{padding:6px 0;border-bottom:1px solid #eef1ef}.mnote.new{background:#fff7e0}.mnote small{color:#6b7a75}.st{font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;margin-right:4px}.st.yes{background:#2E8B3A;color:#fff}.st.maybe{background:var(--gold)}.st.no{background:#C8102E;color:#fff}
+.anote{border:1.5px dashed #c9d2ce!important;background:#fff!important;font-weight:500!important}.attnote{font-size:11.5px;color:#44524d;margin:3px 0 0 66px}.attnote small,.cnote{color:#8a6d00}
+.phid{display:inline-block;background:#C8102E;color:#fff;font-size:9.5px;font-weight:700;border-radius:4px;padding:1px 5px;letter-spacing:.06em;margin-left:4px}
+.pctl{border:1.5px solid #c9d2ce;background:#fff;border-radius:7px;padding:4px 8px;font-size:11px;font-weight:600;letter-spacing:.05em;margin:2px 4px 2px 0}
+.pctlrow{display:flex;flex-wrap:wrap;gap:4px;padding:6px 12px 0}.pmanage{display:flex;flex-direction:column;gap:4px}.phw{border-top:1px solid #eef1ef;padding:6px 0}
+.pvrow{display:flex;align-items:center;gap:6px}.pvrow .pvid{flex:1}
+.fdv{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow:auto;border:1px solid #e1e7e4;border-radius:8px;padding:6px}.chk{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:400;margin:0;letter-spacing:0}
 #legend{padding:6px 10px calc(16px + env(safe-area-inset-bottom));justify-content:center}
 /* full screen */
 #ov{position:fixed;inset:0;background:#0f1d19;z-index:20;display:none;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto}
@@ -180,12 +201,12 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
     <div class=g2><div><label>TIME</label><input id=gTime maxlength=20 placeholder="1:15 PM"></div><div><label>FIELD</label><input id=gField maxlength=60></div></div>
     <label>HOME</label><input id=gHome maxlength=60 placeholder="Packers Barber"><label>AWAY</label><input id=gAway maxlength=60><label>LABEL (e.g. SEMIFINAL)</label><input id=gLabel maxlength=40></details>
   <div class=row><button class="btn ghost" id=gDel>Delete</button><button class="btn ghost" id=gCancel>Cancel</button><button class="btn gold" id=gSave>Save</button></div></dialog>
-<dialog id=dMsg><h2>📣 Message the team</h2><p>Shows in everyone's app (Schedule tab). Then your Mail app opens with every parent email in BCC, so you can send it as an email too.</p>
+<dialog id=dMsg><h2>📣 Team message</h2><p>Shows in MESSAGES with a notification. Adding parents can also email them from Gmail (andrewbarbernyc@gmail.com), BCC.</p>
   <label>TEAM</label><div class=seg id=mTeam style="background:#e9eeec"><button type=button data-f="" class=on>BOTH</button><button type=button data-f=5v5>5V5</button><button type=button data-f=6v6>6V6</button></div>
+  <label>FOR</label><div class=seg id=mAud style="background:#e9eeec"><button type=button data-a=players>PLAYERS ONLY</button><button type=button data-a=all class=on>PLAYERS + PARENTS</button></div>
   <label>TITLE</label><input id=mTitle maxlength=80 placeholder="Practice Thursday 5 PM"><label>MESSAGE</label><textarea id=mBody maxlength=2000 style="min-height:110px"></textarea>
-  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=mMail checked style="width:20px;height:20px"> ALSO EMAIL PARENTS (opens Mail)</label>
-  <div id=mInfo style="font-size:12px;color:#44524d;min-height:16px;margin-top:6px"></div>
-  <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Post</button></div></dialog>
+  <label id=mMailRow style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=mMail checked style="width:20px;height:20px"> ALSO EMAIL PARENTS FROM GMAIL</label>
+  <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Send</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
 <script src=intro.js></script><script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script>
@@ -198,19 +219,22 @@ const isCoach=()=>!!PA.coachEmail();
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); DEF=n; PRAC=n+1; SCHED=n+2; RULE=n+3; if(tab>RULE) tab=0;
-  $('#tabs').innerHTML=[...Array(n)].map((_,i)=>`<button class="${i===tab?'on':''}">CARD ${i+1}</button>`).join('')+`<button class="${tab===DEF?'on':''}">DEFENSE</button><button class="${tab===PRAC?'on':''}">PRACTICE</button><button class="${tab===SCHED?'on':''}">SCHEDULE</button><button class="${tab===RULE?'on':''}">RULES</button>`; }
-$('#tabs').onclick=e=>{ const i=[...$('#tabs').children].indexOf(e.target); if(i>=0){ if(i!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=i===SCHED&&tab!==SCHED; tab=i; draw();
+function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab>RULE) tab=0;   // PLAYS · DEFENSE · PRACTICE · SCHEDULE · MESSAGES · RULES
+  $('#tabs').innerHTML=['PLAYS','DEFENSE','PRACTICE','SCHEDULE','MESSAGES','RULES'].map((t,i)=>`<button class="${i===tab?'on':''}">${t}${i===MSG&&UNREAD?` <span class=nbadge>${UNREAD}</span>`:''}</button>`).join(''); }
+$('#tabs').onclick=e=>{ const b=e.target.closest('button'); const i=[...$('#tabs').children].indexOf(b); if(i>=0){ if(i!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=i===SCHED&&tab!==SCHED; tab=i; draw();
   if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } } };   // practice returns to the next game; schedule opens at the next game
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
 function draw(){
-  [...$('#tabs').children].forEach((b,i)=>b.classList.toggle('on',i===tab)); grid.innerHTML='';
+  buildTabs(); grid.innerHTML='';
   if(tab===SCHED){ $('#legend').innerHTML=''; return drawSchedule(); }
   if(tab===RULE){ $('#legend').innerHTML=''; grid.insertAdjacentHTML('beforeend',rulesHTML(FMT)); return; }
   if(tab===PRAC){ $('#legend').innerHTML=''; return drawPractice(); }
-  const isDef=tab===DEF, list=isDef?defs:band.slice(tab*8,tab*8+8); VIEW=isDef?defs:band;
+  if(tab===MSG){ $('#legend').innerHTML=''; return drawMessages(); }
+  const isDef=tab===DEF, list=isDef?defs:band.slice(CARD*8,CARD*8+8); VIEW=isDef?defs:band;
+  if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div></div>`);
+    grid.querySelector('.cards').onclick=e=>{ const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
     t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
@@ -220,7 +244,7 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let DEF=3, PRAC=4, SCHED=5, RULE=6, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
+let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, CARD=0, UNREAD=0, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
 const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
 const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
 const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
@@ -229,14 +253,15 @@ function attRow(g){                                   // counts + this phone's p
   const team=teamRoster(), c={yes:0,maybe:0,no:0}; team.forEach(m=>{ const s=attOf(g.id,m.id); if(s) c[s]++; });
   const none=team.length-c.yes-c.maybe-c.no, mine=team.filter(m=>PA.canAnswer(m.id));
   let h=`<div class=acount>✅ ${c.yes} COMING · 🤔 ${c.maybe} MAYBE · ❌ ${c.no} OUT${none?` · ${none} NO REPLY`:''}</div>`;
-  if(upcoming(g)) for(const m of mine){ const s=attOf(g.id,m.id);
-    h+=`<div class=att><span class=who>${PA.esc(m.name)}</span>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}">${v.toUpperCase()}</button>`).join('')}</div>`; }
+  if(upcoming(g)) for(const m of mine){ const s=attOf(g.id,m.id), nt=(NOTES[m.id]||{})[g.id];
+    h+=`<div class=att><span class=who>${PA.esc(m.name)}</span>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}">${v.toUpperCase()}</button>`).join('')}<button class=anote data-note="${m.id}" data-g="${g.id}" aria-label="add a note">💬${nt?'':' NOTE'}</button></div>${nt?`<div class=attnote>📝 ${PA.esc(nt)} <small>(only Coach sees this)</small></div>`:''}`; }
   return h;
 }
 function attList(g){                                  // opened game: who's coming (coach can tap a name to change it)
   if(!ROSTER_OK||(!isCoach()&&(!upcoming(g)||g.postponed))) return ''; const team=teamRoster(), E=PA.esc, grp={yes:[],maybe:[],no:[],'':[]};
   team.forEach(m=>grp[attOf(g.id,m.id)].push(m));
-  const nm=m=>isCoach()?`<span class=cyc data-cyc="${m.id}" data-g="${g.id}">${E(m.name)}</span>`:E(m.name);
+  const cn=m=>{ const n=isCoach()&&CNOTES.find(x=>x.member_id===m.id&&x.game_id===g.id); return n?` <small class=cnote>📝 ${E(n.note)}</small>`:''; };
+  const nm=m=>isCoach()?`<span class=cyc data-cyc="${m.id}" data-g="${g.id}">${E(m.name)}</span>${cn(m)}`:E(m.name);
   return `<h5>ATTENDANCE${isCoach()?' <small style="font-weight:400">(tap a name to change it)</small>':''}</h5><div class=alist>`+
     [['yes','COMING'],['maybe','MAYBE'],['no','NOT COMING'],['','NO REPLY']].map(([k,l])=>`<div><b>${l}</b> ${grp[k].map(nm).join(', ')||'—'}</div>`).join('')+`</div>`;
 }
@@ -272,20 +297,22 @@ function drawSchedule(){
         ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
         ${attList(g)}${upcoming(g)&&!g.postponed?`<button class="btn ghost" data-prac="${g.id}" style="margin-right:6px">🏈 PRACTICE PLAN</button>`:''}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+annHTML()+contactHTML()+rosterPanel()+fieldMapHTML()+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+contactHTML()+rosterPanel()+fieldMapHTML()+
     (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
     (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
   grid.appendChild(box);
   box.onclick=async e=>{
     const at=e.target.closest('[data-att]'), cy=e.target.closest('[data-cyc]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
+    const nb=e.target.closest('[data-note]');
+    if(nb){ e.stopPropagation(); const mid=nb.dataset.note, gid=nb.dataset.g, cur=attOf(gid,mid), old=(NOTES[mid]||{})[gid]||'';
+      if(!cur) return alert('Tap YES, MAYBE or NO first, then add a note.');
+      const v=prompt('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return;
+      try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ alert(err.message); } return; }
     if(at||cy){ e.stopPropagation(); const mid=(at||cy).dataset.m||cy.dataset.cyc, gid=(at||cy).dataset.g, cur=attOf(gid,mid);
       const nxt=at?(cur===at.dataset.att?'':at.dataset.att):({'':'yes',yes:'maybe',maybe:'no',no:''}[cur]);
-      try{ await PA.setAtt(mid,gid,nxt||null); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
+      try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
       catch(err){ alert(err.message); } return; }
-    const ad=e.target.closest('[data-adel]'); if(ad){ e.stopPropagation(); if(!confirm('Remove this message from everyone\'s app?')) return;
-      try{ await PA.coachRpc('pa_coach_announce_delete',{aid:+ad.dataset.adel}); await loadAnn(); draw(); }catch(err){ alert(err.message); } return; }
-    if(e.target.id==='msgTeam'){ return openMsg(); }
     if(ra){ e.preventDefault(); const k=ra.dataset.radd;
       if(k==='child'){ const r=await PA.addChildLink(FMT); if(r){ await loadRoster(); draw(); PA.toast('Linked. You can answer attendance now.'); } return; }
       if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }
@@ -313,12 +340,54 @@ function drawPractice(){ const {reg,po,next}=seasonGames(); let g=GAMES.find(x=>
   if(PRAC_WK!=null){ playoff=PRAC_WK==='po'; idx=playoff?0:+PRAC_WK; g=playoff?(po.find(x=>!result(x))||po[0]):reg[idx]; }
   else if(g){ playoff=g.stage==='playoff'; idx=playoff?0:reg.indexOf(g); }
   else { idx=0; playoff=false; }
-  grid.insertAdjacentHTML('beforeend',practiceHTML({game:gameInfo(g),idx,playoff,plays:band,defs,picked:PRAC_WK!=null||(!!PRAC_GAME&&g!==next)}));
+  grid.insertAdjacentHTML('beforeend',practiceHTML({game:gameInfo(g),idx,playoff,plays:band,defs,picked:PRAC_WK!=null||(!!PRAC_GAME&&g!==next),cfg:PCFG,coach:isCoach(),manage:MANAGE,fmt:FMT}));
   const box=grid.querySelector('.prac');
   box.onclick=e=>{ const o=e.target.closest('[data-open]'), w=e.target.closest('[data-wk]');
     if(o){ const n=+o.dataset.open; VIEW=n>50?defs:band; const i=VIEW.findIndex(p=>p.n===n); if(i>=0) openOv(i); return; }
-    if(w){ PRAC_WK=w.dataset.wk==='next'?null:w.dataset.wk; PRAC_GAME=null; draw(); window.scrollTo(0,0); return; } };
+    if(w){ PRAC_WK=w.dataset.wk==='next'?null:w.dataset.wk; PRAC_GAME=null; draw(); window.scrollTo(0,0); return; }
+    if(isCoach()) practiceManage(e); };
 }
+/* coach controls for the Practice tab: what the team sees, edited / new drills and videos, homework */
+let PCFG={}, MANAGE=false;
+async function loadPractice(){ try{ PCFG=(await PA.practiceData())||{}; }catch(e){ PCFG=PCFG||{}; } }
+const pToggle=(list,k)=>{ PCFG.hidden=PCFG.hidden||{}; const a=new Set(PCFG.hidden[list]||[]); a.has(k)?a.delete(k):a.add(k); PCFG.hidden[list]=[...a]; };
+async function savePractice(msg){ try{ await PA.coachRpc('pa_coach_practice_save',{d:PCFG}); PA.toast(msg||'Saved: the team sees it next time they open the app'); }catch(e){ alert('Could not save: '+e.message); await loadPractice(); } draw(); }
+async function practiceManage(e){ const t=e.target.closest('[data-act],[data-sec],[data-vid],[data-drill-hide],[data-drill-edit],[data-drill-reset],[data-hwdel]'); if(!t) return;
+  const d=t.dataset, y=scrollY, keepScroll=()=>requestAnimationFrame(()=>scrollTo(0,y));
+  if(d.act==='manage'){ MANAGE=!MANAGE; draw(); return keepScroll(); }
+  if(d.sec){ pToggle('sections',d.sec); await savePractice(); return keepScroll(); }
+  if(d.vid){ e.preventDefault(); pToggle('videos',d.vid); await savePractice(); return keepScroll(); }
+  if(d.drillHide){ e.preventDefault(); pToggle('drills',d.drillHide); await savePractice(); return keepScroll(); }
+  if(d.drillReset){ e.preventDefault(); if(!confirm(DRILLS[d.drillReset]?'Undo your edits to this drill?':'Delete this drill?')) return; delete PCFG.drills[d.drillReset]; await savePractice(); return keepScroll(); }
+  if(d.drillEdit||d.act==='drillnew'){ e.preventDefault(); const k=d.drillEdit, C=practiceContent(PCFG), cur=k?C.drills[k]:{name:'',min:8,who:'Everyone',setup:'',how:'',pts:[],vids:[]};
+    const r=await drillDialog(cur,C); if(!r) return; PCFG.drills=PCFG.drills||{}; PCFG.drills[k||('c_'+Date.now().toString(36))]=r; await savePractice(); return keepScroll(); }
+  if(d.act==='vidnew'){ const u=prompt('Paste a YouTube link (pick short, clear videos made for young players):'); if(!u) return; const id=ytId(u); if(!id) return alert('That is not a YouTube link.');
+    let title='', len=''; try{ const j=await (await fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id))).json(); title=j.title+(j.author_name?' · '+j.author_name:''); }catch(err){}
+    title=prompt(title?'Video found. Title to show:':'Could not check the video (it may be private). Title to show:',title||''); if(!title) return;
+    PCFG.videos=PCFG.videos||{}; PCFG.videos['c_'+id]=[id,title.slice(0,90),len]; await savePractice('Video added'); return keepScroll(); }
+  if(d.act==='hwnew'){ const r=await homeworkDialog(practiceContent(PCFG)); if(!r) return; const notify=r.notify; delete r.notify; PCFG.homework=[r,...(PCFG.homework||[])]; await savePractice('Homework posted');
+    if(notify){ try{ await PA.coachRpc('pa_coach_announce',{fmt:r.fmt||'',title:'📚 New homework: '+r.title,body:(r.body||'')+'\nSee the PRACTICE tab.',audience:'all'}); await loadAnn(); countUnread(); }catch(err){} } return; }
+  if(d.hwdel){ if(!confirm('Delete this homework?')) return; PCFG.homework=(PCFG.homework||[]).filter(h=>h.id!==d.hwdel); await savePractice('Homework deleted'); return keepScroll(); }
+}
+function formDialog(html,read){ return new Promise(res=>{ const dl=document.createElement('dialog'); dl.innerHTML=html+'<div class=row><button class="btn ghost" data-x=0>Cancel</button><button class="btn gold" data-x=1>Save</button></div>';
+  document.body.appendChild(dl); dl.showModal(); dl.addEventListener('close',()=>dl.remove());
+  dl.onclick=ev=>{ const b=ev.target.closest('[data-x]'); if(!b) return; if(b.dataset.x==='0'){ dl.close(); return res(null); } const v=read(dl); if(v){ dl.close(); res(v); } }; }); }
+function drillDialog(cur,C){ const E=PA.esc;
+  return formDialog(`<h2>${cur.name?'Edit drill':'New drill'}</h2><label>NAME</label><input id=fdN maxlength=60 value="${E(cur.name)}"><div class=g2><div><label>MINUTES</label><input type=number id=fdM min=1 max=60 value="${E(cur.min)}"></div><div><label>WHO</label><input id=fdW maxlength=60 value="${E(cur.who)}"></div></div>
+    <label>SET UP</label><textarea id=fdS maxlength=400>${E(cur.setup)}</textarea><label>HOW</label><textarea id=fdH maxlength=800>${E(cur.how)}</textarea>
+    <label>COACHING POINTS (one per line)</label><textarea id=fdP maxlength=800>${E((cur.pts||[]).join('\n'))}</textarea>
+    <label>VIDEOS</label><div class=fdv>${Object.entries(C.videos).map(([k,v])=>`<label class=chk><input type=checkbox value="${E(k)}" ${(cur.vids||[]).includes(k)?'checked':''}> ${E(v[1])}</label>`).join('')}</div>`,
+    dl=>{ const q=id=>dl.querySelector('#'+id).value.trim(); if(!q('fdN')) { alert('Give the drill a name.'); return null; }
+      return {name:q('fdN'),min:Math.max(1,Math.min(60,+q('fdM')||5)),who:q('fdW')||'Everyone',setup:q('fdS'),how:q('fdH'),pts:q('fdP').split('\n').map(x=>x.trim()).filter(Boolean),vids:[...dl.querySelectorAll('.fdv input:checked')].map(i=>i.value)}; }); }
+function homeworkDialog(C){ const E=PA.esc;
+  return formDialog(`<h2>New homework</h2><label>TEAM</label><select class=f id=fhF><option value="">Both teams</option><option value="5v5">5v5</option><option value="6v6">6v6</option></select>
+    <label>TITLE</label><input id=fhT maxlength=80 placeholder="50 wall catches + watch the QB video"><label>WHAT TO DO</label><textarea id=fhB maxlength=800></textarea>
+    <label>DRILLS</label><div class=fdv>${Object.entries(C.drills).filter(([k])=>!C.hideDrill.has(k)).map(([k,d])=>`<label class=chk><input type=checkbox name=d value="${E(k)}"> ${E(d.name)}</label>`).join('')}</div>
+    <label>VIDEOS</label><div class=fdv>${Object.entries(C.videos).filter(([k])=>!C.hideVid.has(k)).map(([k,v])=>`<label class=chk><input type=checkbox name=v value="${E(k)}"> ${E(v[1])}</label>`).join('')}</div>
+    <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=fhN checked style="width:20px;height:20px"> NOTIFY THE TEAM IN MESSAGES</label>`,
+    dl=>{ const t=dl.querySelector('#fhT').value.trim(); if(!t){ alert('Give the homework a title.'); return null; }
+      return {id:'h'+Date.now().toString(36),fmt:dl.querySelector('#fhF').value||null,title:t,body:dl.querySelector('#fhB').value.trim(),
+        drills:[...dl.querySelectorAll('input[name=d]:checked')].map(i=>i.value),videos:[...dl.querySelectorAll('input[name=v]:checked')].map(i=>i.value),created:new Date().toISOString(),notify:dl.querySelector('#fhN').checked}; }); }
 let editing_game=null;
 function editGame(g){ editing_game=g; const v=(id,x)=>$('#'+id).value=x==null?'':x;
   $('#gTitle').textContent=(!g.home||!g.away)?(g.label||'Playoff game'):g.id?`${PA.isUs(g.home)?'VS':'@'} ${PA.isUs(g.home)?g.away:g.home}`:'New game';
@@ -340,15 +409,14 @@ $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).v
   catch(e){ alert('Could not save: '+e.message); } };
 $('#gDel').onclick=async()=>{ if(!confirm('Delete this game from the schedule?')) return;
   try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ alert(e.message); } };
-async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn()]); }
+async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn(),loadPractice()]); await loadMsgs(); }
 let ANN=[];
 async function loadAnn(){ try{ ANN=await PA.announcements(); }catch(e){ ANN=ANN||[]; } }
-const annFor=()=>ANN.filter(a=>!a.fmt||a.fmt===FMT);
-function annHTML(){ const l=annFor().slice(0,3), E=PA.esc; if(!l.length) return '';
-  return l.map(a=>`<div class=ann>${isCoach()?`<button data-adel="${a.id}" aria-label="remove">✕</button>`:''}<b>📣 FROM COACH${a.fmt?' · '+a.fmt.toUpperCase():''}</b> <small>${PA.ago(a.created_at)}</small><h4>${E(a.title)}</h4>${a.body?`<p>${E(a.body)}</p>`:''}</div>`).join(''); }
-function contactHTML(){
+const annFor=()=>ANN.filter(a=>(!a.fmt||a.fmt===FMT)&&(isCoach()||a.audience!=='players'||PA.role()==='player'));
+function contactHTML(){   // parents / fans email Coach directly; players use MESSAGES
+  if(isCoach()||PA.role()==='player') return '';
   const sub=encodeURIComponent('Packer Army '+FMT+' — question for Coach');
-  return `<div class=sbtns><a class="btn ghost" href="mailto:${PA.COACH_EMAIL}?subject=${sub}">✉️ EMAIL COACH</a>${isCoach()?'<button class="btn gold" id=msgTeam>📣 MESSAGE TEAM</button>':''}</div>`; }
+  return `<div class=sbtns><a class="btn ghost" href="mailto:${PA.COACH_EMAIL}?subject=${sub}">✉️ EMAIL COACH</a></div>`; }
 const MAPS=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
 function fieldMapHTML(){
   return `<details class=fmap><summary><b>🗺️ FIELD MAP</b><span>PROSPECT PARK · RED HOOK</span></summary><div>
@@ -358,25 +426,102 @@ function fieldMapHTML(){
     <b>RED HOOK</b> ball fields: Columbia St &amp; Halleck St.
     <a href="${MAPS('Columbia Street and Halleck Street, Brooklyn, NY')}" target=_blank rel=noopener>Directions</a><br>
     <a href="https://sfxyouthsports.com/fields/" target=_blank rel=noopener>All SFX fields</a> · <a href="https://sfxyouthsports.com/field-status/" target=_blank rel=noopener>Field status (rain-outs)</a></div></details>`; }
-/* coach: post an announcement, then open Mail with every parent email in BCC */
-let MSG_FMT='';
-function openMsg(){ MSG_FMT=''; $('#mTitle').value=''; $('#mBody').value=''; $('#mInfo').textContent=''; paintMsgTeam(); $('#dMsg').showModal(); }
-function paintMsgTeam(){ $('#mTeam').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.f===MSG_FMT)); }
+
+/* ---------- MESSAGES: team messages from Coach + a private thread per player (player or parent <-> Coach) ---------- */
+let THREADS={}, NOTES={}, CTHREADS=[], CNOTES=[], OPEN_THREAD=null, OPEN_MSGS=[], CONTACTS=null;
+const tsOf=x=>new Date(x).getTime()||0;
+async function loadMsgs(){
+  if(isCoach()){ try{ CTHREADS=await PA.coachRpc('pa_coach_threads'); }catch(e){} try{ CNOTES=await PA.coachRpc('pa_coach_notes'); }catch(e){} }
+  else await Promise.all(PA.threadIds().map(async id=>{ try{ THREADS[id]=await PA.thread(id); }catch(e){} try{ NOTES[id]=Object.fromEntries((await PA.myNotes(id)).map(n=>[n.game_id,n.note])); }catch(e){} }));
+  countUnread(); }
+function countUnread(){ const was=UNREAD;
+  if(isCoach()) UNREAD=CTHREADS.reduce((a,t)=>a+(t.unread||0),0)+CNOTES.filter(n=>n.unread).length;
+  else { const seenA=PA.store.get('pa_ann_seen_id',0); UNREAD=annFor().filter(a=>a.id>seenA).length;
+    for(const id in THREADS){ const seen=PA.store.get('pa_thread_seen_'+id,0); UNREAD+=THREADS[id].filter(m=>m.sender==='coach'&&tsOf(m.created_at)>seen).length; } }
+  if(band.length) buildTabs();
+  if(UNREAD>was&&tab!==MSG&&PA.role()) PA.toast(isCoach()?`📥 ${UNREAD} new message${UNREAD===1?'':'s'} · see MESSAGES`:'📣 New message from Coach · see MESSAGES',4500);
+  return UNREAD; }
+function markSeen(){ if(isCoach()) return;
+  const mx=Math.max(0,...annFor().map(a=>a.id)); if(mx) PA.store.set('pa_ann_seen_id',Math.max(mx,PA.store.get('pa_ann_seen_id',0)));
+  for(const id in THREADS){ const t=Math.max(0,...THREADS[id].map(m=>tsOf(m.created_at))); if(t) PA.store.set('pa_thread_seen_'+id,t); }
+  UNREAD=0; buildTabs(); }
+const bubble=(m,mine)=>`<div class="bub ${mine?'me':''}"><b>${PA.esc(m.sender==='coach'?'COACH':m.from_name||'')}</b> <small>${PA.ago(m.created_at)}</small><div>${PA.esc(m.body)}</div></div>`;
+const annCard=a=>`<div class=ann>${isCoach()?`<button data-adel="${a.id}" aria-label="remove">✕</button>`:''}<b>📣 FROM COACH${a.fmt?' · '+a.fmt.toUpperCase():''}${isCoach()?' · '+(a.audience==='players'?'PLAYERS ONLY':'PLAYERS + PARENTS'):''}</b> <small>${PA.ago(a.created_at)}</small><h4>${PA.esc(a.title)}</h4>${a.body?`<p>${PA.esc(a.body)}</p>`:''}</div>`;
+function gameName(gid){ const g=GAMES.find(x=>x.id===gid); if(!g) return 'a game'; const i=gameInfo(g); return i.title+' · '+i.when.split(' · ')[0]; }
+function drawMessages(){
+  const E=PA.esc, box=document.createElement('div'); box.className='msgs'; let h='';
+  if(isCoach()){
+    const unreadN=CNOTES.filter(n=>n.unread).length;
+    h+=`<button class="btn gold" data-act=newmsg>📣 NEW TEAM MESSAGE</button>`;
+    if(OPEN_THREAD){ const t=CTHREADS.find(x=>x.member_id===OPEN_THREAD)||{};
+      h+=`<div class=mcard><div class=mhead><button class="btn ghost" data-act=back>← ALL</button><b>${E(t.player||'')} · ${E((t.team||'').toUpperCase())}</b></div>
+        <div class=mthread>${OPEN_MSGS.slice().reverse().map(m=>bubble(m,m.sender==='coach')).join('')||'<p class=pnote>No messages yet.</p>'}</div>
+        <div class=say><textarea id=mReply maxlength=1000 placeholder="Reply to ${E(t.player||'')} (their phone and linked parents see it)"></textarea><button class="btn gold" data-act=reply>SEND</button></div></div>`; }
+    else h+=`<div class=mcard><h4>📥 FROM PLAYERS & PARENTS</h4>${CTHREADS.map(t=>`<button class=mrow data-thread="${t.member_id}"><b>${E(t.player)}</b> <small>${E(t.team.toUpperCase())} · ${PA.ago(t.last_at)}</small>${t.unread?` <span class=nbadge>${t.unread}</span>`:''}<span>${t.last_sender==='coach'?'You: ':''}${E(t.last_body.slice(0,90))}</span></button>`).join('')||'<p class=pnote>No messages yet. Players and linked parents can message you from their MESSAGES tab.</p>'}
+      <label style="margin-top:10px">MESSAGE A PLAYER DIRECTLY</label><select class=f id=mStart><option value="">— pick a player —</option>${ROSTER.filter(r=>r.kind==='player').map(r=>`<option value="${r.id}">${E(r.name)} · ${r.fmt.toUpperCase()}</option>`).join('')}</select></div>`;
+    h+=`<div class=mcard><h4>📝 ATTENDANCE NOTES${unreadN?` <span class=nbadge>${unreadN}</span>`:''}</h4>${CNOTES.map(n=>`<div class="mnote ${n.unread?'new':''}"><b>${E(n.player)}</b> <small>${E(n.team.toUpperCase())} · ${E(gameName(n.game_id))} · ${PA.ago(n.updated_at)}</small><div><span class="st ${n.status}">${n.status.toUpperCase()}</span> ${E(n.note)}</div></div>`).join('')||'<p class=pnote>No notes yet.</p>'}</div>`;
+    h+=`<div class=mcard><h4>📣 TEAM MESSAGES SENT</h4>${ANN.map(annCard).join('')||'<p class=pnote>None yet.</p>'}</div>`;
+    h+=`<details class=mcard id=mEmails><summary><b>✉️ PARENT EMAILS</b> <small>only you see these</small></summary><div id=mEmailList><p class=pnote>Loading…</p></div></details>`;
+  } else {
+    const ids=PA.threadIds(), parent=PA.role()!=='player';
+    h+=annFor().length?`<div class=mcard><h4>📣 FROM COACH</h4>${annFor().map(annCard).join('')}</div>`:`<div class=mcard><h4>📣 FROM COACH</h4><p class=pnote>No team messages yet.</p></div>`;
+    for(const id of ids){ const msgs=(THREADS[id]||[]).slice(0,30).reverse(), nm=PA.threadName(id);
+      h+=`<div class=mcard><h4>💬 ${parent?`${E(nm)}'S FAMILY`:'YOU'} &amp; COACH</h4><div class=mthread>${msgs.map(m=>bubble(m,m.sender!=='coach')).join('')||'<p class=pnote>Only you and Coach see this.</p>'}</div>
+        <div class=say><textarea data-body="${id}" maxlength=1000 placeholder="Message Coach${parent?'':' (sick, late, a question…)'}"></textarea><button class="btn gold" data-send="${id}">SEND</button></div></div>`; }
+    if(!ids.length) h+=`<div class=mcard><p class=pnote>${PA.role()==='player'?'Join the roster (Schedule → + ADD A PLAYER ON THIS PHONE) to message Coach.':'Link your child (Schedule → + LINK MY CHILD) to message Coach and answer attendance.'}</p></div>`;
+    for(const l of PA.links()) h+=`<div class=mcard><h4>✉️ YOUR EMAIL <small>for Coach's team emails · optional · only Coach sees it</small></h4><div class=say><input type=email data-myemail-in="${l.member_id}" value="${E(l.email||'')}" placeholder="you@example.com" autocapitalize=off><button class="btn ghost" data-myemail="${l.member_id}">SAVE</button></div></div>`;
+    h+=contactHTML();
+  }
+  box.innerHTML=h; grid.appendChild(box); markSeen();
+  if(isCoach()&&CNOTES.some(n=>n.unread)) PA.coachRpc('pa_coach_notes_read').then(()=>{ CNOTES.forEach(n=>n.unread=false); countUnread(); }).catch(()=>{});
+  const em=$('#mEmails'); if(em) em.addEventListener('toggle',()=>{ if(em.open) paintEmails(); });
+  const st=$('#mStart'); if(st) st.onchange=()=>{ if(st.value) openThread(st.value); };
+  box.onclick=async e=>{ const t=e.target.closest('[data-act],[data-thread],[data-send],[data-adel],[data-myemail],[data-pem]'); if(!t) return;
+    const act=t.dataset.act;
+    if(act==='newmsg') return openMsg();
+    if(act==='back'){ OPEN_THREAD=null; await loadMsgs(); return draw(); }
+    if(t.dataset.thread) return openThread(t.dataset.thread);
+    if(act==='reply'){ const b=$('#mReply').value.trim(); if(!b) return; try{ await PA.coachRpc('pa_coach_reply',{member:OPEN_THREAD,body:b}); await openThread(OPEN_THREAD); PA.toast('Sent'); }catch(err){ alert(err.message); } return; }
+    if(t.dataset.send){ const id=t.dataset.send, ta=box.querySelector(`[data-body="${id}"]`), b=ta.value.trim(); if(!b) return;
+      try{ await PA.send(id,b); ta.value=''; THREADS[id]=await PA.thread(id); draw(); PA.toast('Sent to Coach'); }catch(err){ alert(err.message); } return; }
+    if(t.dataset.adel){ if(!confirm('Remove this message from everyone\'s app?')) return;
+      try{ await PA.coachRpc('pa_coach_announce_delete',{aid:+t.dataset.adel}); await loadAnn(); draw(); }catch(err){ alert(err.message); } return; }
+    if(t.dataset.myemail){ const id=t.dataset.myemail, v=box.querySelector(`[data-myemail-in="${id}"]`).value.trim();
+      if(v&&!PA.okEmail(v)) return alert('That email does not look right (or leave it empty).');
+      try{ await PA.setMyEmail(id,v); PA.toast(v?'Saved. Coach can email you.':'Removed'); }catch(err){ alert(err.message); } return; }
+    if(t.dataset.pem){ const r=ROSTER.find(x=>x.id===t.dataset.pem), cur=(CONTACTS||[]).find(c=>c.member_id===r.id&&c.source!=='parent');
+      const v=prompt(`Parent email for ${r.name} (leave empty to remove):`,cur?cur.email:''); if(v===null) return;
+      if(v.trim()&&!PA.okEmail(v.trim())) return alert('That email does not look right.');
+      try{ await PA.coachRpc('pa_coach_parent_email',{member:r.id,email:v.trim()}); await paintEmails(); PA.toast('Saved'); }catch(err){ alert(err.message); } return; } };
+}
+async function openThread(id){ OPEN_THREAD=id; try{ OPEN_MSGS=await PA.coachRpc('pa_coach_thread',{member:id}); }catch(e){ OPEN_MSGS=[]; }
+  if(!CTHREADS.some(t=>t.member_id===id)){ const r=ROSTER.find(x=>x.id===id)||{}; CTHREADS.unshift({member_id:id,player:r.name||'',team:r.fmt||'',last_body:'',unread:0}); }
+  CTHREADS.forEach(t=>{ if(t.member_id===id) t.unread=0; }); countUnread(); draw(); window.scrollTo(0,0); }
+async function paintEmails(){ const el=$('#mEmailList'); if(!el) return;
+  try{ CONTACTS=await PA.coachRpc('pa_coach_contacts',{fmt:null}); }catch(e){ el.innerHTML='<p class=pnote>Could not load.</p>'; return; }
+  const E=PA.esc; el.innerHTML=ROSTER.filter(r=>r.kind==='player').map(r=>{ const cs=CONTACTS.filter(c=>c.member_id===r.id);
+    return `<div class=mrow2><b>${E(r.name)}</b> <small>${r.fmt.toUpperCase()}</small><span>${cs.map(c=>`${E(c.email)}${c.source==='parent'?' <small>(parent)</small>':''}`).join(', ')||'<small>no email</small>'}</span><button class=pctl data-pem="${r.id}">SET</button></div>`; }).join('')||'<p class=pnote>No players yet.</p>'; }
+/* coach: team message → MESSAGES for players (and parents), optional email to parents from Gmail (andrewbarbernyc@gmail.com), BCC */
+let MSG_FMT='', MSG_AUD='all';
+function openMsg(){ MSG_FMT=''; MSG_AUD='all'; $('#mTitle').value=''; $('#mBody').value=''; paintMsgTeam(); $('#dMsg').showModal(); }
+function paintMsgTeam(){ $('#mTeam').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.f===MSG_FMT)); $('#mAud').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.a===MSG_AUD));
+  $('#mMailRow').style.display=MSG_AUD==='all'?'':'none'; }
 $('#mTeam').onclick=e=>{ const b=e.target.closest('button'); if(b){ MSG_FMT=b.dataset.f; paintMsgTeam(); } };
+$('#mAud').onclick=e=>{ const b=e.target.closest('button'); if(b){ MSG_AUD=b.dataset.a; paintMsgTeam(); } };
 $('#mCancel').onclick=()=>$('#dMsg').close();
 $('#mGo').onclick=async()=>{ const t=$('#mTitle').value.trim(), body=$('#mBody').value.trim(); if(!t) return alert('Add a title.');
-  try{ await PA.coachRpc('pa_coach_announce',{fmt:MSG_FMT,title:t,body}); }catch(e){ return alert('Could not post: '+e.message); }
-  $('#dMsg').close(); await loadAnn(); draw(); PA.toast('Posted in the app');
-  if(!$('#mMail').checked) return;
+  try{ await PA.coachRpc('pa_coach_announce',{fmt:MSG_FMT,title:t,body,audience:MSG_AUD}); }catch(e){ return alert('Could not post: '+e.message); }
+  $('#dMsg').close(); await loadAnn(); draw(); PA.toast(MSG_AUD==='players'?'Sent to players in the app':'Sent to players + parents in the app');
+  if(MSG_AUD!=='all'||!$('#mMail').checked) return;
   let emails=[]; try{ emails=[...new Set((await PA.coachRpc('pa_coach_contacts',{fmt:MSG_FMT||null})).map(x=>x.email).filter(PA.okEmail))]; }
   catch(e){ return alert('Posted in the app, but the parent emails could not be loaded: '+e.message); }
-  if(!emails.length) return alert('Posted in the app. No parent emails yet: they are added when players join.');
+  if(!emails.length) return alert('Posted in the app. No parent emails yet (parents add theirs in MESSAGES, or set them under MESSAGES → PARENT EMAILS).');
   mailBatches(emails,'Packer Army: '+t,body); };
-/* Mail apps drop very long mailto links: send in batches of 20 BCC, each from a tap; "copy all" as a fallback */
+/* email from Gmail as andrewbarbernyc@gmail.com (never the phone's default Mail account); batches of 20 BCC, each from a tap */
 function mailBatches(emails,subject,body){ const B=20, n=Math.ceil(emails.length/B), d=document.createElement('dialog');
-  const href=i=>`mailto:${PA.COACH_EMAIL}?bcc=${emails.slice(i*B,i*B+B).map(encodeURIComponent).join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.slice(0,1500))}`;
-  d.innerHTML=`<h2>Email ${emails.length} parent${emails.length===1?'':'s'}</h2><p>${n>1?`Tap each batch (${B} per email) and press Send in Mail each time.`:'Tap to open Mail, then press Send.'}</p>
-    <div class=row style="flex-direction:column">${[...Array(n)].map((_,i)=>`<a class="btn gold" style="text-align:center;text-decoration:none" href="${href(i)}">✉️ ${n>1?`BATCH ${i+1} OF ${n}`:'OPEN MAIL'}</a>`).join('')}
+  const href=i=>PA.gmail(emails.slice(i*B,i*B+B),subject,body.slice(0,1500));
+  d.innerHTML=`<h2>Email ${emails.length} parent${emails.length===1?'':'s'}</h2><p>Opens Gmail as <b>${PA.COACH_EMAIL}</b> with the parents in BCC. ${n>1?`Tap each batch (${B} per email) and press Send each time.`:'Check it, then press Send.'} If Gmail shows a different account, switch to ${PA.COACH_EMAIL} first.</p>
+    <div class=row style="flex-direction:column">${[...Array(n)].map((_,i)=>`<a class="btn gold" style="text-align:center;text-decoration:none" target=_blank rel=noopener href="${PA.esc(href(i))}">✉️ ${n>1?`GMAIL · BATCH ${i+1} OF ${n}`:'OPEN IN GMAIL'}</a>`).join('')}
     <button class="btn ghost" id=mCopy>COPY ALL EMAILS</button><button class="btn ghost" id=mDone>DONE</button></div>`;
   document.body.appendChild(d); d.showModal(); d.addEventListener('close',()=>d.remove());
   d.querySelector('#mCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(emails.join(', ')); PA.toast('Copied'); }catch(e){ prompt('Copy these emails:',emails.join(', ')); } };
@@ -439,7 +584,7 @@ $('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await 
 
 /* ---------- coach mode: visible sign-in, inbox of player ideas ---------- */
 let PENDING=0;
-function coachUI(){ const b=$('#coachBtn'), c=isCoach();
+function coachUI(){ const b=$('#coachBtn'), c=isCoach(); b.style.display=(c||PA.role()==='coach')?'':'none';   // players / parents never see coach controls
   b.classList.toggle('on',c); b.textContent=c?(PENDING?(innerWidth<360?`✓ 📥 ${PENDING}`:`COACH ✓ · 📥 ${PENDING}`):'COACH ✓'):'🔒 COACH';   // short on small phones so the title fits
   $('#inbox').classList.toggle('show',c&&PENDING>0); $('#inbox').textContent=`📥 ${PENDING} NEW PLAYER IDEA${PENDING===1?'':'S'} — TAP TO REVIEW`;
   if($('#ov').classList.contains('show')) $('#send').textContent=c?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
@@ -453,7 +598,7 @@ $('#cCancel').onclick=()=>$('#dCoach').close();
 $('#cGo').onclick=async()=>{ const m=$('#cMsg'); m.style.color='var(--g)'; m.textContent='Signing in…';
   try{ await PA.login($('#cEmail').value.trim(),$('#cPass').value);
     try{ await PA.coachRpc('pa_coach_proposals'); }catch(e){ PA.logout(); throw new Error('That account is not the team coach.'); }
-    $('#dCoach').close(); $('#cPass').value=''; await coachInbox(); PA.toast('Coach mode on: 💾 SAVE TO TEAM on every play'); }
+    $('#dCoach').close(); $('#cPass').value=''; PA.store.set('pa_role','coach'); await coachInbox(); await loadMsgs(); draw(); PA.toast('Coach mode on: 💾 SAVE TO TEAM on every play'); }
   catch(e){ m.style.color='var(--warn)'; m.textContent=/Invalid login/i.test(e.message)?'Wrong email or password.':e.message; } };
 
 /* ---------- data ---------- */
@@ -468,20 +613,20 @@ async function load(first,quiet){
   return had;
 }
 document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible'){ await load(false); await loadIdeas(); await loadGames(); coachInbox(); if(!$('#ov').classList.contains('show')) draw(); } });
-setInterval(()=>{ if(document.visibilityState==='visible'){ load(false); coachInbox(); } },5*60*1000);
+setInterval(()=>{ if(document.visibilityState==='visible'){ load(false); coachInbox(); loadAnn().then(loadMsgs).then(()=>{ if(tab===MSG&&!OPEN_THREAD) draw(); }); } },2*60*1000);   // new messages show up within ~2 minutes
 // Coach page: tap the title 5 times (works inside the installed app, where there is no address bar)
 let taps=[]; $('#ttl').onclick=()=>{ const n=Date.now(); taps=taps.filter(t=>n-t<2500); taps.push(n); if(taps.length>=5) location.href='coach.html'; };
 addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n=>PA.fit(n,12,7)); });
 (async()=>{
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
-  coachUI(); await PA.join(false); await load(true); await Promise.all([loadIdeas(),loadGames()]);
+  coachUI(); await PA.join(false); const wantCoach=PA.lastSetup()==='coach'; await load(true); await Promise.all([loadIdeas(),loadGames()]);
+  if(wantCoach&&!isCoach()){ $('#cMsg').textContent=''; $('#dCoach').showModal(); }
   const parentHome=()=>{ if(PA.isParent()&&!isCoach()&&!location.hash){ const l=PA.links()[0]; if(l&&FMTS.includes(l.fmt)&&l.fmt!==FMT) show(l.fmt); tab=SCHED; } };   // parents start on their child's schedule
   parentHome(); draw(); coachInbox();
   if(ROSTER_OK&&!PA.role()&&!isCoach()){   // installed before roles existed: player or parent / fan, once
-    const m=await PA.setup(FMT); await loadRoster(); parentHome(); draw(); if(m&&m.name) PA.toast('Welcome, '+m.name+'!'); }
-  if(PA.members().some(m=>!m.pe)&&!isCoach()) await PA.askParentEmail();
-  const nw=annFor()[0]; if(nw&&PA.store.get('pa_ann_seen')!==nw.id){ PA.store.set('pa_ann_seen',nw.id); PA.toast('📣 Coach: '+nw.title,4000); }
-  const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
+    const m=await PA.setup(FMT); await loadRoster(); parentHome(); draw(); if(m&&m.name) PA.toast('Welcome, '+m.name+'!');
+    if(m==='coach'){ coachUI(); $('#cMsg').textContent=''; $('#dCoach').showModal(); } }
+  const m=location.hash.match(/^#play=(\w+)-(\d+)$/); if(m&&BY[m[1]]){ show(m[1]); if(+m[2]>50){ tab=DEF; draw(); } else { VIEW=band; tab=PLAYS; const k=band.findIndex(p=>p.n===+m[2]); if(k>=0) CARD=Math.floor(k/8); draw(); } const i=VIEW.findIndex(p=>p.n===+m[2]); if(i>=0) openOv(i); }
 })();
 // the service worker (offline + automatic app updates) is registered in data.js for every page
 </script></body></html>

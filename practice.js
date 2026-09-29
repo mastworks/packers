@@ -158,32 +158,55 @@ const SAFETY=['Water break every 15-20 minutes, more on hot days.','Mouthpiece: 
 
 function practiceWeek(idx,isPlayoff){ return isPlayoff?PLAYOFF:WEEKS[Math.max(0,Math.min(WEEKS.length-1,idx))]; }
 
+/* Coach-controlled content (saved in the database, table practice): {hidden:{sections:[], drills:[], videos:[]},
+   drills:{key:{name,min,who,setup,how,pts:[],vids:[]}} (edited or new), videos:{key:[id,title,len]} (added), homework:[{id,fmt,title,body,drills:[],videos:[],created}]} */
+const PSECTIONS=[['homework','HOMEWORK'],['sessions','PRACTICE PLANS'],['plays','PLAYS & DEFENSES TO REP'],['home','AT HOME'],['season','SEASON PLAN'],['library','DRILL LIBRARY'],['exercises','EXERCISES & SAFETY'],['videos','VIDEOS']];
+function practiceContent(cfg){
+  cfg=cfg||{}; const h=cfg.hidden||{};
+  return {drills:{...DRILLS,...(cfg.drills||{})}, videos:{...VIDEOS,...(cfg.videos||{})}, hw:cfg.homework||[],
+          hideSec:new Set(h.sections||[]), hideDrill:new Set(h.drills||[]), hideVid:new Set(h.videos||[])};
+}
+const ytId=u=>{ const m=String(u||'').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([A-Za-z0-9_-]{11})/)||String(u||'').match(/^([A-Za-z0-9_-]{11})$/); return m?m[1]:null; };
+
 /* html: game = the game we're getting ready for (or null), idx = its place in the regular season, plays / defs = live lists,
-   picked = a week chosen from the season plan (shows a button back to the next game) */
+   picked = a week chosen from the season plan (shows a button back to the next game), cfg = Coach's settings,
+   coach = signed-in coach (sees everything; hidden items marked), manage = show the coach's edit controls, fmt = team */
 function practiceHTML(o){
   const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const w=practiceWeek(o.idx,o.playoff), vid=k=>{ const v=VIDEOS[k]; return `<a class=pvid href="https://www.youtube.com/watch?v=${v[0]}" target=_blank rel=noopener>▶ ${E(v[1])} <small>${v[2]}</small></a>`; };
-  const body=d=>`<p><b>SET UP</b> ${E(d.setup)}</p><p><b>HOW</b> ${E(d.how)}</p><ul>${d.pts.map(x=>`<li>${E(x)}</li>`).join('')}</ul>${d.vids.map(vid).join('')}`;
+  const C=practiceContent(o.cfg), M=o.coach&&o.manage, see=o.coach;
+  const secShown=id=>see||!C.hideSec.has(id), drillShown=k=>C.drills[k]&&(see||!C.hideDrill.has(k)), vidShown=k=>C.videos[k]&&(see||!C.hideVid.has(k));
+  const hid=(set,k)=>set.has(k)?' <span class=phid>HIDDEN</span>':'';
+  const secHead=(id)=>M?`<button class=pctl data-sec="${id}">${C.hideSec.has(id)?'🚫 HIDDEN FROM TEAM · SHOW':'👁 SHOWN · HIDE'}</button>`:(see&&C.hideSec.has(id)?'<span class=phid>HIDDEN FROM TEAM</span>':'');
+  const vid=k=>{ if(!vidShown(k)) return ''; const v=C.videos[k]; return `<div class=pvrow><a class=pvid href="https://www.youtube.com/watch?v=${E(v[0])}" target=_blank rel=noopener>▶ ${E(v[1])} <small>${E(v[2]||'')}</small>${see?hid(C.hideVid,k):''}</a>${M?`<button class=pctl data-vid="${E(k)}">${C.hideVid.has(k)?'SHOW':'HIDE'}</button>`:''}</div>`; };
+  const body=d=>`<p><b>SET UP</b> ${E(d.setup)}</p><p><b>HOW</b> ${E(d.how)}</p><ul>${(d.pts||[]).map(x=>`<li>${E(x)}</li>`).join('')}</ul>${(d.vids||[]).map(vid).join('')}`;
+  const w=practiceWeek(o.idx,o.playoff);
   const pl=o.plays.filter(w.plays).slice(0,8), df=o.defs.filter(w.defs).slice(0,3);
   const chip=p=>`<button class=pplay data-open="${p.n}"><b>${p.n}</b> ${E(p.name)}</button>`;
-  const session=(k,label)=>{ const ids=w[k], tot=ids.reduce((a,d)=>a+DRILLS[d].min,0);
+  const session=(k,label)=>{ const ids=w[k].filter(drillShown), tot=ids.reduce((a,d)=>a+(+C.drills[d].min||0),0);
     return `<div class=psess><h4>${label} <small>${tot} min of drills + water breaks${w.taper&&k==='B'?' · light taper':''}</small></h4>
-      <ol>${ids.map(d=>`<li><details class=pdrill><summary>${E(DRILLS[d].name)} <small>${DRILLS[d].min} min</small></summary>${body(DRILLS[d])}</details></li>`).join('')}</ol></div>`; };
+      <ol>${ids.map(d=>`<li><details class=pdrill><summary>${E(C.drills[d].name)} <small>${E(C.drills[d].min)} min</small>${see?hid(C.hideDrill,d):''}</summary>${body(C.drills[d])}</details></li>`).join('')}</ol></div>`; };
   const head=o.game?`<div class=pnext><b>${o.picked?'SEASON PLAN · WEEK VIEW':'GETTING READY FOR'}</b><h3>${E(o.game.title)}</h3><span>${E(o.game.when)}</span>${o.picked?'<button class=pback data-wk=next>↩ BACK TO THE NEXT GAME</button>':''}</div>`
                    :`<div class=pnext><b>NO GAME ON THE SCHEDULE</b><h3>Pick any week below</h3>${o.picked?'<button class=pback data-wk=next>↩ BACK TO THE NEXT GAME</button>':''}</div>`;
   const weeksNav=[...WEEKS.map((x,i)=>[i,x.t,false]),[-1,PLAYOFF.t,true]].map(([i,t,po])=>`<button class="pwk ${((po&&o.playoff)||(!po&&!o.playoff&&i===o.idx))?'on':''}" data-wk="${po?'po':i}">${po?'PO':'WK '+(i+1)} · ${E(t)}</button>`).join('');
-  return `<div class=prac>${head}
+  const hw=C.hw.filter(h=>!h.fmt||h.fmt===o.fmt);
+  const hwHTML=hw.length||M?`<div class=pblock><h4>📚 HOMEWORK ${secHead('homework')}</h4>${hw.map(h=>`<div class=phw><b>${E(h.title)}</b>${h.fmt?` <small>${E(h.fmt.toUpperCase())}</small>`:''}${M?` <button class=pctl data-hwdel="${E(h.id)}">DELETE</button>`:''}
+      ${h.body?`<p>${E(h.body)}</p>`:''}${(h.drills||[]).filter(drillShown).map(d=>`<details class=pdrill><summary>${E(C.drills[d].name)}</summary>${body(C.drills[d])}</details>`).join('')}${(h.videos||[]).map(vid).join('')}</div>`).join('')||'<p class=pnote>No homework yet.</p>'}
+      ${M?'<button class="btn gold" data-act=hwnew>＋ NEW HOMEWORK</button>':''}</div>`:'';
+  const manageBar=o.coach?`<div class=pmanage><button class="btn ${M?'gold':'ghost'}" data-act=manage>${M?'✓ DONE MANAGING':'✏️ MANAGE WHAT THE TEAM SEES'}</button>${M?'<span class=pnote>Hide / show sections, drills and videos, edit or add drills and videos, post homework. Players and parents only see what is shown.</span>':''}</div>`:'';
+  const sec=(id,html)=>secShown(id)?html:'';
+  return `<div class=prac>${manageBar}${head}
+    ${secShown('homework')?hwHTML:''}
     <div class=ptheme><b>THIS WEEK: ${E(w.t.toUpperCase())}</b><p>${E(w.goal)}</p>
       <p class=pnote>1-2 practices before the game (about 60 minutes each with water breaks). If you only get one, run Practice A. Short on time? Cut the team period in half, never the warm-up. Tap a drill to see how to run it.</p></div>
-    <div class=psessions>${session('A','PRACTICE A · OFFENSE FIRST')}${session('B','PRACTICE B · DEFENSE + SCRIMMAGE')}</div>
-    <div class=pblock><h4>PLAYS TO REP THIS WEEK</h4><div class=pchips>${pl.map(chip).join('')||'<small>Coach picks.</small>'}</div>
-      <h4>DEFENSES TO REP</h4><div class=pchips>${df.map(chip).join('')}</div></div>
-    <div class=pblock><h4>AT HOME</h4><p>${E(w.home)}</p></div>
-    <details class=pdet><summary><b>SEASON PLAN</b><span>tap a week</span></summary><div class=pweeks>${weeksNav}</div></details>
-    <details class=pdet id=pDrills><summary><b>DRILL LIBRARY</b><span>${Object.keys(DRILLS).length} drills</span></summary><div class=pdrills>${Object.entries(DRILLS).map(([k,d])=>`<details class=pdrill id="drill-${k}"><summary>${E(d.name)} <small>${d.min} min · ${E(d.who)}</small></summary>${body(d)}</details>`).join('')}</div></details>
-    <details class=pdet><summary><b>EXERCISES & SAFETY</b><span>ages 12-15</span></summary><div class=pdrills>${EXERCISES.map(([a,b])=>`<p><b>${E(a.toUpperCase())}</b> ${E(b)}</p>`).join('')}<h4>SAFETY</h4><ul>${SAFETY.map(x=>`<li>${E(x)}</li>`).join('')}</ul></div></details>
-    <details class=pdet><summary><b>VIDEOS TO WATCH</b><span>official NFL FLAG series</span></summary><div class=pdrills>
-      <p class=pnote>Short videos (3-7 min) from the NFL FLAG drill series, taught by the New Orleans Saints youth football coaches.</p>
-      ${Object.keys(VIDEOS).map(vid).join('')}<a class=pvid href="${VIDEO_SERIES}" target=_blank rel=noopener>▶ The whole series on YouTube</a></div></details>
+    ${sec('sessions',`${M||see&&C.hideSec.has('sessions')?`<div class=pctlrow>${secHead('sessions')}</div>`:''}<div class=psessions>${session('A','PRACTICE A · OFFENSE FIRST')}${session('B','PRACTICE B · DEFENSE + SCRIMMAGE')}</div>`)}
+    ${sec('plays',`<div class=pblock><h4>PLAYS TO REP THIS WEEK ${secHead('plays')}</h4><div class=pchips>${pl.map(chip).join('')||'<small>Coach picks.</small>'}</div>
+      <h4>DEFENSES TO REP</h4><div class=pchips>${df.map(chip).join('')}</div></div>`)}
+    ${sec('home',`<div class=pblock><h4>AT HOME ${secHead('home')}</h4><p>${E(w.home)}</p></div>`)}
+    ${sec('season',`<details class=pdet ${M?'open':''}><summary><b>SEASON PLAN</b><span>tap a week</span></summary>${M?`<div class=pctlrow>${secHead('season')}</div>`:''}<div class=pweeks>${weeksNav}</div></details>`)}
+    ${sec('library',`<details class=pdet id=pDrills ${M?'open':''}><summary><b>DRILL LIBRARY</b><span>${Object.keys(C.drills).filter(drillShown).length} drills</span></summary>${M?`<div class=pctlrow>${secHead('library')}<button class=pctl data-act=drillnew>＋ ADD A DRILL</button></div>`:''}<div class=pdrills>${Object.entries(C.drills).filter(([k])=>drillShown(k)).map(([k,d])=>`<details class=pdrill id="drill-${E(k)}"><summary>${E(d.name)} <small>${E(d.min)} min · ${E(d.who)}</small>${see?hid(C.hideDrill,k):''}</summary>${M?`<div class=pctlrow><button class=pctl data-drill-hide="${E(k)}">${C.hideDrill.has(k)?'SHOW':'HIDE'}</button><button class=pctl data-drill-edit="${E(k)}">EDIT</button>${o.cfg&&o.cfg.drills&&o.cfg.drills[k]?`<button class=pctl data-drill-reset="${E(k)}">${DRILLS[k]?'UNDO MY EDITS':'DELETE'}</button>`:''}</div>`:''}${body(d)}</details>`).join('')}</div></details>`)}
+    ${sec('exercises',`<details class=pdet ${M?'open':''}><summary><b>EXERCISES & SAFETY</b><span>ages 12-15</span></summary>${M?`<div class=pctlrow>${secHead('exercises')}</div>`:''}<div class=pdrills>${EXERCISES.map(([a,b])=>`<p><b>${E(a.toUpperCase())}</b> ${E(b)}</p>`).join('')}<h4>SAFETY</h4><ul>${SAFETY.map(x=>`<li>${E(x)}</li>`).join('')}</ul></div></details>`)}
+    ${sec('videos',`<details class=pdet ${M?'open':''}><summary><b>VIDEOS TO WATCH</b><span>official NFL FLAG series</span></summary>${M?`<div class=pctlrow>${secHead('videos')}<button class=pctl data-act=vidnew>＋ ADD A YOUTUBE VIDEO</button></div>`:''}<div class=pdrills>
+      <p class=pnote>Short videos (3-7 min) from the NFL FLAG drill series, taught by the New Orleans Saints youth football coaches${o.cfg&&o.cfg.videos&&Object.keys(o.cfg.videos).length?', plus videos Coach added':''}.</p>
+      ${Object.keys(C.videos).map(vid).join('')}<a class=pvid href="${VIDEO_SERIES}" target=_blank rel=noopener>▶ The whole series on YouTube</a></div></details>`)}
   </div>`;
 }

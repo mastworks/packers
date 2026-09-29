@@ -10,8 +10,11 @@ const isD=play=>play&&play.side==='D';
 const ghostK=(play,k)=>isD(play)&&OFF.includes(k);
 const BALL = '#8B4A2B';
 const VIEW = {h:8.0, ymin:-3.6};            // fixed vertical window; width set by aspect
-const R_P = 0.5;                           // player radius
-const SW = 0.12;                            // route stroke
+let R_P = 0.5;                             // player radius (defense diagrams: 12% smaller)
+let SW = 0.12;                              // route stroke (defense diagrams: 15% thinner)
+let LF=1;   // label size factor (smaller on defense cards)
+const look=play=>{ const d=isD(play); SW=d?0.102:0.12; R_P=d?0.36:0.5; LF=d?0.78:1;
+  if(d) for(const k in play.players) if(!OFF.includes(k)&&!COL[k]){ COL[k]=DEF; INK[k]=DINK; } };   // any non-offense key on a defense card is a defender (S1, F2, R1 ...)
 let S=1;
 const f = n => (Math.round(n*1000)/1000);
 
@@ -119,9 +122,9 @@ const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 function starPath(cx,cy,R){ const r=R*0.48; let d=''; for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5; const rr=i%2?r:R; d+=(i?'L':'M')+f(cx+Math.cos(a)*rr)+' '+f(cy+Math.sin(a)*rr);} return d+'Z'; }
 function playerG(k,x,y,isStar,opacity,ghost){
   const c=ghost?GHOST:COL[k], ink=ghost?'#fff':INK[k]; const cx=f(x), cy=f(-y); let shape;
-  const lab=`<text x="${cx}" y="${f(-y+0.24*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,Helvetica,Arial,sans-serif" font-weight="700" font-size="${f(0.72*S)}" fill="${ink}">${esc(k)}</text>`;
+  const lab=`<text x="${cx}" y="${f(-y+0.24*LF*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,Helvetica,Arial,sans-serif" font-weight="700" font-size="${f(0.72*S)}" fill="${ink}">${esc(k)}</text>`.replace(`font-size="${f(0.72*S)}"`,`font-size="${f((String(k).length>1?0.5:0.72)*LF*S)}"`).replace(`font-weight="700"`,String(k).length>1?`font-weight="600"`:`font-weight="700"`);
   if(isStar) shape=`<path d="${starPath(cx,cy-0.02*S,0.98*S)}" fill="${c}" stroke="#fff" stroke-width="${f(0.05*S)}" stroke-linejoin="round"/>`;
-  else if(k==='C') shape=`<rect x="${f(cx-0.46*S)}" y="${f(cy-0.46*S)}" width="${f(0.92*S)}" height="${f(0.92*S)}" rx="${f(0.1*S)}" fill="${c}"/>`;
+  else if(k==='C') shape=`<rect x="${f(cx-0.92*R_P*S)}" y="${f(cy-0.92*R_P*S)}" width="${f(1.84*R_P*S)}" height="${f(1.84*R_P*S)}" rx="${f(0.1*S)}" fill="${c}"/>`;
   else if(c===DEF) shape=`<circle cx="${cx}" cy="${cy}" r="${f(R_P*S)}" fill="${c}" stroke="${DINK}" stroke-width="${f(0.06*S)}"/>`;
   else shape=`<circle cx="${cx}" cy="${cy}" r="${f(R_P*S)}" fill="${c}"/>`;
   return `<g opacity="${opacity==null?1:opacity}">${shape}${lab}</g>`;
@@ -140,7 +143,15 @@ function fieldExtras(play,vb){
     const top=(play.field&&play.field.endBack!=null)?-play.field.endBack:vb.y;   // to-scale end zone: goal line → end line
     if(play.field&&play.field.endBack!=null) s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(top)}" y2="${f(top)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(-top,'END LINE','#C8102E');
     s+=`<rect x="${f(vb.x)}" y="${f(top)}" width="${f(vb.w)}" height="${f(-y-top)}" fill="#C8102E" opacity="0.07"/><line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="#C8102E" stroke-width="${f(0.07*S)}"/>`+lbl(y,'GOAL LINE · END ZONE','#C8102E'); }
-  for(const z of play.zones||[]) s+=`<ellipse cx="${f(z.x)}" cy="${f(-z.y)}" rx="${f(z.rx)}" ry="${f(z.ry)}" fill="${DEF}" fill-opacity="0.10" stroke="${DEF}" stroke-opacity="0.35" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.15*S)} ${f(0.12*S)}"/>`;
+  const tag=(x,y,t,bg,fg)=>{ const w=(String(t).length*0.2+0.25)*S; return `<g><rect x="${f(x-w/2)}" y="${f(-y-0.22*S)}" width="${f(w)}" height="${f(0.42*S)}" rx="${f(0.1*S)}" fill="${bg}"/><text x="${f(x)}" y="${f(-y+0.1*S)}" text-anchor="middle" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="700" font-size="${f(0.32*S)}" fill="${fg}" letter-spacing="0">${esc(t)}</text></g>`; };
+  let tags='';
+  const placed=[];   // keep tags from sitting on each other
+  const spot=(x,y)=>{ let yy=y; for(let i=0;i<6&&placed.some(q=>Math.abs(q[0]-x)<1.35&&Math.abs(q[1]-yy)<0.5);i++) yy-=0.55; placed.push([x,yy]); return yy; };
+  for(const l of play.links||[]){ s+=`<line x1="${f(l.a[0])}" y1="${f(-l.a[1])}" x2="${f(l.b[0])}" y2="${f(-l.b[1])}" stroke="${DINK}" stroke-width="${f(0.1*S)}" stroke-linecap="round"/>`;   // who takes whom (all-deep view)
+    const tx=l.b[0]; tags+=tag(tx,spot(tx,l.b[1]+0.75*S),l.t,DEF,DINK); }   // tag just above the receiver it names (never on the defender)
+  for(const fr of play.free||[]) tags+=tag(fr.at[0],fr.at[1],fr.t,'#C8102E','#fff');
+  play._tags=tags;
+  for(const z of play.zones||[]) s+=`<ellipse cx="${f(z.x)}" cy="${f(-z.y)}" rx="${f(z.rx)}" ry="${f(z.ry)}" fill="${DEF}" fill-opacity="0.06" stroke="${DEF}" stroke-opacity="0.22" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.15*S)} ${f(0.12*S)}"/>`;
   if(play.rushLine!=null){ const y=play.rushLine;
     s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="${DEF}" stroke-opacity="0.55" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.3*S)} ${f(0.2*S)}"/>`+lbl(y,play.rushLabel||'RUSH LINE',DEF); }
   return s;
@@ -196,7 +207,7 @@ function routeEls(k,r,opts){
   return out;
 }
 function staticSVG(play,opt){
-  opt=opt||{}; const aspect=opt.aspect||1.476; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);  // opt.vb pins the view (coach drag)
+  look(play); opt=opt||{}; const aspect=opt.aspect||1.476; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);  // opt.vb pins the view (coach drag)
   let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vb.x)} ${f(vb.y)} ${f(vb.w)} ${f(vb.h)}" preserveAspectRatio="xMidYMid meet" ${opt.attrs||''}>`;
   s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
   s+=fieldExtras(play,vb);
@@ -228,12 +239,12 @@ function staticSVG(play,opt){
   });
   for(const k of drawOrder(play)){ const p=play.players[k]; s+=playerG(k,p[0],p[1],play.star===k,null,ghostK(play,k)); }
   
-  return s+'</svg>';
+  return s+(play._tags||'')+'</svg>';
 }
 
 /* ------------ animated frame ------------ */
 function animSVG(play,T,t,opt){
-  opt=opt||{}; const aspect=opt.aspect||1.3; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);
+  look(play); opt=opt||{}; const aspect=opt.aspect||1.3; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);
   let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vb.x)} ${f(vb.y)} ${f(vb.w)} ${f(vb.h)}" preserveAspectRatio="xMidYMid meet" ${opt.attrs||''}>`;
   s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
   s+=fieldExtras(play,vb);
@@ -251,7 +262,7 @@ function animSVG(play,T,t,opt){
   for(const k of drawOrder(play)){ const p=T.pos(k,t); s+=playerG(k,p[0],p[1],play.star===k && t<SNAP+0.05,null,ghostK(play,k)); }
   // star ring for star player after start
   const b=ballAt(T,t); s+=football(b.pos[0],b.pos[1],b.ang,1.25);
-  return s+'</svg>';
+  return s+(play._tags||'')+'</svg>';
 }
 
 root.PB={COL,shape,timeline,ballAt,staticSVG,animSVG,extents,viewBox,SNAP};

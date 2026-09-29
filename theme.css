@@ -82,3 +82,5 @@ dialog .row .btn{flex:1}
 .ed-empty{font-size:12px;color:#44524d;padding:6px 2px}
 .ed-2col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .ed-time{align-items:center}.ed-time label{margin:0;flex:none}.ed-time select.f{flex:1;width:auto;padding:6px;font-size:15px}
+
+svg text:not([letter-spacing]){letter-spacing:0}   /* page letter-spacing must not leak into diagrams (it becomes huge in SVG units) */

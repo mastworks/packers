@@ -16,6 +16,13 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 .tile .t em{font-style:normal;font-weight:600;color:var(--g)}
 .tile .d{aspect-ratio:1.3;position:relative}
 .tile .d svg{position:absolute;inset:0;width:100%;height:100%}
+.tile .dwarn{position:absolute;right:6px;top:84px;background:#C8102E;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.08em;border-radius:5px;padding:2px 6px;z-index:2}
+.tnotes p{margin:3px 0;font-size:12px;line-height:1.35;letter-spacing:.03em}.tnotes b{font-size:10.5px;letter-spacing:.1em;margin-right:4px}
+.tnotes .n5{color:#1d5c34}.tnotes .n5 b{color:#2E8B3A}.tnotes .n6{color:#1f3f6b}.tnotes .n6 b{color:#2f5fa3}   /* 5v5 green-ish, 6v6 blue-ish */
+.tnotes.short{padding:4px 7px 6px}.tnotes.short p{font-size:9.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#ovnote .tnotes .n5{color:#bfe6c9}#ovnote .tnotes .n5 b{color:#7fd08f}#ovnote .tnotes .n6{color:#c7d9f5}#ovnote .tnotes .n6 b{color:#8fb6ee}#ovnote .dlinks{color:var(--gold);font-weight:600}
+#ovcue .ovwarn{background:#C8102E;color:#fff;border-radius:5px;padding:1px 6px;font-weight:700;font-size:11px}
+#deepBtn.on{background:var(--gold);color:#111}
 .tag{position:absolute;left:5px;bottom:5px;font-size:9px;font-weight:600;background:var(--gold);color:#111;padding:2px 5px;border-radius:4px;letter-spacing:.08em}
 .tag.up{background:var(--g);color:var(--gold)}
 .ib{position:absolute;right:5px;bottom:5px;font-size:10px;font-weight:600;background:#fff;border:1.5px solid var(--gold);border-radius:9px;padding:1px 6px}
@@ -178,6 +185,7 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
     <div class=ofield><div class=stage id=stage></div><div id=edbox></div></div>
     <div class=oside>
       <div class=ocue id=ovcue></div>
+      <button class="btn" id=deepBtn style="display:none">🔭 IF THEY ALL GO DEEP</button>
       <div class=ctl id=ctl><button class=btn id=anim>▶ ANIMATE</button><button class=btn id=sl>0.5×</button><input id=sc type=range min=0 max=1000 value=0 aria-label="scrub"></div>
       <div class=acts><button class=btn id=edit>✏️ EDIT</button><button class="btn gold" id=send>📤 SEND TO COACH</button><button class=btn id=sync>🔄 SYNC</button></div>
       <div class=note id=ovnote></div>
@@ -225,6 +233,7 @@ $('#tabs').onclick=e=>{ const b=e.target.closest('button'); const i=[...$('#tabs
   if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } } };   // practice returns to the next game; schedule opens at the next game
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
+const teamNotes=(p,short)=>(p.note5||p.note6)?`<div class="tnotes ${short?'short':''}">${p.note5?`<p class=n5><b>5V5</b> ${PA.esc(p.note5)}</p>`:''}${p.note6?`<p class=n6><b>6V6</b> ${PA.esc(p.note6)}</p>`:''}</div>`:'';   // defense: both teams' notes, two colors
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
 function draw(){
   buildTabs(); grid.innerHTML='';
@@ -236,7 +245,7 @@ function draw(){
   if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div></div>`);
     grid.querySelector('.cards').onclick=e=>{ const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
-    t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
+    t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${isDef&&p.warn?`<span class=dwarn>⚠ ${PA.esc(p.warn)}</span>`:''}${isDef?teamNotes(p,true):''}${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
     t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
     PA.fit(t.querySelector('.nm'),12,7); });
   $('#legend').innerHTML=PA.legend(isDef);
@@ -528,14 +537,16 @@ function mailBatches(emails,subject,body){ const B=20, n=Math.ceil(emails.length
   d.querySelector('#mDone').onclick=()=>{ d.close(); d.remove(); }; }
 
 /* ---------- full screen ---------- */
-let cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
+let DEEP=false, cur=0, slow=false, stopA=null, ed=null, work=null, editing=false;
 const P=()=>VIEW[cur], DKEY=()=>'pa_idea_'+FMT+'_'+P().n;
 function stop(){ if(stopA){ stopA(); stopA=null; } $('#anim').textContent='▶ ANIMATE'; }
-function openOv(i){ cur=i; stop(); endEdit(); $('#ov').classList.add('show'); $('#ov').scrollTop=0; paintOv(); runAnim(); }   // new play: back to the top so the whole field shows
+function openOv(i){ DEEP=false; cur=i; stop(); endEdit(); $('#ov').classList.add('show'); $('#ov').scrollTop=0; paintOv(); runAnim(); }   // new play: back to the top so the whole field shows
 function paintOv(){ const p=editing?work:P();
   $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; $('#ovt').textContent=p.name;
-  $('#ovcue').innerHTML=cueHTML(p); $('#ovnote').textContent=p.note||'';
-  if(!editing) $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3});
+  const deep=DEEP&&!editing&&P().deep; $('#deepBtn').style.display=P().deep&&!editing?'':'none'; $('#deepBtn').classList.toggle('on',!!deep); $('#deepBtn').textContent=deep?'◀ BACK TO THE PLAY':'🔭 IF THEY ALL GO DEEP';
+  $('#ovcue').innerHTML=(P().warn&&!editing?`<span class=ovwarn>⚠ ${PA.esc(P().warn)}</span> `:'')+cueHTML(p);
+  if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes><p class=n5><b>5V5</b> ${PA.esc(P().deep5||'')}</p><p class=n6><b>6V6</b> ${PA.esc(P().deep6||'')}</p><p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=p.note||'';
+  if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3});
   $('#send').textContent=isCoach()?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
   const ro=PA.isParent()&&!isCoach(); ['#edit','#send','#newfrom'].forEach(k=>$(k).style.display=ro?'none':'');
   $('#edit').textContent=editing?'✓ DONE':'✏️ EDIT'; $('#edit').classList.toggle('on',editing);
@@ -544,11 +555,12 @@ function paintOv(){ const p=editing?work:P();
   const L={pending:'WAITING FOR COACH',shared:'VOTE NOW',applied:'ADDED',declined:'NOT USED'};
   $('#ovideas').innerHTML=list.length?`<h4>💡 IDEAS FOR THIS PLAY (${list.length})</h4>`+list.map(x=>`<a href="idea.html?id=${x.id}"><span>${PA.esc(x.play.name||'Idea')} · ${PA.esc(x.author)}</span><span class="pill ${x.status}" style="flex:none">${L[x.status]}</span> 👍${x.yes} 👎${x.no}</a>`).join(''):'';
 }
-function runAnim(){ stop(); if(editing) return; const p=P(); $('#anim').textContent='■ STOP';
+function runAnim(){ stop(); if(editing) return; const p=DEEP&&P().deep?P().deep:P(); $('#anim').textContent='■ STOP';
   const T=tl(p), vb=PB.viewBox(p,1.3), t0=performance.now(), speed=slow?0.5:1; let raf=0, dead=false;
   const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
     if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='▶ ANIMATE'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); } },700); };
   raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); }; }
+$('#deepBtn').onclick=()=>{ DEEP=!DEEP; stop(); paintOv(); runAnim(); };
 $('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
 $('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
 $('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3}); };

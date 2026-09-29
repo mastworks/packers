@@ -52,7 +52,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
   if(!plays){ await PA.join(false); plays=(await PA.loadPlays()).by[FMT]||[]; }
   const band=DEFN?PA.defense(plays).slice(0,8):PA.band(plays).slice(0,24), hasH=!DEFN&&band.some(p=>p.players.H);
   const cell=p=>`<div class="cell"><div class="band cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm>${esc(p.name)}</span></div><div class="title">${p.sub?`<em>${esc(p.sub)}</em> · `:''}${esc(p.cue||'')}</div><div class="dia" data-n="${p.n}"></div></div>`;
-  const leg=DEFN?'<span><i style="background:#203731;border:1pt solid #FFB612"></i>P PUNCH · S / F SAFETY · M MIDDLE · B BACKER · L / K CORNERS</span><span><i style="background:#b3bdb9"></i>OUR OFFENSE (GRAY)</span>'+PA.DCATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join(''):[['Q','#1F2F6B'],['C','#0B8A8A'],['X','#C8102E'],['Y','#2F9E44'],['Z','#DB8B00']].concat(hasH?[['H','#E0567F']]:[])
+  const leg=DEFN?'<span><i style="background:#203731;border:1pt solid #FFB612"></i>S1 S2 SAFETIES · F1 F2 FLATS · R1 RUSHER · 6V6: R2 / F3 / S3</span><span><i style="background:#b3bdb9"></i>OPPONENT (GRAY)</span>'+PA.DCATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join(''):[['Q','#1F2F6B'],['C','#0B8A8A'],['X','#C8102E'],['Y','#2F9E44'],['Z','#DB8B00']].concat(hasH?[['H','#E0567F']]:[])
     .map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('')+PA.CATS.map(([v,l])=>`<span><i class="sq cat-${v}"></i>${l}</span>`).join('');
   const printed=new Date().toLocaleDateString();
   let html='';

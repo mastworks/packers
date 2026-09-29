@@ -1,12 +1,9 @@
-/* Opening animation, once a day: four silver championship trophies (2023, 2024, 2024, 2025) flicker in,
+/* Opening animation, every time the app opens (and when coming back to it after 10+ minutes away): four silver championship trophies (2023, 2024, 2024, 2025) flicker in,
    a hard-faced Packer Army player smashes through the middle, the trophies are knocked aside and
    "LET'S GO PACKERS" lights up under him. Tap to skip. Original drawing in team colors (green #203731,
    gold #FFB612); no league or team logos. */
 (function(){
-  const KEY='pa_intro_day', day=new Date().toDateString();
-  let seen=null; try{ seen=localStorage.getItem(KEY); }catch(e){}
-  if(seen===day||/[?&]nointro\b/.test(location.search)||navigator.webdriver&&!/[?&]intro\b/.test(location.search)) return;
-  try{ localStorage.setItem(KEY,day); }catch(e){}
+  if(/[?&]nointro\b/.test(location.search)||navigator.webdriver&&!/[?&]intro\b/.test(location.search)) return;   // tests skip it unless ?intro
   const G='#203731', GOLD='#FFB612', S1='#f7f9fb', S2='#aab3bb', S3='#5b646c', SKIN='#e0ac7e';
   // Lombardi-style: a football standing in kicking position on a tall, three-sided tapering stand
   const trophy=(x,year,i,side)=>`<g transform="translate(${x} 0)"><g class="tro ${side}" style="animation-delay:${(0.1+i*0.22).toFixed(2)}s,1.72s">
@@ -65,6 +62,8 @@
   @keyframes paGlow{from{opacity:1;filter:drop-shadow(0 0 2px ${GOLD})}to{opacity:1;filter:drop-shadow(0 0 12px ${GOLD}) drop-shadow(0 0 22px ${GOLD})}}
   @keyframes paOut{to{opacity:0;visibility:hidden}}
   @media (prefers-reduced-motion:reduce){#paIntro,#paIntro *{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important}#paIntro{animation:paOut .3s ease-in 1.5s forwards!important}}`;
+  function run(first){
+  if(document.getElementById('paIntro')) return;
   const el=document.createElement('div'); el.id='paIntro'; el.setAttribute('role','img'); el.setAttribute('aria-label',"Four championship trophies, 2023, 2024, 2024 and 2025. A Packer Army player smashes through them. Let's go Packers!");
   el.innerHTML=`<style>${css}</style><svg viewBox="-300 -40 600 380">
     <defs><linearGradient id=sv x1=0 x2=1><stop offset="0" stop-color="${S3}"/><stop offset=".42" stop-color="${S1}"/><stop offset=".62" stop-color="${S2}"/><stop offset="1" stop-color="${S3}"/></linearGradient>
@@ -75,10 +74,14 @@
     <g transform="translate(0 75)"><g class=runner style="transform-box:fill-box;transform-origin:50% 100%">${player}</g></g>
     <text class=word x="0" y="318" text-anchor="middle" font-size="36" font-weight="900" letter-spacing="4" fill="${GOLD}" style="transform-box:fill-box;transform-origin:50% 50%">LET'S GO <tspan fill="#fff">PACKERS</tspan></text></svg>
     <div class=skip>TAP TO SKIP</div>`;
-  let fin; window.PA_INTRO=new Promise(r=>fin=r);   // setup dialogs wait for this (a modal dialog would cover the animation)
+  let fin=()=>{}; if(first) window.PA_INTRO=new Promise(r=>fin=r);   // setup dialogs wait for this (a modal dialog would cover the animation)
   const done=()=>{ if(el.parentNode) el.remove(); fin(); };
   el.addEventListener('click',done); el.addEventListener('animationend',e=>{ if(e.animationName==='paOut') done(); });
   setTimeout(done,4800);   // safety net
   const add=()=>document.body.appendChild(el);
   if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+  }
+  run(true);
+  let hiddenAt=0;   // coming back to the app after 10+ minutes counts as opening it again
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') hiddenAt=Date.now(); else if(hiddenAt&&Date.now()-hiddenAt>=10*60*1000) run(false); });
 })();

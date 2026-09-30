@@ -131,13 +131,13 @@ function playerG(k,x,y,isStar,opacity,ghost){
 }
 
 /* defense extras: shaded zones, rush line, goal line (drawn under routes and players) */
-function fieldExtras(play,vb){
+function fieldExtras(play,vb,losDrawn){
   if(!isD(play)) return '';
   let s='';
   if(play.field){ const F=play.field, yd=F.yd, hw=F.halfW;               // to-scale field: sidelines + faint lines every 5 yards
     for(let y=-10;y<=25;y+=5){ if(!y) continue; s+=`<line x1="${f(-hw)}" x2="${f(hw)}" y1="${f(-y*yd)}" y2="${f(-y*yd)}" stroke="#dfe5e2" stroke-width="${f(0.04*S)}"/>`; }
     s+=`<line x1="${f(-hw)}" x2="${f(-hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/><line x1="${f(hw)}" x2="${f(hw)}" y1="${f(vb.y)}" y2="${f(vb.y+vb.h)}" stroke="#9aa5a1" stroke-width="${f(0.08*S)}"/>`;
-    if(F.label) s+=`<text x="${f(-hw+0.2*S)}" y="${f(vb.y+0.55*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.38*S)}" fill="#7d8a85" letter-spacing="0.04">${esc(F.label)}</text>`; }
+    if(F.label) s+=`<text x="${f(-hw+0.2*S)}" y="${f(vb.y+(losDrawn==='full'?1.05:0.55)*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.38*S)}" fill="#7d8a85" letter-spacing="0.04">${esc(F.label)}</text>`; }
   const lbl=(y,t,col)=>`<text x="${f(vb.x+0.25*S)}" y="${f(-y-0.12*S)}" font-family="Avenir Next Condensed,Roboto Condensed,Arial Narrow,sans-serif" font-weight="600" font-size="${f(0.36*S)}" fill="${col}" letter-spacing="0.04">${esc(t)}</text>`;
   if(play.goalLine!=null){ const y=play.goalLine;
     const top=(play.field&&play.field.endBack!=null)?-play.field.endBack:vb.y;   // to-scale end zone: goal line → end line
@@ -152,7 +152,7 @@ function fieldExtras(play,vb){
   for(const fr of play.free||[]) tags+=tag(fr.at[0],fr.at[1],fr.t,'#C8102E','#fff');
   play._tags=tags;
   for(const z of play.zones||[]) s+=`<ellipse cx="${f(z.x)}" cy="${f(-z.y)}" rx="${f(z.rx)}" ry="${f(z.ry)}" fill="${DEF}" fill-opacity="0.06" stroke="${DEF}" stroke-opacity="0.22" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.15*S)} ${f(0.12*S)}"/>`;
-  if(play.rushLine!=null){ const y=play.rushLine;
+  if(play.rushLine!=null&&!losDrawn){ const y=play.rushLine;   // the LOS layer draws the rush line when present
     s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="${f(-y)}" y2="${f(-y)}" stroke="${DEF}" stroke-opacity="0.55" stroke-width="${f(0.05*S)}" stroke-dasharray="${f(0.3*S)} ${f(0.2*S)}"/>`+lbl(y,play.rushLabel||'RUSH LINE',DEF); }
   return s;
 }
@@ -206,11 +206,27 @@ function routeEls(k,r,opts){
   else if(r.end==='none' && dotFrom==null){ /* plain end */ }
   return out;
 }
+/* Line-of-scrimmage layer from the independent analyzer (los-overlay.js + analyze.js): one read of the line on offense AND defense.
+   opt.los: 'full' (full screen / editor: read chip, yard ticks, hand-off labels) · default compact (cards / wristband: lines only) · false = off.
+   Falls back to the old grey line if the analyzer files are not loaded. */
+function losLayer(play,vb,opt){
+  if(!root.PALOS||opt.los===false) return '';
+  try{
+    const halfW=Math.max(Math.abs(vb.x),Math.abs(vb.x+vb.w)), full=opt.los==='full';
+    const b=root.PALOS.build(play,{halfW,yMin:-(vb.y+vb.h),yMax:-vb.y,events:full});
+    if(!full) b.prims=b.prims.filter(p=>p.t!=='chip'&&p.t!=='text'&&p.t!=='dot');
+    if(isD(play)) b.prims=b.prims.filter(p=>!(p.stroke===root.PALOS.STYLE.ambig||(p.t==='text'&&/^ON\?/.test(p.s))));   // the grey offense on a defense card is a sample opponent: no ON? flags
+    const L=vb.x, R=vb.x+vb.w, ex=x=>x<-halfW+0.6?x+halfW+L:x>halfW-0.6?x-halfW+R:x;   // the overlay is symmetric: pin its edge marks to this diagram's real edges
+    const K=24/S;   // the overlay works in "pixels": draw it K times larger, then scale the group back to play units
+    return `<g transform="scale(${f(1/K)})">`+root.PALOS.toSVG(b,{scale:K,toPx:(x,y)=>[Math.round(ex(x)*K*10)/10,Math.round(-y*K*10)/10]})+'</g>';
+  }catch(e){ return ''; }
+}
 function staticSVG(play,opt){
   look(play); opt=opt||{}; const aspect=opt.aspect||1.476; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);  // opt.vb pins the view (coach drag)
   let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vb.x)} ${f(vb.y)} ${f(vb.w)} ${f(vb.h)}" preserveAspectRatio="xMidYMid meet" ${opt.attrs||''}>`;
-  s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
-  s+=fieldExtras(play,vb);
+  const los=losLayer(play,vb,opt);
+  s+=los||`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
+  s+=fieldExtras(play,vb,los?(opt.los==='full'?'full':true):false);
   const order=['H','Y','X','Z','C','Q'];
   for(const k of order){ if(play.routes[k]) s+=routeEls(k,play.routes[k],ghostK(play,k)?{...opt,col:GHOST}:opt); }
   for(const k of extraKeys(play,order)) s+=routeEls(k,play.routes[k],opt);
@@ -246,8 +262,9 @@ function staticSVG(play,opt){
 function animSVG(play,T,t,opt){
   look(play); opt=opt||{}; const aspect=opt.aspect||1.3; const vb=opt.vb?(S=opt.vb.h/8.0,opt.vb):viewBox(play,aspect);
   let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vb.x)} ${f(vb.y)} ${f(vb.w)} ${f(vb.h)}" preserveAspectRatio="xMidYMid meet" ${opt.attrs||''}>`;
-  s+=`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
-  s+=fieldExtras(play,vb);
+  const los=losLayer(play,vb,opt);
+  s+=los||`<line x1="${f(vb.x)}" x2="${f(vb.x+vb.w)}" y1="0" y2="0" stroke="#b8b8b8" stroke-width="${f(0.06*S)}"/>`;
+  s+=fieldExtras(play,vb,los?(opt.los==='full'?'full':true):false);
   const order=['H','Y','X','Z','C','Q'], all=order.concat(extraKeys(play,order));   // offense order, then defenders
   const colOf=k=>ghostK(play,k)?GHOST:COL[k];
   // ghost routes

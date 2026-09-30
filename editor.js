@@ -71,7 +71,7 @@ function PlayEditor(root,opt){
     return s;
   }
   function render(){ if(!play) return; const vb=vbLock||PB.viewBox(play,ASP); curVB=vb;
-    stage.innerHTML=PB.staticSVG(play,{aspect:ASP,vb}).replace(/<\/svg>$/,overlay(vb)+'</svg>'); }
+    stage.innerHTML=PB.staticSVG(play,{aspect:ASP,vb,los:'full'}).replace(/<\/svg>$/,overlay(vb)+'</svg>'); }
   function ui(){
     root.querySelectorAll('.ed-modes [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));
     root.querySelectorAll('.ed-tools').forEach(t=>t.classList.toggle('show',t.dataset.for===mode));

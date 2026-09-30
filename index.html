@@ -17,6 +17,7 @@ main{padding:8px 8px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-
 .tile .d{aspect-ratio:1.3;position:relative}
 .tile .d svg{position:absolute;inset:0;width:100%;height:100%}
 .tile .dwarn{position:absolute;right:6px;top:84px;background:#C8102E;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.08em;border-radius:5px;padding:2px 6px;z-index:2}
+.tile .abadge{position:absolute;right:5px;top:30px;z-index:2}
 .tnotes p{margin:3px 0;font-size:12px;line-height:1.35;letter-spacing:.03em}.tnotes b{font-size:10.5px;letter-spacing:.1em;margin-right:4px}
 .tnotes .n5{color:#1d5c34}.tnotes .n5 b{color:#2E8B3A}.tnotes .n6{color:#1f3f6b}.tnotes .n6 b{color:#2f5fa3}   /* 5v5 green-ish, 6v6 blue-ish */
 .tnotes.short{padding:4px 7px 6px}.tnotes.short p{font-size:9.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -217,7 +218,7 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Send</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
-<script src=intro.js></script><script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script>
+<script src=intro.js></script><script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
@@ -234,6 +235,12 @@ $('#tabs').onclick=e=>{ const b=e.target.closest('button'); const i=[...$('#tabs
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
 const teamNotes=(p,short)=>(p.note5||p.note6)?`<div class="tnotes ${short?'short':''}">${p.note5?`<p class=n5><b>5V5</b> ${PA.esc(p.note5)}</p>`:''}${p.note6?`<p class=n6><b>6V6</b> ${PA.esc(p.note6)}</p>`:''}</div>`:'';   // defense: both teams' notes, two colors
+/* coach only: analyzer badges (RULE / RISK) on play cards, computed once per playbook version */
+let ANALYSIS=null, ANALYSIS_KEY='';
+const analysisRows=()=>[].concat(...FMTS.map(f=>(BY[f]||[]).map(p=>({fmt:f,n:p.n,data:p}))));
+function coachBadge(p){ if(!isCoach()||!window.PAAnalyzePanel) return '';
+  if(ANALYSIS_KEY!==SEEN){ try{ ANALYSIS=PA.analyzeRows(analysisRows()); PAAnalyzePanel.css(); }catch(e){ ANALYSIS=null; } ANALYSIS_KEY=SEEN; }
+  const b=ANALYSIS?PAAnalyzePanel.badge(ANALYSIS,FMT,p.n):''; return b?`<span class=abadge>${b}</span>`:''; }
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(p.sub)}</em> · `:'')+PA.esc(p.cue||''); }
 function draw(){
   buildTabs(); grid.innerHTML='';
@@ -242,10 +249,11 @@ function draw(){
   if(tab===PRAC){ $('#legend').innerHTML=''; return drawPractice(); }
   if(tab===MSG){ $('#legend').innerHTML=''; return drawMessages(); }
   const isDef=tab===DEF, list=isDef?defs:band.slice(CARD*8,CARD*8+8); VIEW=isDef?defs:band;
-  if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div></div>`);
-    grid.querySelector('.cards').onclick=e=>{ const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
+  if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div>${isCoach()&&window.PAAnalyzePanel?'<button class="btn gold" id=analyzeBtn style="padding:6px 10px;font-size:11px">🔍 ANALYZE</button>':''}</div>`);
+    grid.querySelector('.cards').onclick=e=>{ if(e.target.id==='analyzeBtn') return PAAnalyzePanel.open(analysisRows()); const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
+  if(isDef&&isCoach()&&window.PAAnalyzePanel){ grid.insertAdjacentHTML('beforeend','<div class=cards><button class="btn gold" id=analyzeBtn2 style="padding:6px 10px;font-size:11px">🔍 ANALYZE</button></div>'); grid.querySelector('#analyzeBtn2').onclick=()=>PAAnalyzePanel.open(analysisRows()); }
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
-    t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${isDef&&p.warn?`<span class=dwarn>⚠ ${PA.esc(p.warn)}</span>`:''}${isDef?teamNotes(p,true):''}${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}`;
+    t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${isDef&&p.warn?`<span class=dwarn>⚠ ${PA.esc(p.warn)}</span>`:''}${isDef?teamNotes(p,true):''}${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}${coachBadge(p)}`;
     t.querySelector('.nm').textContent=p.name; t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
     PA.fit(t.querySelector('.nm'),12,7); });
   $('#legend').innerHTML=PA.legend(isDef);
@@ -546,7 +554,7 @@ function paintOv(){ const p=editing?work:P();
   const deep=DEEP&&!editing&&P().deep; $('#deepBtn').style.display=P().deep&&!editing?'':'none'; $('#deepBtn').classList.toggle('on',!!deep); $('#deepBtn').textContent=deep?'◀ BACK TO THE PLAY':'🔭 IF THEY ALL GO DEEP';
   $('#ovcue').innerHTML=(P().warn&&!editing?`<span class=ovwarn>⚠ ${PA.esc(P().warn)}</span> `:'')+cueHTML(p);
   if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes><p class=n5><b>5V5</b> ${PA.esc(P().deep5||'')}</p><p class=n6><b>6V6</b> ${PA.esc(P().deep6||'')}</p><p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=p.note||'';
-  if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3});
+  if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3,los:'full'});
   $('#send').textContent=isCoach()?'💾 SAVE TO TEAM':'📤 SEND TO COACH';
   const ro=PA.isParent()&&!isCoach(); ['#edit','#send','#newfrom'].forEach(k=>$(k).style.display=ro?'none':'');
   $('#edit').textContent=editing?'✓ DONE':'✏️ EDIT'; $('#edit').classList.toggle('on',editing);
@@ -557,13 +565,13 @@ function paintOv(){ const p=editing?work:P();
 }
 function runAnim(){ stop(); if(editing) return; const p=DEEP&&P().deep?P().deep:P(); $('#anim').textContent='■ STOP';
   const T=tl(p), vb=PB.viewBox(p,1.3), t0=performance.now(), speed=slow?0.5:1; let raf=0, dead=false;
-  const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
-    if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='▶ ANIMATE'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); } },700); };
-  raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3}); }; }
+  const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb,los:'full'}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
+    if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='▶ ANIMATE'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:'full'}); } },700); };
+  raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:'full'}); }; }
 $('#deepBtn').onclick=()=>{ DEEP=!DEEP; stop(); paintOv(); runAnim(); };
 $('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
 $('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
-$('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3}); };
+$('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3,los:'full'}); };
 $('#ovc').onclick=async()=>{ if(editing&&!await PA.ask('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
 $('#pv').onclick=()=>{ if(!editing) openOv((cur+VIEW.length-1)%VIEW.length); };
 $('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%VIEW.length); };
@@ -582,7 +590,7 @@ $('#edit').onclick=()=>{ if(editing){ endEdit(); paintOv(); } else startEdit(); 
 $('#send').onclick=async()=>{
   const d=PA.store.get(DKEY()), mine=editing?work:(d&&d.play);
   if(!mine||same(mine,P())) return PA.toast('Tap ✏️ EDIT and change something first');
-  if(isCoach()){ try{ mine.updated=new Date().toISOString().slice(0,10);
+  if(isCoach()){ if(!await PA.ruleGuard([{fmt:FMT,n:P().n,data:mine}])) return; try{ mine.updated=new Date().toISOString().slice(0,10);
       await PA.coachRpc('pa_save_play',{fmt:FMT,n:P().n,data:mine,reason:'Coach edit'}); PA.store.del(DKEY()); endEdit(); await load(false,true); PA.toast('Saved to the team'); }
     catch(e){ PA.say('Save failed: '+e.message+'\nSign in again on the Coach page (tap the title 5 times).'); } return; }
   if(!await PA.join(true)) return; $('#sMsg').value=''; $('#dSend').showModal();

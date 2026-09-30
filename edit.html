@@ -23,7 +23,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
   <p style="font:12px/1.4 var(--font);color:#44524d">Coach checks every idea against the league rules before the team sees it.</p>
 </div>
 <div class=actions><a class=btn id=cancel href="index.html" style="text-align:center;text-decoration:none">Cancel</a><button class=btn id=undo>Undo</button><button class="btn gold" id=send>Send to Coach</button></div>
-<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
+<script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
 <script>
 const $=s=>document.querySelector(s), q=new URLSearchParams(location.search);
 const FMT=/^[0-9a-z]{3,4}$/i.test(q.get('fmt')||'')?q.get('fmt'):'5v5',   // only a real format name (never markup from a link)

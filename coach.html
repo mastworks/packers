@@ -47,7 +47,7 @@ dialog .radio{display:flex;gap:8px;align-items:center;font:15px var(--font);marg
   <div class=more>
     <button class="btn ghost" id=print5>Print 5v5 wristband</button><button class="btn ghost" id=print6>Print 6v6 wristband</button>
     <button class="btn ghost" id=printD5>Print 5v5 defense</button><button class="btn ghost" id=printD6>Print 6v6 defense</button>
-    <button class="btn ghost" id=histBtn>Versions of this play</button><button class="btn ghost" id=revert>Undo all unsaved changes</button>
+    <button class="btn gold" id=analyzeBtn>🔍 ANALYZE ALL PLAYS</button><button class="btn ghost" id=histBtn>Versions of this play</button><button class="btn ghost" id=revert>Undo all unsaved changes</button>
     <button class="btn ghost" id=codeBtn>Team code</button><button class="btn ghost" id=out>Sign out</button>
     <a class="btn ghost" href="index.html">← Player view</a>
   </div>
@@ -67,7 +67,7 @@ dialog .radio{display:flex;gap:8px;align-items:center;font:15px var(--font);marg
   <label>CURRENT CODE</label><input id=cNow readonly><label>NEW CODE</label><input id=cNew autocapitalize=characters autocomplete=off maxlength=40>
   <div class=row><button class="btn ghost" id=cCancel>Close</button><button class="btn gold" id=cOk>Change</button></div></dialog>
 
-<script src=config.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
+<script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b), P=PA.esc;
 const base={}, work={};            // base = saved playbook, work = coach's copy being edited (kept on the phone until saved)
@@ -114,7 +114,9 @@ $('#tabs').onclick=e=>{ const t=e.target.dataset.t; if(!t) return; tab=t; [...$(
 $('#undo').onclick=()=>{ if(!ed.undo()) PA.toast('Nothing to undo'); };
 $('#revert').onclick=async()=>{ const b=base[FMT].find(q=>q.n===cur().n); if(!b||same(b,cur())) return PA.toast('This play has no unsaved changes');
   if(!await PA.ask(`Put play #${cur().n} back to the saved version?`)) return; work[FMT][idx]=clone(b); saveDraft(); loadPlay(); };
+$('#analyzeBtn').onclick=()=>{ if(!window.PAAnalyzePanel) return PA.say('Analyzer not loaded.'); PAAnalyzePanel.open([].concat(...FMTS.map(f=>(work[f]||[]).map(p=>({fmt:f,n:p.n,data:p}))))); };
 $('#save').onclick=async()=>{
+  if(!await PA.ruleGuard([].concat(...FMTS.map(f=>changed(f).map(p=>({fmt:f,n:p.n,data:p})))))) return;
   $('#save').disabled=true; $('#save').textContent='Saving…'; const today=new Date().toISOString().slice(0,10);
   try{ for(const f of FMTS) for(const p of changed(f)){ p.updated=today; await PA.coachRpc('pa_save_play',{fmt:f,n:p.n,data:p,reason:'Coach edit'});
          const i=base[f].findIndex(q=>q.n===p.n); if(i>=0) base[f][i]=clone(p); else base[f].push(clone(p)); }

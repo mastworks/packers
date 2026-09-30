@@ -142,6 +142,13 @@ const PA=(()=>{
     });
   }
   const say=msg=>dlg(msg), ask=msg=>dlg(msg,{cancel:true,ok:'Yes'}), input=(msg,def)=>dlg(msg,{input:def==null?'':String(def),cancel:true});
+  /* coach-only play check (independent analyzer, analyze.js + pa-rules2025.js). rows: [{fmt,n,data}] */
+  const analyzeRows=rows=>(window.PAAnalyze?window.PAAnalyze.run(rows):null);
+  async function ruleGuard(rows){   // before saving: RULE findings = likely flag → show why, let Coach fix or save anyway
+    const rep=analyzeRows(rows); if(!rep) return true;
+    const r=rep.findings.filter(f=>f.sev==='rule'); if(!r.length) return true;
+    return ask('Rule check · this may draw a flag:\n\n'+r.slice(0,4).map(f=>'#'+f.n+' '+f.msg+(f.fix?'\n→ '+f.fix:'')).join('\n\n')+(r.length>4?'\n\n+'+(r.length-4)+' more (see ANALYZE)':'')+'\n\nSave anyway?');
+  }
   const okEmail=e=>!!e&&e.length<=254&&/^[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(e);   // same rule as the database
   // Coach's emails always open in Gmail as the team address (a mailto: link would use whatever Mail account the phone has)
   const gmail=(bcc,subject,body)=>'https://mail.google.com/mail/?authuser='+encodeURIComponent(COACH_EMAIL)+'&view=cm&fs=1&tf=1'
@@ -226,5 +233,5 @@ const PA=(()=>{
   const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>S1 S2 SAFETIES · F1 F2 FLATS · R1 RUSHER · 6V6: R2 / F3 / S3 (BY JOB)</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {analyzeRows,ruleGuard,say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

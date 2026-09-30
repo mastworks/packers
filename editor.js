@@ -35,7 +35,7 @@ function PlayEditor(root,opt){
   const stack=()=>stacks[key]||(stacks[key]=[]);
   const push=()=>{ const s=stack(); s.push(JSON.stringify(play)); if(s.length>80) s.shift(); };
   const changed=()=>{ render(); ui(); opt.onChange&&opt.onChange(play); };
-  const toast=m=>(window.PA&&PA.toast)?PA.toast(m):alert(m);
+  const toast=m=>PA.toast(m);   // PA is a const (not window.PA): the old check always fell back to a pop-up
   const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 
   /* ---------- ball helpers: an event is {pass|give: player, v?: route dot, alt?: [{pass, v?}]} ---------- */
@@ -219,7 +219,7 @@ function PlayEditor(root,opt){
     r.pts=r.pts.map((p,i)=>{ if(!i) return p; const x=(p[0]-ox)*scale, y=(p[1]-oy)*scale; return [round(ox+x*c-y*s),round(oy+x*s+y*c)]; }); }
 
   /* ---------- buttons ---------- */
-  root.addEventListener('click',e=>{
+  root.addEventListener('click',async e=>{
     const b=e.target.closest('button'); if(!b||!play) return;
     if(b.dataset.m){ if(stopA){stopA();stopA=null;animBtn();} mode=b.dataset.m; if(mode!=='route') selPt=null; render(); ui(); return; }
     if(b.dataset.k){ selK=b.dataset.k; selPt=null; render(); ui(); return; }
@@ -247,7 +247,7 @@ function PlayEditor(root,opt){
       case 'arrow': push(); r.end=r.end==='none'?'arrow':'none'; changed(); break;
       case 'dot': push(); if(r.dotFrom===selPt) delete r.dotFrom; else r.dotFrom=selPt; changed(); break;
       case 'motion': push(); if(r.motion&&r.motion[1]===selPt) delete r.motion; else r.motion=[0,selPt]; changed(); break;
-      case 'clear': if(!confirm(`Remove ${selK}'s route?`)) break; push(); delete play.routes[selK];
+      case 'clear': if(!await PA.ask(`Remove ${selK}'s route?`)) break; push(); delete play.routes[selK];
         for(const ev of play.ball||[]) for(const x of [ev,...(ev.alt||[])]) if(evTo(x)===selK) delete x.v;
         selPt=null; changed(); break;
       case 'addev': { push(); play.ball=play.ball||[]; const from=play.ball.length?evTo(play.ball[play.ball.length-1]):'Q';

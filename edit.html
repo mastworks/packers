@@ -42,17 +42,17 @@ function startFrom(p){ work=clone(p); ed.load(work,DKEY); save(); }
 (async()=>{
   if(!PA.configured) return document.body.append('App not connected (config.js).');
   if(!await PA.join(true)){ location.href=BACK; return; }
-  try{ plays=(await PA.loadPlays()).by[FMT]||[]; }catch(e){ return alert('Could not load plays: '+e.message); }
+  try{ plays=(await PA.loadPlays()).by[FMT]||[]; }catch(e){ return PA.say('Could not load plays: '+e.message); }
   ed=PlayEditor($('#ed'),{onChange:save});
   const d=PA.store.get(DKEY);
   if(NEW){
     $('#hd').innerHTML='PACKER <span>ARMY</span> · NEW '+FMT+' PLAY';
     $('#top').innerHTML=`<div class=start><label style="margin:0">START FROM</label><select class=f id=from><option value="">Blank formation</option>${plays.map(p=>`<option value="${p.n}">Copy of #${p.n} ${PA.esc(p.name)}</option>`).join('')}</select></div>`;
-    $('#from').onchange=e=>{ if(work&&ed.canUndo()&&!confirm('Start over? Your drawing will be replaced.')) return; const p=plays.find(x=>x.n==e.target.value); const s=p?clone(p):blank(); if(p){ s.name='My version of '+p.name; } startFrom(s); };
+    $('#from').onchange=async e=>{ if(work&&ed.canUndo()&&!await PA.ask('Start over? Your drawing will be replaced.')) return; const p=plays.find(x=>x.n==e.target.value); const s=p?clone(p):blank(); if(p){ s.name='My version of '+p.name; } startFrom(s); };
     $('#replaceBox').style.display='block';
     $('#repl').innerHTML='<option value="">Not sure: let Coach pick</option>'+plays.map(p=>`<option value="${p.n}">Replace #${p.n} ${PA.esc(p.name)}</option>`).join('');
   } else {
-    base=plays.find(p=>p.n===N); if(!base) return alert('Play #'+N+' not found');
+    base=plays.find(p=>p.n===N); if(!base) return PA.say('Play #'+N+' not found');
     $('#hd').innerHTML=`PACKER <span>ARMY</span> · CHANGE #${N}`;
     $('#top').innerHTML=`<div class=orig><div class=mini>${PB.staticSVG(base,{aspect:1.3})}</div><div><b>Now: #${N} ${PA.esc(base.name)}</b><br>Drag players, reshape routes, or change who gets the ball below. Your idea goes to Coach first.</div></div>`;
   }
@@ -63,7 +63,7 @@ function startFrom(p){ work=clone(p); ed.load(work,DKEY); save(); }
 $('#undo').onclick=()=>{ if(!ed.undo()) PA.toast('Nothing to undo'); };
 $('#send').onclick=async()=>{
   if(!NEW && JSON.stringify(work)===JSON.stringify(base)) return PA.toast('Change something first');
-  if(!(work.ball||[]).length && !confirm('Your play has no pass or hand-off yet (Ball button). Send anyway?')) return;
+  if(!(work.ball||[]).length && !await PA.ask('Your play has no pass or hand-off yet (Ball button). Send anyway?')) return;
   if(!await PA.join(true)) return;
   $('#send').disabled=true; $('#send').textContent='Sending…';
   try{
@@ -71,6 +71,6 @@ $('#send').onclick=async()=>{
     await PA.propose(FMT,NEW?'new':'modify',NEW?repl:N,work,$('#msg').value);
     PA.store.del(DKEY); PA.toast('Sent! Coach will look at it.',3000);
     setTimeout(()=>location.href=BACK,900);
-  }catch(e){ alert('Could not send: '+e.message); $('#send').disabled=false; $('#send').textContent='Send to Coach'; }
+  }catch(e){ PA.say('Could not send: '+e.message); $('#send').disabled=false; $('#send').textContent='Send to Coach'; }
 };
 </script></body></html>

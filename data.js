@@ -128,6 +128,20 @@ const PA=(()=>{
   const setMyEmail=(memberId,email)=>rpc('pa_guardian_email',{code:code(),member:memberId,token:tokenFor(memberId),email:email||null})
     .then(()=>store.set('pa_links',links().map(l=>l.member_id===memberId?{...l,email:email||''}:l)));
   const practiceData=()=>rpc('pa_practice',{code:code()});
+  /* in-app dialogs: the browser's own alert / confirm / prompt boxes show the web address as their title, so the app never uses them */
+  function dlg(msg,{input=null,cancel=false,ok='OK'}={}){
+    return new Promise(res=>{
+      const d=document.createElement('dialog'); d.id='paDlg'; d.className='padlg';
+      d.innerHTML=`<p>${esc(msg).replace(/\n/g,'<br>')}</p>${input!==null?`<input id=paDlgIn autocomplete=off value="${esc(input)}">`:''}<div class=row>${cancel?'<button class="btn ghost" id=paDlgCancel>Cancel</button>':''}<button class="btn gold" id=paDlgOk>${ok}</button></div>`;
+      document.body.appendChild(d); d.showModal(); const inp=d.querySelector('#paDlgIn'); if(inp){ inp.focus(); inp.select(); }
+      const done=v=>{ d.close(); d.remove(); res(v); };
+      d.querySelector('#paDlgOk').onclick=()=>done(input!==null?inp.value:true);
+      const c=d.querySelector('#paDlgCancel'); if(c) c.onclick=()=>done(input!==null?null:false);
+      if(inp) inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); done(inp.value); } };
+      d.addEventListener('cancel',e=>{ e.preventDefault(); if(cancel) done(input!==null?null:false); });
+    });
+  }
+  const say=msg=>dlg(msg), ask=msg=>dlg(msg,{cancel:true,ok:'Yes'}), input=(msg,def)=>dlg(msg,{input:def==null?'':String(def),cancel:true});
   const okEmail=e=>!!e&&e.length<=254&&/^[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(e);   // same rule as the database
   // Coach's emails always open in Gmail as the team address (a mailto: link would use whatever Mail account the phone has)
   const gmail=(bcc,subject,body)=>'https://mail.google.com/mail/?authuser='+encodeURIComponent(COACH_EMAIL)+'&view=cm&fs=1&tf=1'
@@ -196,7 +210,7 @@ const PA=(()=>{
   async function join(needPlayer){
     if(window.PA_INTRO) await window.PA_INTRO;
     if(!code()){ if(role()) await codeOnlyDialog(); else setupResult=await setupDialog(true,store.get('pa_fmt')); }
-    if(needPlayer&&!members().length){ alert(isParent()||role()==='coach'?'Only players can send ideas, vote or comment.':'Join the roster as a player first (Schedule → + ADD A PLAYER ON THIS PHONE).'); return false; }
+    if(needPlayer&&!members().length){ say(isParent()||role()==='coach'?'Only players can send ideas, vote or comment.':'Join the roster as a player first (Schedule → + ADD A PLAYER ON THIS PHONE).'); return false; }
     return true;
   }
   const lastSetup=()=>{ const r=setupResult; setupResult=null; return r; };
@@ -212,5 +226,5 @@ const PA=(()=>{
   const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>S1 S2 SAFETIES · F1 F2 FLATS · R1 RUSHER · 6V6: R2 / F3 / S3 (BY JOB)</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

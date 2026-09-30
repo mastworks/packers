@@ -84,3 +84,5 @@ dialog .row .btn{flex:1}
 .ed-time{align-items:center}.ed-time label{margin:0;flex:none}.ed-time select.f{flex:1;width:auto;padding:6px;font-size:15px}
 
 svg text:not([letter-spacing]){letter-spacing:0}   /* page letter-spacing must not leak into diagrams (it becomes huge in SVG units) */
+
+dialog.padlg{max-width:380px}dialog.padlg p{font-size:15px;line-height:1.45;color:var(--ink);letter-spacing:.03em;margin:4px 0 12px}dialog.padlg input{width:100%;font-size:16px;padding:9px;border-radius:8px;border:1.5px solid #c9d2ce;font-family:inherit;text-transform:none;box-sizing:border-box}

@@ -315,22 +315,22 @@ function drawSchedule(){
     const at=e.target.closest('[data-att]'), cy=e.target.closest('[data-cyc]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
     const nb=e.target.closest('[data-note]');
     if(nb){ e.stopPropagation(); const mid=nb.dataset.note, gid=nb.dataset.g, cur=attOf(gid,mid), old=(NOTES[mid]||{})[gid]||'';
-      if(!cur) return alert('Tap YES, MAYBE or NO first, then add a note.');
-      const v=prompt('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return;
-      try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ alert(err.message); } return; }
+      if(!cur) return PA.say('Tap YES, MAYBE or NO first, then add a note.');
+      const v=await PA.input('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return;
+      try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ PA.say(err.message); } return; }
     if(at||cy){ e.stopPropagation(); const mid=(at||cy).dataset.m||cy.dataset.cyc, gid=(at||cy).dataset.g, cur=attOf(gid,mid);
       const nxt=at?(cur===at.dataset.att?'':at.dataset.att):({'':'yes',yes:'maybe',maybe:'no',no:''}[cur]);
       try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
-      catch(err){ alert(err.message); } return; }
+      catch(err){ PA.say(err.message); } return; }
     if(ra){ e.preventDefault(); const k=ra.dataset.radd;
       if(k==='child'){ const r=await PA.addChildLink(FMT); if(r){ await loadRoster(); draw(); PA.toast('Linked. You can answer attendance now.'); } return; }
       if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }
-      const n=prompt(k==='coach'?'Coach name':'Player name'); if(!n||!n.trim()) return;
-      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:FMT,kind:k,name:n.trim()}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
-    if(rr){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rr.dataset.rren), n=prompt('New name',m.name); if(!n||!n.trim()) return;
-      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:m.fmt,kind:m.kind,name:n.trim(),mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
-    if(rd){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rd.dataset.rdel); if(!confirm(`Remove ${m.name} from the ${m.fmt} roster? Their attendance answers are removed too.`)) return;
-      try{ await PA.coachRpc('pa_coach_roster_delete',{mid:m.id}); await loadRoster(); draw(); }catch(err){ alert(err.message); } return; }
+      const n=await PA.input(k==='coach'?'Coach name':'Player name'); if(!n||!n.trim()) return;
+      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:FMT,kind:k,name:n.trim()}); await loadRoster(); draw(); }catch(err){ PA.say(err.message); } return; }
+    if(rr){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rr.dataset.rren), n=await PA.input('New name',m.name); if(!n||!n.trim()) return;
+      try{ await PA.coachRpc('pa_coach_roster_save',{fmt:m.fmt,kind:m.kind,name:n.trim(),mid:m.id}); await loadRoster(); draw(); }catch(err){ PA.say(err.message); } return; }
+    if(rd){ e.preventDefault(); const m=ROSTER.find(x=>x.id===rd.dataset.rdel); if(!await PA.ask(`Remove ${m.name} from the ${m.fmt} roster? Their attendance answers are removed too.`)) return;
+      try{ await PA.coachRpc('pa_coach_roster_delete',{mid:m.id}); await loadRoster(); draw(); }catch(err){ PA.say(err.message); } return; }
     const pr=e.target.closest('[data-prac]'); if(pr){ e.stopPropagation(); PRAC_GAME=pr.dataset.prac; PRAC_WK=null; tab=PRAC; window.scrollTo(0,0); return draw(); }
     const ed=e.target.closest('[data-edit]'); if(ed){ e.stopPropagation(); return editGame(GAMES.find(g=>g.id===ed.dataset.edit)); }
     if(e.target.id==='addGame'){ const last=reg[reg.length-1]||{}; return editGame({fmt:FMT,division:last.division||'',week:(last.week||0)+1,gdate:'',gtime:'',field:last.field||'',home:'Packers Barber',away:'',stage:'regular'}); }
@@ -360,23 +360,23 @@ function drawPractice(){ const {reg,po,next}=seasonGames(); let g=GAMES.find(x=>
 let PCFG={}, MANAGE=false;
 async function loadPractice(){ try{ PCFG=(await PA.practiceData())||{}; }catch(e){ PCFG=PCFG||{}; } }
 const pToggle=(list,k)=>{ PCFG.hidden=PCFG.hidden||{}; const a=new Set(PCFG.hidden[list]||[]); a.has(k)?a.delete(k):a.add(k); PCFG.hidden[list]=[...a]; };
-async function savePractice(msg){ try{ await PA.coachRpc('pa_coach_practice_save',{d:PCFG}); PA.toast(msg||'Saved: the team sees it next time they open the app'); }catch(e){ alert('Could not save: '+e.message); await loadPractice(); } draw(); }
+async function savePractice(msg){ try{ await PA.coachRpc('pa_coach_practice_save',{d:PCFG}); PA.toast(msg||'Saved: the team sees it next time they open the app'); }catch(e){ PA.say('Could not save: '+e.message); await loadPractice(); } draw(); }
 async function practiceManage(e){ const t=e.target.closest('[data-act],[data-sec],[data-vid],[data-drill-hide],[data-drill-edit],[data-drill-reset],[data-hwdel]'); if(!t) return;
   const d=t.dataset, y=scrollY, keepScroll=()=>requestAnimationFrame(()=>scrollTo(0,y));
   if(d.act==='manage'){ MANAGE=!MANAGE; draw(); return keepScroll(); }
   if(d.sec){ pToggle('sections',d.sec); await savePractice(); return keepScroll(); }
   if(d.vid){ e.preventDefault(); pToggle('videos',d.vid); await savePractice(); return keepScroll(); }
   if(d.drillHide){ e.preventDefault(); pToggle('drills',d.drillHide); await savePractice(); return keepScroll(); }
-  if(d.drillReset){ e.preventDefault(); if(!confirm(DRILLS[d.drillReset]?'Undo your edits to this drill?':'Delete this drill?')) return; delete PCFG.drills[d.drillReset]; await savePractice(); return keepScroll(); }
+  if(d.drillReset){ e.preventDefault(); if(!await PA.ask(DRILLS[d.drillReset]?'Undo your edits to this drill?':'Delete this drill?')) return; delete PCFG.drills[d.drillReset]; await savePractice(); return keepScroll(); }
   if(d.drillEdit||d.act==='drillnew'){ e.preventDefault(); const k=d.drillEdit, C=practiceContent(PCFG), cur=k?C.drills[k]:{name:'',min:8,who:'Everyone',setup:'',how:'',pts:[],vids:[]};
     const r=await drillDialog(cur,C); if(!r) return; PCFG.drills=PCFG.drills||{}; PCFG.drills[k||('c_'+Date.now().toString(36))]=r; await savePractice(); return keepScroll(); }
-  if(d.act==='vidnew'){ const u=prompt('Paste a YouTube link (pick short, clear videos made for young players):'); if(!u) return; const id=ytId(u); if(!id) return alert('That is not a YouTube link.');
+  if(d.act==='vidnew'){ const u=await PA.input('Paste a YouTube link (pick short, clear videos made for young players):'); if(!u) return; const id=ytId(u); if(!id) return PA.say('That is not a YouTube link.');
     let title='', len=''; try{ const j=await (await fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id))).json(); title=j.title+(j.author_name?' · '+j.author_name:''); }catch(err){}
-    title=prompt(title?'Video found. Title to show:':'Could not check the video (it may be private). Title to show:',title||''); if(!title) return;
+    title=await PA.input(title?'Video found. Title to show:':'Could not check the video (it may be private). Title to show:',title||''); if(!title) return;
     PCFG.videos=PCFG.videos||{}; PCFG.videos['c_'+id]=[id,title.slice(0,90),len]; await savePractice('Video added'); return keepScroll(); }
   if(d.act==='hwnew'){ const r=await homeworkDialog(practiceContent(PCFG)); if(!r) return; const notify=r.notify; delete r.notify; PCFG.homework=[r,...(PCFG.homework||[])]; await savePractice('Homework posted');
     if(notify){ try{ await PA.coachRpc('pa_coach_announce',{fmt:r.fmt||'',title:'📚 New homework: '+r.title,body:(r.body||'')+'\nSee the PRACTICE tab.',audience:'all'}); await loadAnn(); countUnread(); }catch(err){} } return; }
-  if(d.hwdel){ if(!confirm('Delete this homework?')) return; PCFG.homework=(PCFG.homework||[]).filter(h=>h.id!==d.hwdel); await savePractice('Homework deleted'); return keepScroll(); }
+  if(d.hwdel){ if(!await PA.ask('Delete this homework?')) return; PCFG.homework=(PCFG.homework||[]).filter(h=>h.id!==d.hwdel); await savePractice('Homework deleted'); return keepScroll(); }
 }
 function formDialog(html,read){ return new Promise(res=>{ const dl=document.createElement('dialog'); dl.innerHTML=html+'<div class=row><button class="btn ghost" data-x=0>Cancel</button><button class="btn gold" data-x=1>Save</button></div>';
   document.body.appendChild(dl); dl.showModal(); dl.addEventListener('close',()=>dl.remove());
@@ -386,7 +386,7 @@ function drillDialog(cur,C){ const E=PA.esc;
     <label>SET UP</label><textarea id=fdS maxlength=400>${E(cur.setup)}</textarea><label>HOW</label><textarea id=fdH maxlength=800>${E(cur.how)}</textarea>
     <label>COACHING POINTS (one per line)</label><textarea id=fdP maxlength=800>${E((cur.pts||[]).join('\n'))}</textarea>
     <label>VIDEOS</label><div class=fdv>${Object.entries(C.videos).map(([k,v])=>`<label class=chk><input type=checkbox value="${E(k)}" ${(cur.vids||[]).includes(k)?'checked':''}> ${E(v[1])}</label>`).join('')}</div>`,
-    dl=>{ const q=id=>dl.querySelector('#'+id).value.trim(); if(!q('fdN')) { alert('Give the drill a name.'); return null; }
+    dl=>{ const q=id=>dl.querySelector('#'+id).value.trim(); if(!q('fdN')) { PA.say('Give the drill a name.'); return null; }
       return {name:q('fdN'),min:Math.max(1,Math.min(60,+q('fdM')||5)),who:q('fdW')||'Everyone',setup:q('fdS'),how:q('fdH'),pts:q('fdP').split('\n').map(x=>x.trim()).filter(Boolean),vids:[...dl.querySelectorAll('.fdv input:checked')].map(i=>i.value)}; }); }
 function homeworkDialog(C){ const E=PA.esc;
   return formDialog(`<h2>New homework</h2><label>TEAM</label><select class=f id=fhF><option value="">Both teams</option><option value="5v5">5v5</option><option value="6v6">6v6</option></select>
@@ -394,7 +394,7 @@ function homeworkDialog(C){ const E=PA.esc;
     <label>DRILLS</label><div class=fdv>${Object.entries(C.drills).filter(([k])=>!C.hideDrill.has(k)).map(([k,d])=>`<label class=chk><input type=checkbox name=d value="${E(k)}"> ${E(d.name)}</label>`).join('')}</div>
     <label>VIDEOS</label><div class=fdv>${Object.entries(C.videos).filter(([k])=>!C.hideVid.has(k)).map(([k,v])=>`<label class=chk><input type=checkbox name=v value="${E(k)}"> ${E(v[1])}</label>`).join('')}</div>
     <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type=checkbox id=fhN checked style="width:20px;height:20px"> NOTIFY THE TEAM IN MESSAGES</label>`,
-    dl=>{ const t=dl.querySelector('#fhT').value.trim(); if(!t){ alert('Give the homework a title.'); return null; }
+    dl=>{ const t=dl.querySelector('#fhT').value.trim(); if(!t){ PA.say('Give the homework a title.'); return null; }
       return {id:'h'+Date.now().toString(36),fmt:dl.querySelector('#fhF').value||null,title:t,body:dl.querySelector('#fhB').value.trim(),
         drills:[...dl.querySelectorAll('input[name=d]:checked')].map(i=>i.value),videos:[...dl.querySelectorAll('input[name=v]:checked')].map(i=>i.value),created:new Date().toISOString(),notify:dl.querySelector('#fhN').checked}; }); }
 let editing_game=null;
@@ -409,15 +409,15 @@ $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).v
   if(out.postponed){ if(g.gdate&&out.gdate===g.gdate){ out.orig_gdate=g.orig_gdate||g.gdate; out.gdate=''; } }   // postponed: keep the original date, new date TBD
   else if(g.postponed&&out.gdate){ out.orig_gdate=g.orig_gdate||''; }                                               // new date entered: show "rescheduled from"
   else if(g.gdate&&out.gdate&&out.gdate!==g.gdate&&!g.orig_gdate){ out.orig_gdate=g.gdate; }                        // moved directly to a new date
-  if(g.postponed&&!out.postponed&&!out.gdate&&out.stage!=='playoff') return alert('Enter the new date (or keep it marked postponed).');
-  if(out.stage!=='playoff'&&!out.postponed&&(!out.gdate||!out.home||!out.away)) return alert('Date, home and away are needed.');
-  if(out.postponed&&out.ours!=null) return alert('A postponed game has no score yet.');
-  if(out.ours!=null&&(!out.home||!out.away)) return alert('Enter both teams before a score.');
-  if((out.ours==null)!==(out.theirs==null)) return alert('Enter both scores (or neither).');
+  if(g.postponed&&!out.postponed&&!out.gdate&&out.stage!=='playoff') return PA.say('Enter the new date (or keep it marked postponed).');
+  if(out.stage!=='playoff'&&!out.postponed&&(!out.gdate||!out.home||!out.away)) return PA.say('Date, home and away are needed.');
+  if(out.postponed&&out.ours!=null) return PA.say('A postponed game has no score yet.');
+  if(out.ours!=null&&(!out.home||!out.away)) return PA.say('Enter both teams before a score.');
+  if((out.ours==null)!==(out.theirs==null)) return PA.say('Enter both scores (or neither).');
   try{ await PA.coachRpc('pa_save_game',{g:out}); $('#dGame').close(); await loadGames(); draw(); PA.toast('Saved. Players see it next time they open the app.'); }
-  catch(e){ alert('Could not save: '+e.message); } };
-$('#gDel').onclick=async()=>{ if(!confirm('Delete this game from the schedule?')) return;
-  try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ alert(e.message); } };
+  catch(e){ PA.say('Could not save: '+e.message); } };
+$('#gDel').onclick=async()=>{ if(!await PA.ask('Delete this game from the schedule?')) return;
+  try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ PA.say(e.message); } };
 async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn(),loadPractice()]); await loadMsgs(); }
 let ANN=[];
 async function loadAnn(){ try{ ANN=await PA.announcements(); }catch(e){ ANN=ANN||[]; } }
@@ -490,18 +490,18 @@ function drawMessages(){
     if(act==='newmsg') return openMsg();
     if(act==='back'){ OPEN_THREAD=null; await loadMsgs(); return draw(); }
     if(t.dataset.thread) return openThread(t.dataset.thread);
-    if(act==='reply'){ const b=$('#mReply').value.trim(); if(!b) return; try{ await PA.coachRpc('pa_coach_reply',{member:OPEN_THREAD,body:b}); await openThread(OPEN_THREAD); PA.toast('Sent'); }catch(err){ alert(err.message); } return; }
+    if(act==='reply'){ const b=$('#mReply').value.trim(); if(!b) return; try{ await PA.coachRpc('pa_coach_reply',{member:OPEN_THREAD,body:b}); await openThread(OPEN_THREAD); PA.toast('Sent'); }catch(err){ PA.say(err.message); } return; }
     if(t.dataset.send){ const id=t.dataset.send, ta=box.querySelector(`[data-body="${id}"]`), b=ta.value.trim(); if(!b) return;
-      try{ await PA.send(id,b); ta.value=''; THREADS[id]=await PA.thread(id); draw(); PA.toast('Sent to Coach'); }catch(err){ alert(err.message); } return; }
-    if(t.dataset.adel){ if(!confirm('Remove this message from everyone\'s app?')) return;
-      try{ await PA.coachRpc('pa_coach_announce_delete',{aid:+t.dataset.adel}); await loadAnn(); draw(); }catch(err){ alert(err.message); } return; }
+      try{ await PA.send(id,b); ta.value=''; THREADS[id]=await PA.thread(id); draw(); PA.toast('Sent to Coach'); }catch(err){ PA.say(err.message); } return; }
+    if(t.dataset.adel){ if(!await PA.ask('Remove this message from everyone\'s app?')) return;
+      try{ await PA.coachRpc('pa_coach_announce_delete',{aid:+t.dataset.adel}); await loadAnn(); draw(); }catch(err){ PA.say(err.message); } return; }
     if(t.dataset.myemail){ const id=t.dataset.myemail, v=box.querySelector(`[data-myemail-in="${id}"]`).value.trim();
-      if(v&&!PA.okEmail(v)) return alert('That email does not look right (or leave it empty).');
-      try{ await PA.setMyEmail(id,v); PA.toast(v?'Saved. Coach can email you.':'Removed'); }catch(err){ alert(err.message); } return; }
+      if(v&&!PA.okEmail(v)) return PA.say('That email does not look right (or leave it empty).');
+      try{ await PA.setMyEmail(id,v); PA.toast(v?'Saved. Coach can email you.':'Removed'); }catch(err){ PA.say(err.message); } return; }
     if(t.dataset.pem){ const r=ROSTER.find(x=>x.id===t.dataset.pem), cur=(CONTACTS||[]).find(c=>c.member_id===r.id&&c.source!=='parent');
-      const v=prompt(`Parent email for ${r.name} (leave empty to remove):`,cur?cur.email:''); if(v===null) return;
-      if(v.trim()&&!PA.okEmail(v.trim())) return alert('That email does not look right.');
-      try{ await PA.coachRpc('pa_coach_parent_email',{member:r.id,email:v.trim()}); await paintEmails(); PA.toast('Saved'); }catch(err){ alert(err.message); } return; } };
+      const v=await PA.input(`Parent email for ${r.name} (leave empty to remove):`,cur?cur.email:''); if(v===null) return;
+      if(v.trim()&&!PA.okEmail(v.trim())) return PA.say('That email does not look right.');
+      try{ await PA.coachRpc('pa_coach_parent_email',{member:r.id,email:v.trim()}); await paintEmails(); PA.toast('Saved'); }catch(err){ PA.say(err.message); } return; } };
 }
 async function openThread(id){ OPEN_THREAD=id; try{ OPEN_MSGS=await PA.coachRpc('pa_coach_thread',{member:id}); }catch(e){ OPEN_MSGS=[]; }
   if(!CTHREADS.some(t=>t.member_id===id)){ const r=ROSTER.find(x=>x.id===id)||{}; CTHREADS.unshift({member_id:id,player:r.name||'',team:r.fmt||'',last_body:'',unread:0}); }
@@ -518,13 +518,13 @@ function paintMsgTeam(){ $('#mTeam').querySelectorAll('button').forEach(b=>b.cla
 $('#mTeam').onclick=e=>{ const b=e.target.closest('button'); if(b){ MSG_FMT=b.dataset.f; paintMsgTeam(); } };
 $('#mAud').onclick=e=>{ const b=e.target.closest('button'); if(b){ MSG_AUD=b.dataset.a; paintMsgTeam(); } };
 $('#mCancel').onclick=()=>$('#dMsg').close();
-$('#mGo').onclick=async()=>{ const t=$('#mTitle').value.trim(), body=$('#mBody').value.trim(); if(!t) return alert('Add a title.');
-  try{ await PA.coachRpc('pa_coach_announce',{fmt:MSG_FMT,title:t,body,audience:MSG_AUD}); }catch(e){ return alert('Could not post: '+e.message); }
+$('#mGo').onclick=async()=>{ const t=$('#mTitle').value.trim(), body=$('#mBody').value.trim(); if(!t) return PA.say('Add a title.');
+  try{ await PA.coachRpc('pa_coach_announce',{fmt:MSG_FMT,title:t,body,audience:MSG_AUD}); }catch(e){ return PA.say('Could not post: '+e.message); }
   $('#dMsg').close(); await loadAnn(); draw(); PA.toast(MSG_AUD==='players'?'Sent to players in the app':'Sent to players + parents in the app');
   if(MSG_AUD!=='all'||!$('#mMail').checked) return;
   let emails=[]; try{ emails=[...new Set((await PA.coachRpc('pa_coach_contacts',{fmt:MSG_FMT||null})).map(x=>x.email).filter(PA.okEmail))]; }
-  catch(e){ return alert('Posted in the app, but the parent emails could not be loaded: '+e.message); }
-  if(!emails.length) return alert('Posted in the app. No parent emails yet (parents add theirs in MESSAGES, or set them under MESSAGES → PARENT EMAILS).');
+  catch(e){ return PA.say('Posted in the app, but the parent emails could not be loaded: '+e.message); }
+  if(!emails.length) return PA.say('Posted in the app. No parent emails yet (parents add theirs in MESSAGES, or set them under MESSAGES → PARENT EMAILS).');
   mailBatches(emails,'Packer Army: '+t,body); };
 /* email from Gmail as andrewbarbernyc@gmail.com (never the phone's default Mail account); batches of 20 BCC, each from a tap */
 function mailBatches(emails,subject,body){ const B=20, n=Math.ceil(emails.length/B), d=document.createElement('dialog');
@@ -533,7 +533,7 @@ function mailBatches(emails,subject,body){ const B=20, n=Math.ceil(emails.length
     <div class=row style="flex-direction:column">${[...Array(n)].map((_,i)=>`<a class="btn gold" style="text-align:center;text-decoration:none" target=_blank rel=noopener href="${PA.esc(href(i))}">✉️ ${n>1?`GMAIL · BATCH ${i+1} OF ${n}`:'OPEN IN GMAIL'}</a>`).join('')}
     <button class="btn ghost" id=mCopy>COPY ALL EMAILS</button><button class="btn ghost" id=mDone>DONE</button></div>`;
   document.body.appendChild(d); d.showModal(); d.addEventListener('close',()=>d.remove());
-  d.querySelector('#mCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(emails.join(', ')); PA.toast('Copied'); }catch(e){ prompt('Copy these emails:',emails.join(', ')); } };
+  d.querySelector('#mCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(emails.join(', ')); PA.toast('Copied'); }catch(e){ await PA.input('Copy these emails:',emails.join(', ')); } };
   d.querySelector('#mDone').onclick=()=>{ d.close(); d.remove(); }; }
 
 /* ---------- full screen ---------- */
@@ -564,7 +564,7 @@ $('#deepBtn').onclick=()=>{ DEEP=!DEEP; stop(); paintOv(); runAnim(); };
 $('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
 $('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
 $('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3}); };
-$('#ovc').onclick=()=>{ if(editing&&!confirm('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
+$('#ovc').onclick=async()=>{ if(editing&&!await PA.ask('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
 $('#pv').onclick=()=>{ if(!editing) openOv((cur+VIEW.length-1)%VIEW.length); };
 $('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%VIEW.length); };
 { let sx=null, sy=0;   // swipe the play left / right for NEXT / PREV. Listens on #ov: the animation redraws #stage every frame
@@ -584,13 +584,13 @@ $('#send').onclick=async()=>{
   if(!mine||same(mine,P())) return PA.toast('Tap ✏️ EDIT and change something first');
   if(isCoach()){ try{ mine.updated=new Date().toISOString().slice(0,10);
       await PA.coachRpc('pa_save_play',{fmt:FMT,n:P().n,data:mine,reason:'Coach edit'}); PA.store.del(DKEY()); endEdit(); await load(false,true); PA.toast('Saved to the team'); }
-    catch(e){ alert('Save failed: '+e.message+'\nSign in again on the Coach page (tap the title 5 times).'); } return; }
+    catch(e){ PA.say('Save failed: '+e.message+'\nSign in again on the Coach page (tap the title 5 times).'); } return; }
   if(!await PA.join(true)) return; $('#sMsg').value=''; $('#dSend').showModal();
 };
 $('#sCancel').onclick=()=>$('#dSend').close();
 $('#sOk').onclick=async()=>{ const d=PA.store.get(DKEY()), mine=editing?work:d.play;
   try{ await PA.propose(FMT,'modify',P().n,mine,$('#sMsg').value); $('#dSend').close(); PA.store.del(DKEY()); endEdit(); await loadIdeas(); paintOv(); $('#ov').scrollTop=0; PA.toast('Sent! Coach will look at it.',3000); }
-  catch(e){ alert('Could not send: '+e.message); } };
+  catch(e){ PA.say('Could not send: '+e.message); } };
 $('#sync').onclick=async()=>{ $('#sync').textContent='🔄 …'; const ch=await load(false,true); await loadIdeas(); await loadGames(); if($('#ov').classList.contains('show')&&!editing){ cur=Math.min(cur,VIEW.length-1); paintOv(); }
   $('#sync').textContent='🔄 SYNC'; PA.toast(ch?'Updated from Coach':'Up to date'); };
 

@@ -85,7 +85,7 @@ async function start(){
   if(!PA.configured){ view('vLogin'); $('#lMsg').textContent='App not connected yet: fill in config.js (COACH_SETUP.md).'; return; }
   try{ const by=await PA.coachPlays(); FMTS=Object.keys(by).sort();
     for(const f of FMTS){ base[f]=by[f]; const d=PA.store.get('pa_draft_'+f); work[f]=d||clone(by[f]); if(d&&changed(f).length) PA.toast('Restored your unsaved '+f+' changes'); }
-  }catch(e){ if(e.status===401||/Coach sign-in|JWT|token/i.test(e.message)){ PA.logout(); view('vLogin'); return; } alert(e.message); return; }
+  }catch(e){ if(e.status===401||/Coach sign-in|JWT|token/i.test(e.message)){ PA.logout(); view('vLogin'); return; } PA.say(e.message); return; }
   $('#fmts').innerHTML=FMTS.map(f=>`<button>${f}</button>`).join('');
   const s=PA.store.get('pa_coach_fmt'); FMT=FMTS.includes(s)?s:FMTS[0];
   if(location.hash==='#review'){ tab='review'; [...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.t==='review')); }   // from the 📥 inbox
@@ -94,7 +94,7 @@ async function start(){
 $('#lGo').onclick=async()=>{ $('#lMsg').textContent='Signing in…';
   try{ await PA.login($('#lEmail').value.trim(),$('#lPass').value); $('#lMsg').textContent=''; start(); }
   catch(e){ $('#lMsg').textContent=e.message==='Invalid login credentials'?'Wrong email or password.':e.message; } };
-$('#out').onclick=()=>{ if(FMTS.some(f=>changed(f).length)&&!confirm('You have unsaved changes on this phone. They stay here until you sign back in. Sign out?')) return; PA.logout(); location.reload(); };
+$('#out').onclick=async()=>{ if(FMTS.some(f=>changed(f).length)&&!await PA.ask('You have unsaved changes on this phone. They stay here until you sign back in. Sign out?')) return; PA.logout(); location.reload(); };
 
 /* ---------- playbook ---------- */
 function loadPlay(){ idx=Math.min(idx,work[FMT].length-1); ed.load(cur(),FMT+'#'+cur().n); refresh(); }
@@ -112,14 +112,14 @@ $('#fmts').onclick=e=>{ if(e.target.tagName!=='BUTTON') return; FMT=e.target.tex
 $('#tabs').onclick=e=>{ const t=e.target.dataset.t; if(!t) return; tab=t; [...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.t===t)); openIdea=null;
   view(t==='book'?'vBook':'vReview'); if(t==='review') loadIdeas(); else loadPlay(); };
 $('#undo').onclick=()=>{ if(!ed.undo()) PA.toast('Nothing to undo'); };
-$('#revert').onclick=()=>{ const b=base[FMT].find(q=>q.n===cur().n); if(!b||same(b,cur())) return PA.toast('This play has no unsaved changes');
-  if(!confirm(`Put play #${cur().n} back to the saved version?`)) return; work[FMT][idx]=clone(b); saveDraft(); loadPlay(); };
+$('#revert').onclick=async()=>{ const b=base[FMT].find(q=>q.n===cur().n); if(!b||same(b,cur())) return PA.toast('This play has no unsaved changes');
+  if(!await PA.ask(`Put play #${cur().n} back to the saved version?`)) return; work[FMT][idx]=clone(b); saveDraft(); loadPlay(); };
 $('#save').onclick=async()=>{
   $('#save').disabled=true; $('#save').textContent='Saving…'; const today=new Date().toISOString().slice(0,10);
   try{ for(const f of FMTS) for(const p of changed(f)){ p.updated=today; await PA.coachRpc('pa_save_play',{fmt:f,n:p.n,data:p,reason:'Coach edit'});
          const i=base[f].findIndex(q=>q.n===p.n); if(i>=0) base[f][i]=clone(p); else base[f].push(clone(p)); }
        saveDraft(); PA.toast('Saved! Players get it next time they open the app.',3500); }
-  catch(e){ alert('Save failed. Your changes are still on this phone.\n\n'+e.message); }
+  catch(e){ PA.say('Save failed. Your changes are still on this phone.\n\n'+e.message); }
   refresh(); };
 function printFmt(f,side){ PA.store.set('pa_print_'+f,work[f]); location.href='print.html?fmt='+f+'&src=coach'+(side?'&side='+side:''); }
 $('#print5').onclick=()=>printFmt('5v5'); $('#print6').onclick=()=>printFmt('6v6'); $('#printD5').onclick=()=>printFmt('5v5','D'); $('#printD6').onclick=()=>printFmt('6v6','D');
@@ -132,8 +132,8 @@ $('#histBtn').onclick=async()=>{ const p=cur(); $('#hTitle').textContent=`Versio
 $('#hClose').onclick=()=>$('#dHist').close();
 $('#codeBtn').onclick=async()=>{ $('#cNew').value=''; $('#dCode').showModal(); try{ $('#cNow').value=await PA.coachRpc('pa_get_code'); }catch(e){ $('#cNow').value=e.message; } };
 $('#cCancel').onclick=()=>$('#dCode').close();
-$('#cOk').onclick=async()=>{ const c=$('#cNew').value.trim(); if(c.length<4) return alert('Use at least 4 characters');
-  try{ await PA.coachRpc('pa_set_code',{new_code:c}); PA.store.set('pa_code',c); $('#cNow').value=c; PA.toast('Team code changed'); }catch(e){ alert(e.message); } };
+$('#cOk').onclick=async()=>{ const c=$('#cNew').value.trim(); if(c.length<4) return PA.say('Use at least 4 characters');
+  try{ await PA.coachRpc('pa_set_code',{new_code:c}); PA.store.set('pa_code',c); $('#cNow').value=c; PA.toast('Team code changed'); }catch(e){ PA.say(e.message); } };
 
 /* ---------- review ideas ---------- */
 async function loadIdeas(){ try{ ideas=(await PA.coachRpc('pa_coach_proposals')).map(x=>(PA.norm(x.play),x)); }catch(e){ ideas=[]; $('#rev').innerHTML='<p class=meta>'+P(e.message)+'</p>'; return; }
@@ -176,7 +176,7 @@ async function drawIdea(x){
   B('apply',()=>applyDlg(x)); B('edit',()=>editIdea(x));
   try{ const c=await PA.coachRpc('pa_coach_comments',{pid:x.id});
     $('#cms').className=''; $('#cms').innerHTML=c.length?c.map(m=>`<div class=cm><div><b>${P(m.author)}</b> <small class=meta>${PA.ago(m.created_at)}</small><br>${P(m.body)}</div><button data-c="${m.id}" aria-label="delete">×</button></div>`).join(''):'<p class=meta>No comments yet.</p>';
-    $('#cms').onclick=async e=>{ const id=e.target.dataset.c; if(!id||!confirm('Delete this comment?')) return; await PA.coachRpc('pa_delete_comment',{cid:+id}); loadIdeas(); };
+    $('#cms').onclick=async e=>{ const id=e.target.dataset.c; if(!id||!await PA.ask('Delete this comment?')) return; await PA.coachRpc('pa_delete_comment',{cid:+id}); loadIdeas(); };
   }catch(e){ $('#cms').textContent=e.message; }
 }
 function note(title,text,ok,pickFrom){ $('#nTitle').textContent=title; $('#nText').textContent=text; $('#nBody').value='';
@@ -184,7 +184,7 @@ function note(title,text,ok,pickFrom){ $('#nTitle').textContent=title; $('#nText
   $('#dNote').showModal();
   $('#nOk').onclick=()=>{ $('#dNote').close(); ok($('#nBody').value,pickFrom?+$('#nWith').value:null); }; }
 $('#nCancel').onclick=()=>$('#dNote').close();
-async function setStatus(x,s,t,w){ try{ await PA.coachRpc('pa_set_status',{pid:x.id,new_status:s,note:t,show_with:w||null}); PA.toast({shared:'Shared with the team',declined:'Declined',pending:'Moved back to review'}[s]); loadIdeas(); }catch(e){ alert(e.message); } }
+async function setStatus(x,s,t,w){ try{ await PA.coachRpc('pa_set_status',{pid:x.id,new_status:s,note:t,show_with:w||null}); PA.toast({shared:'Shared with the team',declined:'Declined',pending:'Moved back to review'}[s]); loadIdeas(); }catch(e){ PA.say(e.message); } }
 function applyDlg(x){
   const plays=base[x.fmt], opt=(v,l,on)=>`<label class=radio><input type=radio name=ap value="${v}" ${on?'checked':''}> ${l}</label>`;
   $('#aOpts').innerHTML=(x.kind==='modify'?opt(x.target_n,`Change play #${x.target_n} (${P(plays.find(p=>p.n===x.target_n)?.name||'')})`,true):'')
@@ -192,11 +192,11 @@ function applyDlg(x){
     ;   // no spares: every idea changes or replaces one of the 24 plays / 8 defenses
   $('#aNote').value=''; $('#dApply').showModal();
   $('#aOk').onclick=async()=>{ const v=document.querySelector('input[name=ap]:checked').value, into=v==='pick'?+$('#aPick').value:+v;
-    if(into && changed(x.fmt).some(p=>p.n===into) && !confirm(`You have unsaved edits to #${into}. Applying replaces them. Continue?`)) return;
+    if(into && changed(x.fmt).some(p=>p.n===into) && !await PA.ask(`You have unsaved edits to #${into}. Applying replaces them. Continue?`)) return;
     try{ const n=await PA.coachRpc('pa_apply',{pid:x.id,into_n:into,note:$('#aNote').value}); $('#dApply').close();
       const by=await PA.coachPlays(); base[x.fmt]=by[x.fmt]; const w=work[x.fmt], fresh=by[x.fmt].find(p=>p.n===n); const i=w.findIndex(p=>p.n===n); if(i>=0) w[i]=clone(fresh); else { w.push(clone(fresh)); w.sort((a,b)=>a.n-b.n); }
       saveDraft(); PA.toast(`Applied as play #${n}. Players get it next time they open the app.`,4000); loadIdeas(); }
-    catch(e){ alert(e.message); } };
+    catch(e){ PA.say(e.message); } };
 }
 $('#aCancel').onclick=()=>$('#dApply').close();
 function editIdea(x){
@@ -204,7 +204,7 @@ function editIdea(x){
   $('#rev').innerHTML=`<div class=btns style="margin:10px 0"><button class=btn id=eBack style="flex:0 0 auto">← Cancel</button><button class="btn gold" id=eSave>Save changes to idea</button></div><p class=meta>Editing ${P(x.author)}’s idea before the team sees it.</p><div id=ied></div>`;
   const e2=PlayEditor($('#ied')); e2.load(copy,'idea-'+x.id);
   $('#eBack').onclick=()=>drawIdea(x);
-  $('#eSave').onclick=async()=>{ try{ await PA.coachRpc('pa_update_proposal',{pid:x.id,play:copy}); PA.toast('Idea updated'); loadIdeas(); }catch(e){ alert(e.message); } };
+  $('#eSave').onclick=async()=>{ try{ await PA.coachRpc('pa_update_proposal',{pid:x.id,play:copy}); PA.toast('Idea updated'); loadIdeas(); }catch(e){ PA.say(e.message); } };
 }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&PA.coachEmail()) loadIdeas(); });
 start();

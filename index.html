@@ -175,6 +175,28 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 }
 .oside .btn{white-space:nowrap}
 @media print{ #ov,.acts,.ctl,.btn{display:none!important} }       /* buttons never print */
+/* GAME DAY (coach only) */
+.gday{grid-column:1/-1;max-width:980px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.4}
+.gtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.gtop b{display:block;color:var(--g);font-size:15px;letter-spacing:.08em}.gtop span{font-size:10.5px;color:#6b7a75}
+.gseg{overflow-x:auto;max-width:100%}.gseg button{padding:4px 9px;font-size:11.5px;white-space:nowrap}
+.gdrive{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:10.5px}.gdrive i{color:#9aa5a1;font-style:normal}
+.gstep{background:#fff;border:1px solid #d9dfdc;border-radius:6px;padding:3px 7px}.gstep.s1{border-color:var(--t-run)}.gstep.s3{border-color:var(--gold)}.gstep.s4{border-color:var(--g)}
+.gh{margin:10px 0 0;font-size:13px;letter-spacing:.1em;color:var(--g);display:flex;flex-direction:column}.gh small{font-size:10.5px;color:#6b7a75;letter-spacing:.04em;font-weight:500}
+.gh.g-green{border-left:5px solid var(--t-run);padding-left:7px}.gh.g-gold{border-left:5px solid var(--gold);padding-left:7px}.gh.g-point{border-left:5px solid var(--g);padding-left:7px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px}
+.gcard{background:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 1px 3px #0001;text-transform:none}
+.gcard.g-green{border-top:4px solid var(--t-run)}.gcard.g-gold{border-top:4px solid var(--gold)}.gcard.g-point{border-top:4px solid var(--g)}
+.ghead{display:flex;align-items:baseline;gap:8px;text-transform:uppercase}.gcall{font-weight:700;color:var(--g);font-size:14px;letter-spacing:.08em}.gtitle{font-size:11px;color:#6b7a75;letter-spacing:.08em}
+.ghuddle{display:flex;align-items:center;gap:6px;margin:6px 0}.ghuddle i{font-style:normal;color:#9aa5a1;font-size:18px}
+.gnum{min-width:38px;height:34px;border:0;border-radius:8px;font-size:18px;font-weight:700;letter-spacing:0;cursor:pointer;padding:0 6px}
+.gplays .gnum,.gnums .gnum{min-width:28px;height:26px;font-size:13px}
+.gdwhen,.gwhy{margin:2px 0;font-size:12px}.gdwhen b{font-size:10px;letter-spacing:.08em;color:var(--g)}.gwhy{color:#44524d}
+.gplays{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:6px}.gplays li{display:flex;gap:8px;align-items:flex-start}
+.gplays li div{display:flex;flex-direction:column}.gplays b{font-size:11px;letter-spacing:.05em;text-transform:uppercase}.gplays small{font-size:10px;color:#6b7a75;letter-spacing:.04em}
+.gif{margin:6px 0 0;padding-left:16px;font-size:12px}.gif li{margin:2px 0}.gif b{color:var(--g)}
+.gsec>summary{cursor:pointer;list-style:none;color:var(--g);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}.gsec>summary::-webkit-details-marker{display:none}
+.gsec table{width:100%;border-collapse:collapse;margin-top:6px}.gsec td{vertical-align:top;padding:6px 4px;border-top:1px solid #eef0ef;font-size:12px;width:50%}.gsec td b{font-size:10px;color:var(--g);letter-spacing:.08em}
+.gnums{display:flex;gap:4px;margin-top:4px}.gnote{font-size:10.5px;color:#6b7a75;margin:4px 0 12px}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div><button id=coachBtn>🔒 COACH</button></div><div class=tabs id=tabs></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -218,7 +240,7 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Send</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
-<script src=intro.js></script><script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script>
+<script src=intro.js></script><script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script><script src=gameday.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
@@ -228,8 +250,8 @@ const isCoach=()=>!!PA.coachEmail();
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab>RULE) tab=0;   // PLAYS · DEFENSE · PRACTICE · SCHEDULE · MESSAGES · RULES
-  $('#tabs').innerHTML=['PLAYS','DEFENSE','PRACTICE','SCHEDULE','MESSAGES','RULES'].map((t,i)=>`<button class="${i===tab?'on':''}">${t}${i===MSG&&UNREAD?` <span class=nbadge>${UNREAD}</span>`:''}</button>`).join(''); }
+function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab>RULE&&!(tab===GAME&&isCoach())) tab=0;   // PLAYS · DEFENSE · PRACTICE · SCHEDULE · MESSAGES · RULES (+ GAME DAY, coach only)
+  $('#tabs').innerHTML=['PLAYS','DEFENSE','PRACTICE','SCHEDULE','MESSAGES','RULES'].concat(isCoach()?['GAME DAY']:[]).map((t,i)=>`<button class="${i===tab?'on':''}">${t}${i===MSG&&UNREAD?` <span class=nbadge>${UNREAD}</span>`:''}</button>`).join(''); }
 $('#tabs').onclick=e=>{ const b=e.target.closest('button'); const i=[...$('#tabs').children].indexOf(b); if(i>=0){ if(i!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=i===SCHED&&tab!==SCHED; tab=i; draw();
   if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } } };   // practice returns to the next game; schedule opens at the next game
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
@@ -248,6 +270,7 @@ function draw(){
   if(tab===RULE){ $('#legend').innerHTML=''; grid.insertAdjacentHTML('beforeend',rulesHTML(FMT)); return; }
   if(tab===PRAC){ $('#legend').innerHTML=''; return drawPractice(); }
   if(tab===MSG){ $('#legend').innerHTML=''; return drawMessages(); }
+  if(tab===GAME){ $('#legend').innerHTML=''; return drawGameDay(); }
   const isDef=tab===DEF, list=isDef?defs:band.slice(CARD*8,CARD*8+8); VIEW=isDef?defs:band;
   if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div>${isCoach()&&window.PAAnalyzePanel?'<button class="btn gold" id=analyzeBtn style="padding:6px 10px;font-size:11px">🔍 ANALYZE</button>':''}</div>`);
     grid.querySelector('.cards').onclick=e=>{ if(e.target.id==='analyzeBtn') return PAAnalyzePanel.open(analysisRows()); const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
@@ -261,7 +284,7 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, CARD=0, UNREAD=0, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
+let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, GAME=6, CARD=0, UNREAD=0, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
 const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
 const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
 const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
@@ -353,6 +376,20 @@ function gameInfo(g){ if(!g) return null; const tbd=!g.home||!g.away, home=PA.is
   const days=d?Math.round((d-todayISO())/864e5):null;
   return {title:(g.label?g.label+' · ':'')+(tbd?'OPPONENT TBD':(home?'VS ':'@ ')+(home?g.away:g.home)),
     when:[d?`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`:'DATE TBD',g.gtime,g.field,days==null?'':days===0?'TODAY':days===1?'TOMORROW':days>0?`IN ${days} DAYS`:''].filter(Boolean).join(' · ')}; }
+/* ---------- GAME DAY (coach only): plan from pa_coach_gameplan, cached on the coach's phone for the field ---------- */
+let GPLAN=PA.store.get('pa_gameplan')||null, GERR='', GFILTER='all', GLOADING=false;
+async function loadGamePlan(){ if(GLOADING||!isCoach()) return; GLOADING=true;
+  try{ const rows=await PA.coachRpc('pa_coach_gameplan'); const by={}; (rows||[]).forEach(r=>by[r.fmt]=r.data); GPLAN=by; GERR=''; PA.store.set('pa_gameplan',by); }
+  catch(e){ GERR=GPLAN?'':'Could not load the game plan ('+e.message+').'; }
+  GLOADING=false; if(tab===GAME) draw(); }
+function drawGameDay(){ if(!isCoach()){ tab=0; return draw(); }
+  const plan=GPLAN&&GPLAN[FMT]; if(!plan&&!GERR) loadGamePlan();
+  grid.insertAdjacentHTML('beforeend',gamedayHTML(plan,{fmt:FMT,band,catOf:PA.catOf,filter:GFILTER,err:GERR||(!FMT?'Enter the team code first (PLAYS tab).':GPLAN&&!plan?'No game plan for '+FMT+' yet.':'')}));
+  const box=grid.querySelector('.gday');
+  box.onclick=e=>{ const f=e.target.closest('[data-gf]'), n=e.target.closest('[data-gplay]');
+    if(f){ GFILTER=f.dataset.gf; draw(); return; }
+    if(n){ VIEW=band; const i=band.findIndex(p=>p.n===+n.dataset.gplay); if(i>=0) openOv(i); } };
+  if(plan&&!GLOADING&&!drawGameDay.fresh){ drawGameDay.fresh=true; loadGamePlan(); } }   // refresh once per app open
 function drawPractice(){ const {reg,po,next}=seasonGames(); let g=GAMES.find(x=>x.id===PRAC_GAME&&x.fmt===FMT)||next, idx, playoff;
   if(PRAC_WK!=null){ playoff=PRAC_WK==='po'; idx=playoff?0:+PRAC_WK; g=playoff?(po.find(x=>!result(x))||po[0]):reg[idx]; }
   else if(g){ playoff=g.stage==='playoff'; idx=playoff?0:reg.indexOf(g); }

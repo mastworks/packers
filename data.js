@@ -54,7 +54,7 @@ const PA=(()=>{
     const n=await call('/auth/v1/token?grant_type=refresh_token',{refresh_token:s.refresh});
     store.set('pa_session',{...s,access:n.access_token,refresh:n.refresh_token,exp:Date.now()+n.expires_in*1000}); return n.access_token;
   }
-  const logout=()=>store.del('pa_session'), coachEmail=()=>(store.get('pa_session')||{}).email;
+  const logout=()=>{ store.del('pa_session'); store.del('pa_gameplan'); }, coachEmail=()=>(store.get('pa_session')||{}).email;
 
   /* ---- plays: {fmt:[play,...]} sorted by number; cached for offline ---- */
   // every play drawn in the app goes through norm(): tolerate plays saved without routes / ball

@@ -217,11 +217,53 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 .gsec>summary{cursor:pointer;list-style:none;color:var(--g);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}.gsec>summary::-webkit-details-marker{display:none}
 .gsec table{width:100%;border-collapse:collapse;margin-top:6px}.gsec td{vertical-align:top;padding:6px 4px;border-top:1px solid #eef0ef;font-size:12px;width:50%}.gsec td b{font-size:10px;color:var(--g);letter-spacing:.08em}
 .gnums{display:flex;gap:4px;margin-top:4px}.gnote{font-size:10.5px;color:#6b7a75;margin:4px 0 12px}
+/* bottom tab bar (TeamSnap style) */
+body{padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;background:var(--g);border-top:1px solid #0f1d19;padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.bnav button{flex:1;position:relative;background:none;border:0;color:var(--mute);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:56px;padding:0 2px;font-size:9.5px;letter-spacing:.06em}
+.bnav button i{font-style:normal;font-size:19px;line-height:1;filter:grayscale(1) brightness(1.4);opacity:.75}
+.bnav button.on{color:var(--gold)}.bnav button.on i{filter:none;opacity:1}
+.bnav .nbadge{position:absolute;top:5px;left:calc(50% + 6px);margin:0}
+#gdBtn{background:var(--g2);color:var(--gold);border:1.5px solid var(--gold);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+#gdBtn.on{background:var(--gold);color:var(--ink)}
+@media(max-width:400px){#gdBtn{padding:5px 6px;font-size:10px}}
+.odrow{grid-column:1/-1;display:flex;justify-content:center;margin-bottom:2px}.odrow .seg button{padding:6px 18px}
+/* HOME */
+.home{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.hcard{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:12px;text-transform:none}
+.hcard>h4{margin:0 0 6px;font-size:11px;letter-spacing:.12em;color:#6b7a75;text-transform:uppercase;display:flex;justify-content:space-between}
+.hcard.next{border-top:4px solid var(--gold)}.hcard.prac{border-top:4px solid var(--t-trick)}
+.hbig{display:flex;gap:12px;align-items:center}.hdate{flex:none;width:58px;text-align:center;border-radius:10px;background:var(--g);color:#fff;padding:6px 0;text-transform:uppercase}
+.hdate b{display:block;font-size:22px;line-height:1.1}.hdate small{font-size:10px;letter-spacing:.1em;color:var(--gold)}
+.hopp{font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}.hsub{font-size:12.5px;color:#44524d;margin-top:2px}
+.hrowb{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.hrowb .btn{padding:8px 11px;font-size:12px;text-decoration:none}
+.hmsg{font-size:13px}.hmsg b{text-transform:uppercase;letter-spacing:.05em}.hlink{cursor:pointer}
+.gdet{display:grid;grid-template-columns:22px 1fr;gap:6px 6px;margin:6px 0 4px;font-size:12.5px;text-transform:none}.gdet i{font-style:normal;text-align:center}
+.gmap{width:100%;height:150px;border:0;border-radius:10px;margin:6px 0;background:#e6ebe8}
+.game.prac-ev{border-left-color:var(--t-trick)}.game.prac-ev .gres{background:var(--t-trick);color:#fff}
+/* practice finder */
+.ipr{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.ipr .hcard p{margin:4px 0;font-size:12.5px;color:#44524d}
+.fgrid{overflow-x:auto;margin-top:8px;touch-action:pan-y}.fgrid table{border-collapse:separate;border-spacing:2px;width:100%;table-layout:fixed;user-select:none;-webkit-user-select:none}
+.fgrid th{font-size:10px;font-weight:600;color:#44524d;letter-spacing:.04em;text-align:center}.fgrid th small{display:block;font-size:9px;color:#9aa5a1}
+.fgrid th.ft{width:30px;text-align:right;font-size:9px;vertical-align:top;padding-right:2px}
+.fgrid td{height:22px;border-radius:4px;text-align:center;font-size:10px;font-weight:700}
+.fgrid td.na{background:transparent}.fgrid td.fs{background:#f1f3f2;border:1px solid #dfe5e2;cursor:pointer;color:#fff}
+.fgrid td.fs.on{background:#2E8B3A;border-color:#2E8B3A}.fgrid td.fs.busy{background:#C8102E;border-color:#C8102E}
+.fgrid td.bl{background:repeating-linear-gradient(45deg,#d5dbd8,#d5dbd8 4px,#e6ebe8 4px,#e6ebe8 8px);color:#44524d;font-size:7.5px;font-weight:600;overflow:visible;white-space:nowrap;position:relative}
+.fgrid td.bl span{position:absolute;left:1px;top:1px;z-index:1}.fgrid td.cb{background:#f3d6da}
+.fgrid td.ht{cursor:pointer;color:#111}.fgrid td.h0{background:#f1f3f2;color:#9aa5a1}.fgrid td.h1{background:#d6ecd8}.fgrid td.h2{background:#a9d8ae}.fgrid td.h3{background:#6fbf77}.fgrid td.h4{background:#2E8B3A;color:#fff}
+.fleg{display:flex;gap:10px;flex-wrap:wrap;font-size:10.5px;color:#44524d;margin-top:6px;text-transform:none}.fleg i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:3px}
+.best{display:flex;flex-direction:column;gap:6px;margin-top:6px}.bwin{border:1.5px solid #dfe5e2;border-radius:10px;padding:8px 10px;display:flex;gap:8px;align-items:center}
+.bwin div{flex:1;font-size:12px;text-transform:none}.bwin b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.04em}.bwin .miss{color:#C8102E}.bwin .pg{color:var(--g);font-weight:600}
+.bwin .btn{padding:8px 10px;font-size:11.5px;flex:none}
+.fsave{font-size:11px;color:#2E8B3A;text-transform:none;margin-top:4px;min-height:14px}
 </style></head><body>
-<header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div><button id=coachBtn>🔒 COACH</button></div><div class=tabs id=tabs></div></header>
+<header><div class=hrow><h1 id=ttl>PACKER <span>ARMY</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">🏈 GAME DAY</button><button id=coachBtn>🔒 COACH</button></div></header>
 <a id=inbox href="coach.html#review"></a>
 <main id=grid></main>
 <div class="legend" id=legend></div>
+<nav class=bnav id=tabs aria-label="Sections"></nav>
 <div id=ov>
   <div class=otop><b class=badge id=ovn></b><div class=n id=ovt></div><button id=ovc aria-label="close">&times;</button></div>
   <div class=obody>
@@ -260,20 +302,25 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
   <div class=row><button class="btn ghost" id=mCancel>Cancel</button><button class="btn gold" id=mGo>Send</button></div></dialog>
 <dialog id=dSend><h2>Send to Coach</h2><p>Why is this better? Coach and the team will see this.</p><textarea id=sMsg maxlength=600></textarea>
   <div class=row><button class="btn ghost" id=sCancel>Cancel</button><button class="btn gold" id=sOk>Send</button></div></dialog>
-<script src=intro.js></script><script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script><script src=gameday.js></script>
+<script src=intro.js></script><script src=config.js></script><script src=analyze.js></script><script src=pa-rules2025.js></script><script src=los-overlay.js></script><script src=analyze-panel.js></script><script src=pb.js></script><script src=data.js></script><script src=editor.js></script><script src=rules.js></script><script src=practice.js></script><script src=gameday.js></script><script src=finder.js></script>
 <script>
 const $=s=>document.querySelector(s), clone=o=>JSON.parse(JSON.stringify(o)), same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=0, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
+let BY={}, SEEN='', FMT='', FMTS=[], plays=[], band=[], defs=[], VIEW=[], tab=window.PA_START_TAB==='plays'?0:7, IDEAS=[];   // VIEW = the list full screen steps through (offense or defense)
 const grid=$('#grid'), TL={}, tl=p=>TL[p.n]||(TL[p.n]=PB.timeline(p));
 const isCoach=()=>!!PA.coachEmail();
 
 /* ---------- grid ---------- */
 function buildFmts(){ $('#fmts').innerHTML=FMTS.map(f=>`<button class="${f===FMT?'on':''}">${f}</button>`).join(''); }
 $('#fmts').onclick=e=>{ if(e.target.tagName==='BUTTON') show(e.target.textContent); };
-function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab>RULE&&!(tab===GAME&&isCoach())) tab=0;   // PLAYS · DEFENSE · PRACTICE · SCHEDULE · MESSAGES · RULES (+ GAME DAY, coach only)
-  $('#tabs').innerHTML=['PLAYS','DEFENSE','PRACTICE','SCHEDULE','MESSAGES','RULES'].concat(isCoach()?['GAME DAY']:[]).map((t,i)=>`<button class="${i===tab?'on':''}">${t}${i===MSG&&UNREAD?` <span class=nbadge>${UNREAD}</span>`:''}</button>`).join(''); }
-$('#tabs').onclick=e=>{ const b=e.target.closest('button'); const i=[...$('#tabs').children].indexOf(b); if(i>=0){ if(i!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=i===SCHED&&tab!==SCHED; tab=i; draw();
-  if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } } };   // practice returns to the next game; schedule opens at the next game
+const NAV=[[7,'HOME','🏠'],[3,'SCHEDULE','📅'],[4,'MESSAGES','💬'],['plays','PLAYS','🏈'],[2,'PRACTICE','🏃'],[5,'RULES','📖']];
+function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab===GAME&&!isCoach()) tab=HOME;   // bottom bar: HOME · SCHEDULE · MESSAGES · PLAYS · PRACTICE · RULES; GAME DAY = coach button up top
+  $('#tabs').innerHTML=NAV.map(([t,l,ic])=>{ const on=t==='plays'?(tab===PLAYS||tab===DEF):tab===t;
+    return `<button data-t="${t}" class="${on?'on':''}" aria-current="${on?'page':'false'}"><i aria-hidden=true>${ic}</i><span>${l}</span>${t===MSG&&UNREAD?`<b class=nbadge>${UNREAD}</b>`:''}</button>`; }).join('');
+  const gd=$('#gdBtn'); gd.style.display=isCoach()?'':'none'; gd.classList.toggle('on',tab===GAME); }
+function goTab(t){ if(t!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=t===SCHED&&tab!==SCHED; tab=t; draw(); window.scrollTo(0,0);
+  if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } }   // practice returns to the next game; schedule opens at the next game
+$('#tabs').onclick=e=>{ const b=e.target.closest('button[data-t]'); if(!b) return; const t=b.dataset.t; goTab(t==='plays'?PLAYMODE:+t); };
+$('#gdBtn').onclick=()=>goTab(GAME);
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">UPDATED</span>'; return p.status==='new'?'<span class="tag">NEW</span>':''; }
 const openIdeas=p=>IDEAS.filter(x=>x.fmt===FMT&&x.target_n===p.n&&x.status==='shared');
 const teamNotes=(p,short)=>(p.note5||p.note6)?`<div class="tnotes ${short?'short':''}">${p.note5?`<p class=n5><b>5V5</b> ${PA.esc(p.note5)}</p>`:''}${p.note6?`<p class=n6><b>6V6</b> ${PA.esc(p.note6)}</p>`:''}</div>`:'';   // defense: both teams' notes, two colors
@@ -291,7 +338,10 @@ function draw(){
   if(tab===PRAC){ $('#legend').innerHTML=''; return drawPractice(); }
   if(tab===MSG){ $('#legend').innerHTML=''; return drawMessages(); }
   if(tab===GAME){ $('#legend').innerHTML=''; return drawGameDay(); }
-  const isDef=tab===DEF, list=isDef?defs:band.slice(CARD*8,CARD*8+8); VIEW=isDef?defs:band;
+  if(tab===HOME){ $('#legend').innerHTML=''; return drawHome(); }
+  const isDef=tab===DEF, list=isDef?defs:band.slice(CARD*8,CARD*8+8); VIEW=isDef?defs:band; PLAYMODE=tab;
+  grid.insertAdjacentHTML('beforeend',`<div class=odrow><div class=seg id=odSeg><button class="${isDef?'':'on'}" data-od=0>OFFENSE</button><button class="${isDef?'on':''}" data-od=1>DEFENSE</button></div></div>`);
+  grid.querySelector('#odSeg').onclick=e=>{ const b=e.target.closest('[data-od]'); if(b){ tab=+b.dataset.od?DEF:PLAYS; draw(); } };
   if(!isDef){ const n=Math.ceil(band.length/8); grid.insertAdjacentHTML('beforeend',`<div class=cards><span>CARD</span><div class=seg>${[...Array(n)].map((_,i)=>`<button class="${i===CARD?'on':''}" data-card="${i}">${i+1}</button>`).join('')}</div>${isCoach()&&window.PAAnalyzePanel?'<button class="btn gold" id=analyzeBtn style="padding:6px 10px;font-size:11px">🔍 ANALYZE</button>':''}</div>`);
     grid.querySelector('.cards').onclick=e=>{ if(e.target.id==='analyzeBtn') return PAAnalyzePanel.open(analysisRows()); const b=e.target.closest('[data-card]'); if(b){ CARD=+b.dataset.card; draw(); } }; }
   if(isDef&&isCoach()&&window.PAAnalyzePanel){ grid.insertAdjacentHTML('beforeend','<div class=cards><button class="btn gold" id=analyzeBtn2 style="padding:6px 10px;font-size:11px">🔍 ANALYZE</button></div>'); grid.querySelector('#analyzeBtn2').onclick=()=>PAAnalyzePanel.open(analysisRows()); }
@@ -304,7 +354,7 @@ function draw(){
 function show(f){ FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
 /* ---------- schedule ---------- */
-let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, GAME=6, CARD=0, UNREAD=0, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
+let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, GAME=6, HOME=7, PRACS=[], PLAYMODE=0, CARD=0, UNREAD=0, GAMES=[], openGame=null, ROSTER=[], ATT=[], ROSTER_OK=false;
 const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
 const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
 const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
@@ -368,6 +418,26 @@ async function remindNoReply(g){ const team=teamRoster().filter(m=>m.kind==='pla
   if(!emails.length) return PA.say(`No parent emails for: ${team.map(m=>m.name).join(', ')}.\n\nAsk them in MESSAGES, or add emails in MESSAGES → PARENT EMAILS.`);
   if(missing.length) await PA.say(`No email on file for: ${missing.join(', ')}. The reminder goes to the others.`);
   mailBatches(emails,`Packer Army: is your child coming ${day}?`,`Hi! Please open the Packer Army app → SCHEDULE and tap GOING, MAYBE or CAN'T GO for ${day}${g.gtime?' ('+g.gtime+')':''}. It takes 5 seconds and helps us plan.\n\nThanks!\nCoach Andrew`); }
+/* GOING / MAYBE / CAN'T GO, notes, filters, reminders, grid boxes: same on HOME, SCHEDULE and PRACTICE */
+const EVENTS=()=>GAMES.concat(PRACS);
+async function attClick(e){ const at=e.target.closest('[data-att]');
+    const nb=e.target.closest('[data-note]');
+    if(nb){ e.stopPropagation(); const mid=nb.dataset.note, gid=nb.dataset.g, cur=attOf(gid,mid), old=(NOTES[mid]||{})[gid]||'';
+      if(!cur) { PA.say('Tap GOING, MAYBE or CAN\'T GO first, then add a note.'); return true; }
+      const v=await PA.input('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return true;
+      try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ PA.say(err.message); } return true; }
+    const af=e.target.closest('[data-af]'), rm=e.target.closest('[data-remind]'), gc=e.target.closest('[data-gcell]');
+    if(af){ e.stopPropagation(); AFILT[af.dataset.g]=af.dataset.af; draw(); return true; }
+    if(rm){ e.stopPropagation(); remindNoReply(EVENTS().find(g=>g.id===rm.dataset.remind)); return true; }
+    const saveAtt=async(mid,gid,nxt)=>{ try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid));
+        if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt,set_by:isCoach()&&!PA.canAnswer(mid)?'coach':PA.isParent()?'parent':'player',updated_at:new Date().toISOString()}); draw(); }
+      catch(err){ PA.say(err.message); } };
+    if(gc){ e.stopPropagation(); const m=ROSTER.find(x=>x.id===gc.dataset.gcell), g=EVENTS().find(x=>x.id===gc.dataset.g), v=await pickAtt(m,g); if(v===null||v==='') return true;
+      const det=gc.closest('details'); await saveAtt(m.id,g.id,v==='clear'?'':v); const nd=grid.querySelector('.agrid'); if(det&&nd) nd.closest('details').open=true; return true; }
+    if(at){ e.stopPropagation(); const mid=at.dataset.m, gid=at.dataset.g, cur=attOf(gid,mid), v=at.dataset.att;
+      if(cur===v){ if(!isCoach()) return true; if(await PA.ask(`Clear the answer for ${(ROSTER.find(x=>x.id===mid)||{}).name}?`)) await saveAtt(mid,gid,''); return true; }   // tapping the chosen answer never flips it
+      await saveAtt(mid,gid,v); return true; }
+  return false; }
 function rosterPanel(){
   if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(team.filter(m=>PA.canAnswer(m.id)).map(m=>m.id)), E=PA.esc;
   const chip=m=>`<span class="rname ${m.kind==='coach'?'coach':''} ${mine.has(m.id)?'me':''}">${m.kind==='coach'?'COACH ':''}${E(m.name)}${isCoach()?`<button data-rren="${m.id}" aria-label="rename">✏️</button><button data-rdel="${m.id}" aria-label="remove">✕</button>`:''}</span>`;
@@ -395,34 +465,19 @@ function drawSchedule(){
         <div class=gmid><div class=gopp>${tbd?'':(home?'VS ':'@ ')}${E(opp)}</div><div class=gsub>${E(g.field||'FIELD TBD')}${tbd?'':' · '+(home?'HOME':'AWAY')}${moved?' · RESCHEDULED FROM '+short(g.orig_gdate):''}${g.recap?' · 📝 RECAP':''}${g.notes&&!r?' · 📌 NOTES':''}</div></div>
         ${res?`<span class=gres>${res}</span>`:''}</div>
       ${g.stage!=='playoff'||!(!g.home||!g.away)?attRow(g):''}
-      <div class=gx><div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
+      <div class=gx>${openGame===g.id&&g.gdate&&!g.postponed?gameDetail(g,true):''}<div><b>HOME</b> ${E(g.home||'TBD')} &nbsp; <b>AWAY</b> ${E(g.away||'TBD')}</div><div><b>FIELD</b> ${E(g.field||'TBD')} &nbsp; <b>TIME</b> ${E(g.gtime||'TBD')}</div>
         ${r?`<div><b>FINAL</b> ${E(g.home)} ${home?g.ours:g.theirs} – ${E(g.away)} ${home?g.theirs:g.ours}</div>`:''}
         ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
         ${attList(g)}${upcoming(g)&&!g.postponed?`<button class="btn ghost" data-prac="${g.id}" style="margin-right:6px">🏈 PRACTICE PLAN</button>`:''}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+nextRsvp(next)+contactHTML()+availGrid([...reg,...po])+rosterPanel()+fieldMapHTML()+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+nextRsvp(next)+(upPracs().length?`<div class=shead><b>PRACTICES</b><span>${upPracs().length} COMING UP</span></div>`+upPracs().map(pracCard).join(''):'')+contactHTML()+availGrid([...reg,...po])+rosterPanel()+fieldMapHTML()+
     (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
     (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
   grid.appendChild(box);
   box.onclick=async e=>{
-    const at=e.target.closest('[data-att]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
-    const nb=e.target.closest('[data-note]');
-    if(nb){ e.stopPropagation(); const mid=nb.dataset.note, gid=nb.dataset.g, cur=attOf(gid,mid), old=(NOTES[mid]||{})[gid]||'';
-      if(!cur) return PA.say('Tap YES, MAYBE or NO first, then add a note.');
-      const v=await PA.input('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return;
-      try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ PA.say(err.message); } return; }
-    const af=e.target.closest('[data-af]'), rm=e.target.closest('[data-remind]'), gc=e.target.closest('[data-gcell]');
-    if(af){ e.stopPropagation(); AFILT[af.dataset.g]=af.dataset.af; return draw(); }
-    if(rm){ e.stopPropagation(); return remindNoReply(GAMES.find(g=>g.id===rm.dataset.remind)); }
-    const saveAtt=async(mid,gid,nxt)=>{ try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid));
-        if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt,set_by:isCoach()&&!PA.canAnswer(mid)?'coach':PA.isParent()?'parent':'player',updated_at:new Date().toISOString()}); draw(); }
-      catch(err){ PA.say(err.message); } };
-    if(gc){ e.stopPropagation(); const m=ROSTER.find(x=>x.id===gc.dataset.gcell), g=GAMES.find(x=>x.id===gc.dataset.g), v=await pickAtt(m,g); if(v===null||v==='') return;
-      const det=gc.closest('details'); await saveAtt(m.id,g.id,v==='clear'?'':v); const nd=grid.querySelector('.agrid'); if(det&&nd) nd.closest('details').open=true; return; }
-    if(at){ e.stopPropagation(); const mid=at.dataset.m, gid=at.dataset.g, cur=attOf(gid,mid), v=at.dataset.att;
-      if(cur===v){ if(!isCoach()) return; if(!await PA.ask(`Clear the answer for ${(ROSTER.find(x=>x.id===mid)||{}).name}?`)) return; return saveAtt(mid,gid,''); }   // tapping the chosen answer never flips it
-      return saveAtt(mid,gid,v); }
+    const ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
+    if(await attClick(e)) return; if(await inPersonClick(e)) return;
     if(ra){ e.preventDefault(); const k=ra.dataset.radd;
       if(k==='child'){ const r=await PA.addChildLink(FMT); if(r){ await loadRoster(); draw(); PA.toast('Linked. You can answer attendance now.'); } return; }
       if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }
@@ -452,7 +507,7 @@ async function loadGamePlan(){ if(GLOADING||!isCoach()) return; GLOADING=true;
   try{ const rows=await PA.coachRpc('pa_coach_gameplan'); const by={}; (rows||[]).forEach(r=>by[r.fmt]=r.data); GPLAN=by; GERR=''; PA.store.set('pa_gameplan',by); }
   catch(e){ GERR=GPLAN?'':'Could not load the game plan ('+e.message+').'; }
   GLOADING=false; if(tab===GAME) draw(); }
-function drawGameDay(){ if(!isCoach()){ tab=0; return draw(); }
+function drawGameDay(){ if(!isCoach()){ tab=HOME; return draw(); }
   const plan=GPLAN&&GPLAN[FMT]; if(!plan&&!GERR) loadGamePlan();
   grid.insertAdjacentHTML('beforeend',gamedayHTML(plan,{fmt:FMT,band,catOf:PA.catOf,filter:GFILTER,err:GERR||(!FMT?'Enter the team code first (PLAYS tab).':GPLAN&&!plan?'No game plan for '+FMT+' yet.':'')}));
   const box=grid.querySelector('.gday');
@@ -460,10 +515,146 @@ function drawGameDay(){ if(!isCoach()){ tab=0; return draw(); }
     if(f){ GFILTER=f.dataset.gf; draw(); return; }
     if(n){ VIEW=band; const i=band.findIndex(p=>p.n===+n.dataset.gplay); if(i>=0) openOv(i); } };
   if(plan&&!GLOADING&&!drawGameDay.fresh){ drawGameDay.fresh=true; loadGamePlan(); } }   // refresh once per app open
+/* ---------- places, arrive-by, calendar (game page details, TeamSnap style) ---------- */
+const PLACES=[[/prospect/i,'9th Street and Prospect Park West, Brooklyn, NY',40.6617,-73.9745,'Prospect Park · enter 9th St & Prospect Park West'],
+              [/red\s*hook/i,'Columbia Street and Halleck Street, Brooklyn, NY',40.6741,-74.0059,'Red Hook ball fields · Columbia St & Halleck St']];
+const placeOf=f=>{ const p=PLACES.find(x=>x[0].test(f||'')); return p?{addr:p[1],lat:p[2],lon:p[3],how:p[4]}:f?{addr:f+', Brooklyn, NY'}:null; };
+const osm=p=>p&&p.lat?`https://www.openstreetmap.org/export/embed.html?bbox=${(p.lon-.007).toFixed(4)}%2C${(p.lat-.004).toFixed(4)}%2C${(p.lon+.007).toFixed(4)}%2C${(p.lat+.004).toFixed(4)}&layer=mapnik&marker=${p.lat}%2C${p.lon}`:'';
+const isPrac=g=>g.stage==='practice';
+const arriveBy=g=>{ const t=PAFinder.parseTime(g.gtime); return isPrac(g)||t==null?'':PAFinder.longLabel(t-45); };
+function icsHref(g){ const t=PAFinder.parseTime(g.gtime); if(!g.gdate||t==null) return '';
+  const p2=n=>String(n).padStart(2,'0'), st=dOf(g.gdate); st.setHours(Math.floor(t/60),t%60); const en=new Date(st.getTime()+(isPrac(g)?(g.minutes||90):60)*60000);
+  const f=x=>`${x.getFullYear()}${p2(x.getMonth()+1)}${p2(x.getDate())}T${p2(x.getHours())}${p2(x.getMinutes())}00`, home=PA.isUs(g.home);
+  const title=isPrac(g)?`Packers ${g.fmt} practice`:`Packers ${g.fmt} ${home?'vs':'@'} ${home?g.away:g.home}`;
+  const desc=isPrac(g)?(g.notes||''):`Arrive by ${arriveBy(g)} (45 min before kickoff).`+(g.notes?' '+g.notes:'');
+  const esc=v=>String(v||'').replace(/[\\,;]/g,m=>'\\'+m).replace(/\n/g,'\\n');
+  return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Packer Army//EN','BEGIN:VEVENT','UID:'+g.id+'@packer-army',
+    'DTSTAMP:'+f(new Date()),'DTSTART:'+f(st),'DTEND:'+f(en),'SUMMARY:'+esc(title),'LOCATION:'+esc(g.field||''),'DESCRIPTION:'+esc(desc),'END:VEVENT','END:VCALENDAR'].join('\r\n')); }
+function gameDetail(g,withMap){ const E=PA.esc, pl=placeOf(g.field), ics=icsHref(g), t=PAFinder.parseTime(g.gtime);
+  const time=isPrac(g)?`${E(g.gtime||'TIME TBD')} · ${g.minutes||90} min`:`Kickoff ${E(g.gtime||'TBD')}${arriveBy(g)?` · <b>arrive by ${arriveBy(g)}</b>`:''}`;
+  return `<div class=gdet><i>🕐</i><div>${time}</div><i>📍</i><div>${E(g.field||'Field TBD')}${pl&&pl.how?`<br><small>${E(pl.how)}</small>`:''}</div></div>
+    ${withMap&&pl&&pl.lat?`<iframe class=gmap loading=lazy title="map" src="${osm(pl)}"></iframe>`:''}
+    <div class=hrowb>${pl?`<a class="btn gold" target=_blank rel=noopener href="${MAPS(pl.addr)}">🧭 DIRECTIONS</a>`:''}${ics?`<a class="btn ghost" href="${ics}" download="packers-${g.gdate}.ics">📅 ADD TO CALENDAR</a>`:''}</div>`; }
+const upPracs=()=>PRACS.filter(p=>p.fmt===FMT&&p.gdate&&dOf(p.gdate)>=todayISO()).sort((a,b)=>a.gdate<b.gdate?-1:a.gdate>b.gdate?1:(PAFinder.parseTime(a.gtime)||0)-(PAFinder.parseTime(b.gtime)||0));
+function pracCard(p){ const E=PA.esc, d=dOf(p.gdate), open=openGame===p.id;
+  return `<div class="game prac-ev ${open?'open':''}" data-id="${p.id}"><div class=grow><div class=gwhen><b>${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}</b>${E(p.gtime||'')} · ${p.minutes||90} MIN</div>
+    <div class=gmid><div class=gopp>🏃 PRACTICE</div><div class=gsub>${E(p.field||'FIELD TBD')}${p.notes?' · 📌 NOTES':''}</div></div><span class=gres>PRACTICE</span></div>${attRow(p)}
+    <div class=gx>${open?gameDetail(p,true):''}${p.notes?`<h5>NOTES</h5><p>${E(p.notes)}</p>`:''}${attList(p)}${isCoach()?`<button class="btn gold" data-pedit="${p.id}">✏️ CHANGE / CANCEL PRACTICE</button>`:''}</div></div>`; }
+/* ---------- HOME ---------- */
+function eventCard(g,kind){ const E=PA.esc, d=dOf(g.gdate), prac=isPrac(g), home=PA.isUs(g.home), opp=prac?'PRACTICE':(home?'VS ':'@ ')+E(home?g.away:g.home), c=attCounts(g);
+  const days=Math.round((d-todayISO())/864e5), when=days===0?'TODAY':days===1?'TOMORROW':`IN ${days} DAYS`;
+  return `<div class="hcard ${prac?'prac':'next'}"><h4><span>${kind}</span><span>${when}</span></h4>
+    <div class=hbig><div class=hdate><small>${DOW[d.getDay()]}</small><b>${d.getDate()}</b><small>${MON[d.getMonth()]}</small></div>
+      <div><div class=hopp>${prac?'🏃 ':''}${opp}</div><div class=hsub>${E(g.gtime||'Time TBD')}${prac?` · ${g.minutes||90} min`:arriveBy(g)?` · <b>arrive by ${arriveBy(g)}</b>`:''}<br>📍 ${E(g.field||'Field TBD')}</div></div></div>
+    ${gameDetail(g,false).replace(/^<div class=gdet>[\s\S]*?<\/div><\/div>/,'')}
+    <div class=acount>✅ ${c.yes} GOING · 🤔 ${c.maybe} MAYBE · ❌ ${c.no} CAN'T GO${c.none?` · ${c.none} NO REPLY`:''}</div>${attBar(c)}
+    ${isCoach()?`<div class=hrowb><button class="btn ghost" data-opengame="${g.id}">📋 SEE AVAILABILITY</button></div>`:familyRows(g)}</div>`; }
+function drawHome(){ const E=PA.esc, {reg,next}=seasonGames(), np=upPracs()[0], kids=teamRoster().filter(m=>PA.canAnswer(m.id)), ann=annFor()[0];
+  const hw=((PCFG&&PCFG.homework)||[]).filter(h=>!h.fmt||h.fmt===FMT).slice(-1)[0], rec=(()=>{ const r={w:0,l:0,t:0}; reg.forEach(g=>{ const x=result(g); if(x) r[x]++; }); return `${r.w}–${r.l}${r.t?'–'+r.t:''}`; })();
+  let h=`<div class=home><div class=shead><b>PACKERS · ${E(FMT.toUpperCase())}</b><span>RECORD ${rec}</span></div>`;
+  h+=next?eventCard(next,'NEXT GAME'):`<div class=hcard><h4><span>NEXT GAME</span></h4><p class=hmsg>No upcoming game on the schedule.</p></div>`;
+  if(np) h+=eventCard(np,'NEXT PRACTICE');
+  if(isCoach()) h+=`<div class=hcard><h4><span>COACH</span></h4><div class=hrowb><button class="btn gold" data-go="find">🔎 FIND A PRACTICE TIME</button><button class="btn ghost" data-go="${GAME}">🏈 GAME DAY</button><button class="btn ghost" data-go="${SCHED}">📋 AVAILABILITY</button></div></div>`;
+  else if(kids.length&&kids.some(m=>!AVF[m.id])) h+=`<div class="hcard hlink" data-go="${PRAC}"><h4><span>PRACTICE TIMES</span><span>›</span></h4><p class=hmsg><b>When can ${E(kids.map(m=>m.name).join(' & '))} practice?</b><br>Tap the times that work in a normal week. Coach uses it to pick practice times.</p></div>`;
+  if(ann) h+=`<div class="hcard hlink" data-go="${MSG}"><h4><span>📣 FROM COACH</span><span>${PA.ago(ann.created_at)} ›</span></h4><p class=hmsg><b>${E(ann.title)}</b>${ann.body?'<br>'+E(ann.body).slice(0,180):''}</p></div>`;
+  if(hw) h+=`<div class="hcard hlink" data-go="${PRAC}"><h4><span>📚 HOMEWORK</span><span>›</span></h4><p class=hmsg><b>${E(hw.title)}</b>${hw.body?'<br>'+E(hw.body).slice(0,160):''}</p></div>`;
+  h+=`<div class="hcard hlink" data-go="plays"><h4><span>🏈 PLAYBOOK</span><span>›</span></h4><p class=hmsg>${band.length} offense plays · ${defs.length} defenses. Tap a play to watch it move.</p></div></div>`;
+  grid.insertAdjacentHTML('beforeend',h); const box=grid.querySelector('.home');
+  box.onclick=async e=>{ if(await attClick(e)) return;
+    const og=e.target.closest('[data-opengame]'); if(og){ openGame=og.dataset.opengame; return goTab(SCHED); }
+    const ra=e.target.closest('[data-radd]'); if(ra){ const r=ra.dataset.radd==='child'?await PA.addChildLink(FMT):await PA.addPlayer(FMT); if(r){ await loadRoster(); draw(); } return; }
+    const go=e.target.closest('[data-go]'); if(go){ const t=go.dataset.go; if(t==='find'){ FIND_OPEN=true; return goTab(PRAC); } return goTab(t==='plays'?PLAYMODE:+t); } };
+  if(!isCoach()) loadMyAvail();
+}
+/* ---------- in-person practice: families' availability + Coach's time finder ---------- */
+let AVF={}, AVC=null, FVIEW='typical', FKID=null, FWEEK=0, FBUSY=false, FIND_OPEN=false, AV_LOADING=false;
+async function loadMyAvail(force){ if(AV_LOADING) return; const kids=teamRoster().filter(m=>PA.canAnswer(m.id)&&(force||!(m.id in AVF))); if(!kids.length) return; AV_LOADING=true;
+  await Promise.all(kids.map(async m=>{ try{ AVF[m.id]=await PA.rpc('pa_avail',{code:PA.code(),member:m.id,token:PA.tokenFor(m.id)}); }catch(e){ AVF[m.id]=AVF[m.id]||null; } }));
+  AV_LOADING=false; if(tab===PRAC||tab===HOME) draw(); }
+async function loadCoachAvail(){ try{ AVC=await PA.coachRpc('pa_coach_avail',{fmt:null}); }catch(e){ AVC={players:[],busy:{},err:e.message}; } if(tab===PRAC) draw(); }
+let FSAVE_T=null;
+function saveMyAvail(mid){ clearTimeout(FSAVE_T); const el=grid.querySelector('.fsave'); if(el) el.textContent='Saving…';
+  FSAVE_T=setTimeout(async()=>{ const a=AVF[mid]||{typical:[],weeks:{}}, keep=PAFinder.weekOf(0), weeks={};
+    for(const [k,v] of Object.entries(a.weeks||{})) if(k>=keep) weeks[k]=v;   // past weeks drop off
+    try{ await PA.rpc('pa_avail_save',{code:PA.code(),member:mid,token:PA.tokenFor(mid),typical:a.typical||[],weeks}); a.weeks=weeks; a.set_by=PA.isParent()?'parent':'player';
+      const el2=grid.querySelector('.fsave'); if(el2) el2.textContent='Saved ✓ Coach sees it.'; }catch(e){ PA.say(e.message); } },500); }
+function familyAvailHTML(){ const kids=teamRoster().filter(m=>PA.canAnswer(m.id)), E=PA.esc; if(!kids.length) return '';
+  if(!FKID||!kids.some(m=>m.id===FKID)) FKID=kids[0].id; const kid=kids.find(m=>m.id===FKID), a=AVF[FKID];
+  if(a===undefined){ loadMyAvail(); return `<div class=hcard><h4><span>WHEN CAN ${E(kid.name)} PRACTICE?</span></h4><p>Loading…</p></div>`; }
+  const wk=FVIEW==='typical'?null:PAFinder.weekOf(+FVIEW), cur=a||{typical:[],weeks:{}}, changed=wk&&cur.weeks&&cur.weeks[wk];
+  const ws=new Set(wk?(changed||cur.typical||[]):(cur.typical||[])), blocked=wk?PAFinder.blocks(EVENTS(),wk):{};
+  const tabs=[['typical','NORMAL WEEK'],['0','THIS WEEK'],['1','NEXT WEEK']].map(([k,l])=>`<button class="${FVIEW===k?'on':''}" data-fv="${k}">${l}</button>`).join('');
+  return `<div class="hcard fam"><h4><span>WHEN CAN ${E(kid.name)} PRACTICE?</span><span>${a?'':'NOT FILLED IN YET'}</span></h4>
+    ${kids.length>1?`<div class=afilt>${kids.map(m=>`<button class="${m.id===FKID?'on':''}" data-fk="${m.id}">${E(m.name)}</button>`).join('')}</div>`:''}
+    <p>${wk?(changed?'Changed for this week only. ':'Same as a normal week. ')+'Tap or drag to change just this week. Gray = a game (no practice then).':'Tap or drag across the times that <b>work</b> in a normal week (green = works). After school, plus weekends.'}</p>
+    <div class=seg style="display:inline-flex;margin-top:4px">${tabs}</div>
+    ${PAFinder.gridHTML({mode:'edit',week:wk,ws,blocked})}
+    <div class=fleg><span><i style="background:#2E8B3A"></i>works</span><span><i style="background:#f1f3f2;border:1px solid #dfe5e2"></i>can't</span>${wk?'<span><i style="background:#d5dbd8"></i>game (blocked)</span>':''}</div>
+    <div class=hrowb>${changed?'<button class="btn ghost" data-freset=1>↺ USE NORMAL WEEK</button>':''}<button class="btn ghost" data-fall=1>ALL WORK</button><button class="btn ghost" data-fnone=1>CLEAR</button></div>
+    <div class=fsave>${a&&a.set_by?`Saved · by ${a.set_by}`:''}</div></div>`; }
+function coachFinderHTML(){ const E=PA.esc;
+  if(!AVC){ loadCoachAvail(); return `<div class=hcard id=finder><h4><span>🔎 FIND A PRACTICE TIME</span></h4><p>Loading everyone's times…</p></div>`; }
+  const wk=PAFinder.weekOf(FWEEK), events=EVENTS(), blocked=PAFinder.blocks(events,wk), bz=AVC.busy||{}, busy=new Set((bz.weeks&&bz.weeks[wk])||bz.typical||[]);
+  const P=f=>(AVC.players||[]).filter(p=>p.fmt===f), A=PAFinder.analyze(P(FMT),wk,blocked,busy,{fmt:FMT}), other=FMTS.find(f=>f!==FMT);
+  const weeks=[0,1,2].map(o=>{ const d=PAFinder.dOf(PAFinder.weekOf(o)); return `<button class="${FWEEK===o?'on':''}" data-fw="${o}">${['THIS WEEK','NEXT WEEK','IN 2 WEEKS'][o]} <small>${d.getMonth()+1}/${d.getDate()}</small></button>`; }).join('');
+  const n=A.answered.length, best=A.wins.slice(0,3), win=(w,f)=>`<div class=bwin><div><b>${PAFinder.winLabel(wk,w)}</b>${w.can.length} of ${n} can come${w.miss.length?` · <span class=miss>can't: ${E(w.miss.map(p=>p.name).join(', '))}</span>`:''}${w.pregame?`<br><span class=pg>🏈 right before the ${E(w.pregame.replace(/ GAME.*/,' game'))}</span>`:''}</div><button class="btn gold" data-setp="${f||FMT}|${wk}|${w.d}|${w.m}">SET</button></div>`;
+  let bb=''; if(other){ const B=PAFinder.analyze(P(other),wk,blocked,busy,{fmt:other}), pairs=PAFinder.backToBack(FMT==='5v5'?A:B,FMT==='5v5'?B:A,wk).slice(0,2);
+    if(pairs.length) bb=`<h5>BOTH TEAMS BACK TO BACK · 3 HOURS</h5><div class=best>${pairs.map(x=>`<div class=bwin><div><b>${PAFinder.winLabel(wk,{d:x.d,m:x.m}).replace(/–.*$/,'')}–${PAFinder.longLabel(x.m+180)}</b>${x.first} first (${x.w1.can.length} of ${(x.first==='5V5'?P('5v5'):P('6v6')).filter(p=>p.typical||p.weeks).length}), then ${x.second} (${x.w2.can.length} of ${(x.second==='5V5'?P('5v5'):P('6v6')).filter(p=>p.typical||p.weeks).length})</div><button class="btn gold" data-setb="${x.first.toLowerCase()}|${x.second.toLowerCase()}|${wk}|${x.d}|${x.m}">SET BOTH</button></div>`).join('')}</div>`; }
+  return `<div class=hcard id=finder><h4><span>🔎 FIND A PRACTICE TIME · ${E(FMT.toUpperCase())}</span><span>${n} OF ${n+A.noreply.length} ANSWERED</span></h4>
+    <div class=seg style="display:inline-flex">${weeks}</div>
+    <div class=afilt><button class="${FBUSY?'':'on'}" data-fb=0>TEAM</button><button class="${FBUSY?'on':''}" data-fb=1>MY BUSY TIMES</button></div>
+    <p>${FBUSY?'Tap or drag the times <b>you</b> are busy this week (red). Games are already blocked.':'Number = players who can come. Darker = more. Gray = games (45 min before to 30 min after) or a set practice.'}</p>
+    <div class="${FBUSY?'busyedit':''}">${PAFinder.gridHTML({mode:'heat',week:wk,blocked,busy,heat:A.heat,n,editBusy:FBUSY})}</div>
+    ${FBUSY?'':`<h5>BEST TIMES · 1.5 HOURS</h5><div class=best>${best.length?best.map(w=>win(w)).join(''):'<p>No open 1.5-hour time this week.</p>'}</div>${bb}
+    ${A.noreply.length?`<h5>NOT FILLED IN YET (${A.noreply.length})</h5><p>${E(A.noreply.map(p=>p.name).join(', '))}</p><div class=hrowb><button class="btn ghost" data-favremind=1>📣 ASK THEM TO FILL IT IN</button></div>`:''}`}</div>`; }
+function inPersonHTML(){ const ups=upPracs(); let h='<div class=ipr>';
+  if(ups.length) h+=`<div class=shead><b>IN-PERSON PRACTICE</b><span>${ups.length} COMING UP</span></div>`+ups.map(pracCard).join('');
+  h+=isCoach()?coachFinderHTML():familyAvailHTML();
+  return h+'</div>'; }
+async function setPractice(p){ const E=PA.esc, d=document.createElement('dialog'), last=PRACS.filter(x=>x.fmt===p.fmt&&x.field).slice(-1)[0], edit=!!p.id;
+  d.innerHTML=`<h2>${edit?'CHANGE PRACTICE':'SET PRACTICE'} · ${E(p.fmt.toUpperCase())}</h2><label>DAY</label><input type=date id=spD value="${p.gdate}"><label>START</label><input id=spT value="${E(p.gtime)}" placeholder="4:00 PM">
+    <label>LENGTH (MIN)</label><input id=spM type=number min=30 max=240 step=15 value="${p.minutes||90}"><label>FIELD / PLACE</label><input id=spF maxlength=60 value="${E(p.field||(last&&last.field)||'')}" placeholder="Prospect Park, Long Meadow">
+    <label>NOTES</label><textarea id=spN maxlength=600 placeholder="Bring water, cleats, flags">${E(p.notes||'')}</textarea>
+    <p style="font-size:12px">${edit?'':'The team gets a message, and it shows on HOME and SCHEDULE with GOING / MAYBE / CAN\'T GO.'}</p>
+    <div class=row>${edit?'<button class="btn ghost" id=spDel style="color:#C8102E">CANCEL PRACTICE</button>':''}<button class="btn ghost" id=spX>BACK</button><button class="btn gold" id=spGo>${edit?'SAVE':'SET PRACTICE'}</button></div>`;
+  document.body.appendChild(d); d.showModal(); d.addEventListener('close',()=>d.remove());
+  d.querySelector('#spX').onclick=()=>d.close();
+  if(edit) d.querySelector('#spDel').onclick=async()=>{ if(!await PA.ask('Cancel this practice? It is removed from everyone\'s schedule.')) return;
+    try{ await PA.coachRpc('pa_delete_game',{gid:p.id}); await PA.coachRpc('pa_coach_announce',{fmt:p.fmt,title:'Practice canceled: '+pLabel(p),body:'',audience:'all'}).catch(()=>{}); d.close(); await loadGames(); draw(); PA.toast('Practice canceled. The team got a message.'); }catch(e){ PA.say(e.message); } };
+  d.querySelector('#spGo').onclick=async()=>{ const q={...p,gdate:d.querySelector('#spD').value,gtime:d.querySelector('#spT').value.trim(),minutes:+d.querySelector('#spM').value||90,field:d.querySelector('#spF').value.trim(),notes:d.querySelector('#spN').value.trim()};
+    if(!q.gdate||PAFinder.parseTime(q.gtime)==null) return PA.say('Pick a day and a start time like 4:00 PM.');
+    try{ await PA.coachRpc('pa_coach_session_save',{p:q}); await PA.coachRpc('pa_coach_announce',{fmt:q.fmt,title:(edit?'Practice changed: ':'Practice: ')+pLabel(q),body:[q.field,q.notes].filter(Boolean).join(' · '),audience:'all'}).catch(()=>{});
+      d.close(); await loadGames(); draw(); PA.toast(edit?'Practice updated. The team got a message.':'Practice set. The team got a message.'); }catch(e){ PA.say(e.message); } }; }
+const pLabel=p=>{ const d=dOf(p.gdate); return `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()} · ${p.gtime}`; };
+async function inPersonClick(e){ const t=e.target.closest('[data-fv],[data-fk],[data-freset],[data-fall],[data-fnone],[data-fw],[data-fb],[data-setp],[data-setb],[data-pedit],[data-favremind]'); if(!t) return false; e.stopPropagation();
+  const d=t.dataset, a=()=>{ AVF[FKID]=AVF[FKID]||{typical:[],weeks:{}}; return AVF[FKID]; }, wk=FVIEW==='typical'?null:PAFinder.weekOf(+FVIEW);
+  if(d.fv!=null) FVIEW=d.fv; else if(d.fk) FKID=d.fk; else if(d.fw!=null) FWEEK=+d.fw; else if(d.fb!=null) FBUSY=d.fb==='1';
+  else if(d.freset){ delete a().weeks[wk]; saveMyAvail(FKID); }
+  else if(d.fall||d.fnone){ const all=d.fall?[...PAFinder.valid].filter(k=>!(wk&&PAFinder.blocks(EVENTS(),wk)[k])):[]; if(wk) a().weeks={...a().weeks,[wk]:all}; else a().typical=all; saveMyAvail(FKID); }
+  else if(d.setp){ const [f,w,dd,m]=d.setp.split('|'), x=PAFinder.dayDate(w,+dd); return setPractice({fmt:f,gdate:PAFinder.iso(x),gtime:PAFinder.longLabel(+m),minutes:90}), true; }
+  else if(d.setb){ const [f1,f2,w,dd,m]=d.setb.split('|'), x=PAFinder.iso(PAFinder.dayDate(w,+dd));
+    if(!await PA.ask(`Set ${f1.toUpperCase()} practice ${PAFinder.longLabel(+m)}–${PAFinder.longLabel(+m+90)} and ${f2.toUpperCase()} ${PAFinder.longLabel(+m+90)}–${PAFinder.longLabel(+m+180)} on ${x}? Both teams get a message.`)) return true;
+    const field=(PRACS.filter(p=>p.field).slice(-1)[0]||{}).field||'';
+    try{ for(const [f,mm] of [[f1,+m],[f2,+m+90]]){ const q={fmt:f,gdate:x,gtime:PAFinder.longLabel(mm),minutes:90,field}; await PA.coachRpc('pa_coach_session_save',{p:q}); await PA.coachRpc('pa_coach_announce',{fmt:f,title:'Practice: '+pLabel(q),body:field,audience:'all'}).catch(()=>{}); }
+      await loadGames(); draw(); PA.toast('Both practices set. Both teams got a message.'); }catch(err){ PA.say(err.message); } return true; }
+  else if(d.pedit) return setPractice(PRACS.find(p=>p.id===d.pedit)), true;
+  else if(d.favremind){ const wkN=PAFinder.weekOf(FWEEK), A=PAFinder.analyze((AVC.players||[]).filter(p=>p.fmt===FMT),wkN,{},null), ids=new Set(A.noreply.map(p=>p.member_id));
+    let cs=[]; try{ cs=await PA.coachRpc('pa_coach_contacts',{fmt:FMT}); }catch(err){ PA.say(err.message); return true; }
+    const emails=[...new Set(cs.filter(c=>ids.has(c.member_id)).map(c=>c.email).filter(PA.okEmail))];
+    if(!emails.length){ PA.say('No parent emails for them yet. Ask in MESSAGES, or add emails in MESSAGES → PARENT EMAILS.'); return true; }
+    mailBatches(emails,'Packer Army: when can your child practice?',"Hi! Please open the Packer Army app → PRACTICE and tap the times your child can practice in a normal week (after school and weekends). It takes a minute and helps us pick practice times that work for everyone.\n\nThanks!\nCoach Andrew"); return true; }
+  draw(); return true; }
+function wireInPerson(){ const fam=grid.querySelector('.fam .fgrid'); if(fam) PAFinder.paint(fam,keys=>{ const wk=FVIEW==='typical'?null:PAFinder.weekOf(+FVIEW), a=AVF[FKID]=AVF[FKID]||{typical:[],weeks:{}};
+    if(wk) a.weeks={...(a.weeks||{}),[wk]:keys}; else a.typical=keys; saveMyAvail(FKID); });
+  const be=grid.querySelector('.busyedit .fgrid'); if(be) PAFinder.paint(be,async keys=>{ const wk=PAFinder.weekOf(FWEEK), bz=AVC.busy=AVC.busy||{typical:[],weeks:{}};
+    bz.weeks={...(bz.weeks||{}),[wk]:keys}; try{ await PA.coachRpc('pa_coach_busy_save',{typical:bz.typical||[],weeks:bz.weeks}); PA.toast('Your busy times are saved'); }catch(e){ PA.say(e.message); } });
+  if(FIND_OPEN){ FIND_OPEN=false; const f=grid.querySelector('#finder'); if(f) f.scrollIntoView({block:'start'}); } }
 function drawPractice(){ const {reg,po,next}=seasonGames(); let g=GAMES.find(x=>x.id===PRAC_GAME&&x.fmt===FMT)||next, idx, playoff;
   if(PRAC_WK!=null){ playoff=PRAC_WK==='po'; idx=playoff?0:+PRAC_WK; g=playoff?(po.find(x=>!result(x))||po[0]):reg[idx]; }
   else if(g){ playoff=g.stage==='playoff'; idx=playoff?0:reg.indexOf(g); }
   else { idx=0; playoff=false; }
+  grid.insertAdjacentHTML('beforeend',inPersonHTML()); const ip=grid.querySelector('.ipr'); wireInPerson();
+  ip.onclick=async e=>{ if(await inPersonClick(e)) return; if(await attClick(e)) return; const c=e.target.closest('.game'); if(c){ openGame=openGame===c.dataset.id?null:c.dataset.id; draw(); } };
   grid.insertAdjacentHTML('beforeend',practiceHTML({game:gameInfo(g),idx,playoff,plays:band,defs,picked:PRAC_WK!=null||(!!PRAC_GAME&&g!==next),cfg:PCFG,coach:isCoach(),manage:MANAGE,fmt:FMT}));
   const box=grid.querySelector('.prac');
   box.onclick=e=>{ const o=e.target.closest('[data-open]'), w=e.target.closest('[data-wk]');
@@ -533,7 +724,7 @@ $('#gSave').onclick=async()=>{ const g=editing_game, n=id=>{ const x=$('#'+id).v
   catch(e){ PA.say('Could not save: '+e.message); } };
 $('#gDel').onclick=async()=>{ if(!await PA.ask('Delete this game from the schedule?')) return;
   try{ await PA.coachRpc('pa_delete_game',{gid:editing_game.id}); $('#dGame').close(); await loadGames(); draw(); }catch(e){ PA.say(e.message); } };
-async function loadGames(){ try{ GAMES=await PA.games(); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn(),loadPractice()]); await loadMsgs(); }
+async function loadGames(){ try{ const all=await PA.games(); GAMES=all.filter(g=>g.stage!=='practice'); PRACS=all.filter(g=>g.stage==='practice'); }catch(e){ GAMES=GAMES||[]; } await Promise.all([loadRoster(),loadAnn(),loadPractice()]); await loadMsgs(); }
 let ANN=[];
 async function loadAnn(){ try{ ANN=await PA.announcements(); }catch(e){ ANN=ANN||[]; } }
 const annFor=()=>ANN.filter(a=>(!a.fmt||a.fmt===FMT)&&(isCoach()||a.audience!=='players'||PA.role()==='player'));
@@ -748,7 +939,7 @@ addEventListener('resize',()=>{ document.querySelectorAll('.tile .nm').forEach(n
   if(!PA.configured){ grid.textContent='This app is not connected to the team database yet (config.js). See COACH_SETUP.md.'; return; }
   coachUI(); await PA.join(false); const wantCoach=PA.lastSetup()==='coach'; await load(true); await Promise.all([loadIdeas(),loadGames()]);
   if(wantCoach&&!isCoach()){ $('#cMsg').textContent=''; $('#dCoach').showModal(); }
-  const parentHome=()=>{ if(PA.isParent()&&!isCoach()&&!location.hash){ const l=PA.links()[0]; if(l&&FMTS.includes(l.fmt)&&l.fmt!==FMT) show(l.fmt); tab=SCHED; } };   // parents start on their child's schedule
+  const parentHome=()=>{ if(PA.isParent()&&!isCoach()&&!location.hash){ const l=PA.links()[0]; if(l&&FMTS.includes(l.fmt)&&l.fmt!==FMT) show(l.fmt); tab=HOME; } };   // parents start on their child's schedule
   parentHome(); draw(); coachInbox();
   if(ROSTER_OK&&!PA.role()&&!isCoach()){   // installed before roles existed: player or parent / fan, once
     const m=await PA.setup(FMT); await loadRoster(); parentHome(); draw(); if(m&&m.name) PA.toast('Welcome, '+m.name+'!');

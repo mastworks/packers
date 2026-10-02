@@ -70,13 +70,33 @@ input[type=number],input[type=date]{width:100%;font-size:16px;padding:8px 9px;bo
 .rname.me{background:var(--gold)}.rname.coach{background:var(--g);color:var(--gold)}
 .rname button{background:none;border:0;padding:0 2px;font-size:13px;color:#555}
 .rbtns{padding:0 12px 12px;display:flex;flex-wrap:wrap;gap:6px}.rbtns .btn{padding:7px 10px;font-size:12px}
+/* availability (TeamSnap / Spond style): explicit 3-way answer, never tap-to-cycle */
 .att{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:11.5px;letter-spacing:.06em;color:#44524d}
 .att .who{font-weight:600;color:var(--ink);min-width:60px}
-.att button{border:1.5px solid #c9d2ce;background:#fff;border-radius:14px;padding:4px 10px;font-size:11.5px;font-weight:600;letter-spacing:.06em}
-.att button.yes.on{background:#2E8B3A;border-color:#2E8B3A;color:#fff}.att button.maybe.on{background:var(--gold);border-color:var(--gold)}.att button.no.on{background:#C8102E;border-color:#C8102E;color:#fff}
+.rsvp{display:flex;gap:4px;flex:1;min-width:230px}
+.rsvp button{flex:1;min-height:40px;border:1.5px solid #c9d2ce;background:#fff;border-radius:10px;padding:4px 6px;font-size:12px;font-weight:700;letter-spacing:.05em;color:#44524d}
+.rsvp button.yes.on{background:#2E8B3A;border-color:#2E8B3A;color:#fff}.rsvp button.maybe.on{background:var(--gold);border-color:var(--gold);color:#111}.rsvp button.no.on{background:#C8102E;border-color:#C8102E;color:#fff}
+.rsvp.sm{min-width:150px;flex:none}.rsvp.sm button{min-height:36px;min-width:44px;font-size:15px;padding:0}
+.att .anote{border:1.5px solid #c9d2ce;background:#fff;border-radius:10px;min-height:40px;padding:4px 10px;font-size:11.5px;font-weight:600}
+.by{font-size:10px;color:#6b7a75;letter-spacing:.04em;text-transform:none}
 .acount{font-size:11px;letter-spacing:.06em;color:#44524d;margin-top:6px}
+.abar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#e6ebe8;margin-top:6px}.abar i{display:block}.abar .y{background:#2E8B3A}.abar .m{background:var(--gold)}.abar .n{background:#C8102E}
+.next-rsvp{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.15);padding:11px 12px;border-top:4px solid var(--gold);margin-bottom:8px}
+.next-rsvp h4{margin:0;font-size:12px;letter-spacing:.1em;color:var(--g)}.next-rsvp .nq{font-size:15px;font-weight:700;margin:4px 0 2px;letter-spacing:.04em}.next-rsvp .nw{font-size:11px;color:#44524d}
+.next-rsvp .att{margin-top:10px}
+.avail h5{display:flex;justify-content:space-between;align-items:center}
+.afilt{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}.afilt button{border:1.5px solid #c9d2ce;background:#fff;border-radius:16px;padding:5px 10px;font-size:11px;font-weight:700;letter-spacing:.05em}
+.afilt button.on{background:var(--g);border-color:var(--g);color:#fff}
+.arow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #eef0ef}.arow .an{flex:1;min-width:0}.arow .an b{display:block;font-size:13px;color:var(--ink)}
+.arow .cnote{display:block;font-size:11px;color:#44524d;text-transform:none;letter-spacing:.02em}
+.aremind{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.aremind .btn{padding:8px 10px;font-size:11.5px}
 .alist b{display:inline-block;min-width:92px;font-size:11px;color:var(--g)}
-.alist span.cyc{cursor:pointer;text-decoration:underline dotted}
+.agrid{overflow-x:auto;padding:0 12px 12px}.agrid table{border-collapse:separate;border-spacing:3px;font-size:11px}
+.agrid th{font-size:10px;font-weight:600;color:#44524d;letter-spacing:.04em;padding:2px 4px;white-space:nowrap}.agrid td.nm{font-weight:600;white-space:nowrap;padding-right:6px}
+.agrid button.cell{width:40px;height:34px;border-radius:8px;border:1.5px solid #d9dfdc;background:#fff;font-size:14px;font-weight:700;color:#9aa5a1}
+.agrid button.cell.yes{background:#2E8B3A;border-color:#2E8B3A;color:#fff}.agrid button.cell.maybe{background:var(--gold);border-color:var(--gold);color:#111}.agrid button.cell.no{background:#C8102E;border-color:#C8102E;color:#fff}
+.agrid td.tot{font-size:10.5px;text-align:center;color:#2E8B3A;font-weight:700}
+.apick{max-width:340px}.apick .rsvp{margin:10px 0}.apick .rsvp button{min-height:48px;font-size:13px}
 /* announcements, contact, field map */
 .ann{background:var(--g);color:#fff;border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.45;letter-spacing:.04em}
 .ann b{color:var(--gold);letter-spacing:.1em;font-size:11px}.ann h4{margin:2px 0;font-size:14px;letter-spacing:.06em}.ann p{margin:2px 0 0;white-space:pre-wrap}
@@ -288,23 +308,66 @@ let PLAYS=0, DEF=1, PRAC=2, SCHED=3, MSG=4, RULE=5, GAME=6, CARD=0, UNREAD=0, GA
 const teamRoster=()=>ROSTER.filter(r=>r.fmt===FMT);
 const attOf=(g,m)=>(ATT.find(a=>a.game_id===g&&a.member_id===m)||{}).status||'';
 const upcoming=g=>!result(g)&&(!g.gdate||dOf(g.gdate)>=todayISO());
-function attRow(g){                                   // counts + this phone's player(s): YES / MAYBE / NO
+const ALAB={yes:'✅ GOING',maybe:'🤔 MAYBE',no:'❌ CAN\'T GO'}, ASHORT={yes:'✓',maybe:'?',no:'✗'};
+const attRec=(g,m)=>ATT.find(a=>a.game_id===g&&a.member_id===m)||{};
+const byTxt=(r,coachView)=>{ if(!r.status||!r.set_by) return ''; const who=r.set_by==='parent'?'parent':r.set_by==='coach'?'Coach':'player';
+  return `<span class=by>by ${who}${coachView&&r.updated_at?' · '+PA.ago(r.updated_at):''}</span>`; };
+const rsvpBtns=(g,m,sm)=>{ const s=attOf(g.id,m.id); return `<div class="rsvp${sm?' sm':''}" role=group aria-label="${PA.esc(m.name)} availability">${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}" aria-pressed="${s===v}" aria-label="${v}">${sm?ASHORT[v]:ALAB[v]}</button>`).join('')}</div>`; };
+function attCounts(g){ const team=teamRoster().filter(m=>m.kind==='player'), c={yes:0,maybe:0,no:0}; team.forEach(m=>{ const s=attOf(g.id,m.id); if(s) c[s]++; }); c.none=team.length-c.yes-c.maybe-c.no; c.n=team.length; return c; }
+function attBar(c){ const w=k=>c.n?(100*c[k]/c.n).toFixed(1):0; return `<div class=abar aria-hidden=true><i class=y style="width:${w('yes')}%"></i><i class=m style="width:${w('maybe')}%"></i><i class=n style="width:${w('no')}%"></i></div>`; }
+function familyRows(g){                                 // this phone's player(s): the player OR a linked parent answers
+  let h=''; for(const m of teamRoster().filter(m=>PA.canAnswer(m.id))){ const nt=(NOTES[m.id]||{})[g.id], r=attRec(g.id,m.id);
+    h+=`<div class=att><span class=who>${PA.esc(m.name)} ${byTxt(r)}</span>${rsvpBtns(g,m)}<button class=anote data-note="${m.id}" data-g="${g.id}" aria-label="add a note">💬${nt?'':' NOTE'}</button></div>${nt?`<div class=attnote>📝 ${PA.esc(nt)} <small>(only Coach sees this)</small></div>`:''}`; }
+  return h; }
+function attRow(g){                                   // game card: counts bar + this phone's YES / MAYBE / NO
   if(!ROSTER_OK||!upcoming(g)||g.postponed) return '';   // no RSVP for past games or postponed games with no new date
-  const team=teamRoster(), c={yes:0,maybe:0,no:0}; team.forEach(m=>{ const s=attOf(g.id,m.id); if(s) c[s]++; });
-  const none=team.length-c.yes-c.maybe-c.no, mine=team.filter(m=>PA.canAnswer(m.id));
-  let h=`<div class=acount>✅ ${c.yes} COMING · 🤔 ${c.maybe} MAYBE · ❌ ${c.no} OUT${none?` · ${none} NO REPLY`:''}</div>`;
-  if(upcoming(g)) for(const m of mine){ const s=attOf(g.id,m.id), nt=(NOTES[m.id]||{})[g.id];
-    h+=`<div class=att><span class=who>${PA.esc(m.name)}</span>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-att="${v}" data-m="${m.id}" data-g="${g.id}">${v.toUpperCase()}</button>`).join('')}<button class=anote data-note="${m.id}" data-g="${g.id}" aria-label="add a note">💬${nt?'':' NOTE'}</button></div>${nt?`<div class=attnote>📝 ${PA.esc(nt)} <small>(only Coach sees this)</small></div>`:''}`; }
-  return h;
+  const c=attCounts(g);
+  return `<div class=acount>✅ ${c.yes} GOING · 🤔 ${c.maybe} MAYBE · ❌ ${c.no} CAN'T GO${c.none?` · ${c.none} NO REPLY`:''}</div>${attBar(c)}`+(isCoach()?'':familyRows(g));
 }
-function attList(g){                                  // opened game: who's coming (coach can tap a name to change it)
-  if(!ROSTER_OK||(!isCoach()&&(!upcoming(g)||g.postponed))) return ''; const team=teamRoster(), E=PA.esc, grp={yes:[],maybe:[],no:[],'':[]};
-  team.forEach(m=>grp[attOf(g.id,m.id)].push(m));
-  const cn=m=>{ const n=isCoach()&&CNOTES.find(x=>x.member_id===m.id&&x.game_id===g.id); return n?` <small class=cnote>📝 ${E(n.note)}</small>`:''; };
-  const nm=m=>isCoach()?`<span class=cyc data-cyc="${m.id}" data-g="${g.id}">${E(m.name)}</span>${cn(m)}`:E(m.name);
-  return `<h5>ATTENDANCE${isCoach()?' <small style="font-weight:400">(tap a name to change it)</small>':''}</h5><div class=alist>`+
-    [['yes','COMING'],['maybe','MAYBE'],['no','NOT COMING'],['','NO REPLY']].map(([k,l])=>`<div><b>${l}</b> ${grp[k].map(nm).join(', ')||'—'}</div>`).join('')+`</div>`;
+function nextRsvp(next){                              // top of SCHEDULE for families: "Is Sam coming Saturday?"
+  if(!ROSTER_OK||isCoach()||!next||!PA.role()) return ''; const kids=teamRoster().filter(m=>PA.canAnswer(m.id)), d=dOf(next.gdate), E=PA.esc;
+  const when=`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}${next.gtime?' · '+E(next.gtime):''}${next.field?' · '+E(next.field):''}`;
+  if(!kids.length){
+    if(PA.isParent()) return `<div class=next-rsvp><h4>NEXT GAME · ${when}</h4><p class=nq>Answer for your child</p><p class=nw>Link your child once, then tap GOING, MAYBE or CAN'T GO for every game.</p><div class=rbtns style="padding:8px 0 0"><button class="btn gold" data-radd=child>+ LINK MY CHILD</button></div></div>`;
+    if(PA.role()==='player'&&teamRoster().filter(m=>m.kind==='player').length<12) return `<div class=next-rsvp><h4>NEXT GAME · ${when}</h4><p class=nq>Add yourself to the roster to answer</p><div class=rbtns style="padding:8px 0 0"><button class="btn gold" data-radd=me>+ ADD ME TO THE ROSTER</button></div></div>`;
+    return ''; }
+  const names=kids.map(m=>E(m.name)).join(' & ');
+  return `<div class=next-rsvp><h4>NEXT GAME · ${when}</h4><p class=nq>${kids.length===1?`Is ${names} coming?`:`Who's coming? ${names}`}</p><p class=nw>Tap one. You can change it any time. 💬 tells Coach why.</p>${familyRows(next)}</div>`;
 }
+let AFILT={};
+function attList(g){                                  // opened game: coach = availability list with explicit buttons; team = who's coming
+  if(!ROSTER_OK||(!isCoach()&&(!upcoming(g)||g.postponed))) return ''; const team=teamRoster().filter(m=>m.kind==='player'), E=PA.esc;
+  if(!isCoach()){ const grp={yes:[],maybe:[],no:[],'':[]}; team.forEach(m=>grp[attOf(g.id,m.id)].push(m));
+    return `<h5>WHO'S COMING</h5><div class=alist>`+[['yes','GOING'],['maybe','MAYBE'],['no',"CAN'T GO"],['','NO REPLY']].map(([k,l])=>`<div><b>${l}</b> ${grp[k].map(m=>E(m.name)).join(', ')||'—'}</div>`).join('')+`</div>`; }
+  const c=attCounts(g), f=AFILT[g.id]||'all', st=m=>attOf(g.id,m.id)||'none';
+  const rows=team.filter(m=>f==='all'||st(m)===f).map(m=>{ const r=attRec(g.id,m.id), n=CNOTES.find(x=>x.member_id===m.id&&x.game_id===g.id);
+    return `<div class=arow><div class=an><b>${E(m.name)}</b>${byTxt(r,true)}${n?`<span class=cnote>📝 ${E(n.note)}</span>`:''}</div>${rsvpBtns(g,m,true)}</div>`; }).join('')||'<p class=by style="padding:8px 0">No one here.</p>';
+  const chips=[['all','ALL',c.n],['yes','GOING',c.yes],['maybe','MAYBE',c.maybe],['no',"CAN'T GO",c.no],['none','NO REPLY',c.none]].map(([k,l,n])=>`<button class="${f===k?'on':''}" data-af="${k}" data-g="${g.id}">${l} ${n}</button>`).join('');
+  return `<div class=avail><h5>AVAILABILITY <small style="font-weight:400">${c.yes} of ${c.n} going</small></h5>${attBar(c)}<div class=afilt>${chips}</div>${rows}
+    ${upcoming(g)&&!g.postponed&&c.none?`<div class=aremind><button class="btn ghost" data-remind="${g.id}">📣 REMIND ${c.none} NO REPLY</button></div>`:''}</div>`;
+}
+function availGrid(games){                            // coach: players × upcoming games (TeamSnap availability view)
+  if(!ROSTER_OK||!isCoach()) return ''; const team=teamRoster().filter(m=>m.kind==='player'), gs=games.filter(g=>upcoming(g)&&!g.postponed&&g.gdate).slice(0,6), E=PA.esc;
+  if(!team.length||!gs.length) return '';
+  const hd=gs.map(g=>{ const d=dOf(g.gdate); return `<th>${MON[d.getMonth()]} ${d.getDate()}</th>`; }).join('');
+  const body=team.map(m=>`<tr><td class=nm>${E(m.name)}</td>${gs.map(g=>{ const s=attOf(g.id,m.id); return `<td><button class="cell ${s}" data-gcell="${m.id}" data-g="${g.id}" aria-label="${E(m.name)}: ${s||'no reply'}">${s?ASHORT[s]:'–'}</button></td>`; }).join('')}</tr>`).join('');
+  const tot=gs.map(g=>`<td class=tot>${attCounts(g).yes} ✓</td>`).join('');
+  return `<details class=roster><summary><b>📋 AVAILABILITY · NEXT ${gs.length} GAMES</b><span>TAP A BOX TO CHANGE</span></summary><div class=agrid><table><tr><th></th>${hd}</tr>${body}<tr><td class=nm>GOING</td>${tot}</tr></table></div></details>`;
+}
+function pickAtt(m,g){ return new Promise(res=>{ const d=document.createElement('dialog'), s=attOf(g.id,m.id), dd=dOf(g.gdate); d.className='apick';
+  d.innerHTML=`<h2>${PA.esc(m.name)}</h2><p>${DOW[dd.getDay()]} ${MON[dd.getMonth()]} ${dd.getDate()}${g.gtime?' · '+PA.esc(g.gtime):''}</p><div class=rsvp>${['yes','maybe','no'].map(v=>`<button class="${v} ${s===v?'on':''}" data-v="${v}">${ALAB[v]}</button>`).join('')}</div>
+    <div class=row><button class="btn ghost" data-v="clear">CLEAR ANSWER</button><button class="btn ghost" data-v="">CANCEL</button></div>`;
+  document.body.appendChild(d); d.showModal(); let out=null;
+  d.onclick=e=>{ const b=e.target.closest('[data-v]'); if(b){ out=b.dataset.v; d.close(); } else if(e.target===d) d.close(); };
+  d.addEventListener('close',()=>{ d.remove(); res(out); }); }); }
+async function remindNoReply(g){ const team=teamRoster().filter(m=>m.kind==='player'&&!attOf(g.id,m.id));
+  let cs=[]; try{ cs=await PA.coachRpc('pa_coach_contacts',{fmt:g.fmt}); }catch(e){ return PA.say(e.message); }
+  const ids=new Set(team.map(m=>m.id)), emails=[...new Set(cs.filter(c=>ids.has(c.member_id)).map(c=>c.email).filter(PA.okEmail))], d=dOf(g.gdate);
+  const missing=team.filter(m=>!cs.some(c=>c.member_id===m.id&&PA.okEmail(c.email))).map(m=>m.name);
+  const day=`${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`;
+  if(!emails.length) return PA.say(`No parent emails for: ${team.map(m=>m.name).join(', ')}.\n\nAsk them in MESSAGES, or add emails in MESSAGES → PARENT EMAILS.`);
+  if(missing.length) await PA.say(`No email on file for: ${missing.join(', ')}. The reminder goes to the others.`);
+  mailBatches(emails,`Packer Army: is your child coming ${day}?`,`Hi! Please open the Packer Army app → SCHEDULE and tap GOING, MAYBE or CAN'T GO for ${day}${g.gtime?' ('+g.gtime+')':''}. It takes 5 seconds and helps us plan.\n\nThanks!\nCoach Andrew`); }
 function rosterPanel(){
   if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(team.filter(m=>PA.canAnswer(m.id)).map(m=>m.id)), E=PA.esc;
   const chip=m=>`<span class="rname ${m.kind==='coach'?'coach':''} ${mine.has(m.id)?'me':''}">${m.kind==='coach'?'COACH ':''}${E(m.name)}${isCoach()?`<button data-rren="${m.id}" aria-label="rename">✏️</button><button data-rdel="${m.id}" aria-label="remove">✕</button>`:''}</span>`;
@@ -337,22 +400,29 @@ function drawSchedule(){
         ${g.notes?`<h5>NOTES</h5><p>${E(g.notes)}</p>`:''}${g.recap?`<h5>RECAP</h5><p>${E(g.recap)}</p>`:''}
         ${attList(g)}${upcoming(g)&&!g.postponed?`<button class="btn ghost" data-prac="${g.id}" style="margin-right:6px">🏈 PRACTICE PLAN</button>`:''}${isCoach()?`<button class="btn gold" data-edit="${g.id}">✏️ ${tbd?'ENTER TEAMS / DATE':'SCORE / NOTES / RECAP'}</button>`:''}</div></div>`; };
   const box=document.createElement('div'); box.className='sched';
-  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+contactHTML()+rosterPanel()+fieldMapHTML()+
+  box.innerHTML=`<div class=shead><b>${E((reg[0]||po[0]||{}).division||FMT)}</b><span>RECORD ${tally(reg)}</span></div>`+nextRsvp(next)+contactHTML()+availGrid([...reg,...po])+rosterPanel()+fieldMapHTML()+
     (reg.length?reg.map(card).join(''):'<p style="font-size:13px;color:#44524d">No games yet.</p>')+
     (po.length?`<div class=shead style="margin-top:8px"><b>PLAYOFFS</b><span>${po.some(result)?'PLAYOFFS '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
     (isCoach()?'<button class="btn ghost" id=addGame style="margin-bottom:10px">＋ ADD GAME</button>':'');
   grid.appendChild(box);
   box.onclick=async e=>{
-    const at=e.target.closest('[data-att]'), cy=e.target.closest('[data-cyc]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
+    const at=e.target.closest('[data-att]'), ra=e.target.closest('[data-radd]'), rr=e.target.closest('[data-rren]'), rd=e.target.closest('[data-rdel]');
     const nb=e.target.closest('[data-note]');
     if(nb){ e.stopPropagation(); const mid=nb.dataset.note, gid=nb.dataset.g, cur=attOf(gid,mid), old=(NOTES[mid]||{})[gid]||'';
       if(!cur) return PA.say('Tap YES, MAYBE or NO first, then add a note.');
       const v=await PA.input('A short note for Coach (for example: sick, arriving late). Only Coach sees it. Leave empty to remove.',old); if(v===null) return;
       try{ await PA.setAtt(mid,gid,cur,v.trim().slice(0,120)); NOTES[mid]={...(NOTES[mid]||{}),[gid]:v.trim().slice(0,120)||undefined}; draw(); PA.toast(v.trim()?'Note sent to Coach':'Note removed'); }catch(err){ PA.say(err.message); } return; }
-    if(at||cy){ e.stopPropagation(); const mid=(at||cy).dataset.m||cy.dataset.cyc, gid=(at||cy).dataset.g, cur=attOf(gid,mid);
-      const nxt=at?(cur===at.dataset.att?'':at.dataset.att):({'':'yes',yes:'maybe',maybe:'no',no:''}[cur]);
-      try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid)); if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt}); draw(); }
-      catch(err){ PA.say(err.message); } return; }
+    const af=e.target.closest('[data-af]'), rm=e.target.closest('[data-remind]'), gc=e.target.closest('[data-gcell]');
+    if(af){ e.stopPropagation(); AFILT[af.dataset.g]=af.dataset.af; return draw(); }
+    if(rm){ e.stopPropagation(); return remindNoReply(GAMES.find(g=>g.id===rm.dataset.remind)); }
+    const saveAtt=async(mid,gid,nxt)=>{ try{ await PA.setAtt(mid,gid,nxt||null,(NOTES[mid]||{})[gid]); ATT=ATT.filter(a=>!(a.game_id===gid&&a.member_id===mid));
+        if(nxt) ATT.push({game_id:gid,member_id:mid,status:nxt,set_by:isCoach()&&!PA.canAnswer(mid)?'coach':PA.isParent()?'parent':'player',updated_at:new Date().toISOString()}); draw(); }
+      catch(err){ PA.say(err.message); } };
+    if(gc){ e.stopPropagation(); const m=ROSTER.find(x=>x.id===gc.dataset.gcell), g=GAMES.find(x=>x.id===gc.dataset.g), v=await pickAtt(m,g); if(v===null||v==='') return;
+      const det=gc.closest('details'); await saveAtt(m.id,g.id,v==='clear'?'':v); const nd=grid.querySelector('.agrid'); if(det&&nd) nd.closest('details').open=true; return; }
+    if(at){ e.stopPropagation(); const mid=at.dataset.m, gid=at.dataset.g, cur=attOf(gid,mid), v=at.dataset.att;
+      if(cur===v){ if(!isCoach()) return; if(!await PA.ask(`Clear the answer for ${(ROSTER.find(x=>x.id===mid)||{}).name}?`)) return; return saveAtt(mid,gid,''); }   // tapping the chosen answer never flips it
+      return saveAtt(mid,gid,v); }
     if(ra){ e.preventDefault(); const k=ra.dataset.radd;
       if(k==='child'){ const r=await PA.addChildLink(FMT); if(r){ await loadRoster(); draw(); PA.toast('Linked. You can answer attendance now.'); } return; }
       if(k==='me'){ const m=await PA.addPlayer(FMT); if(m){ await loadRoster(); draw(); PA.toast(m.name+' is on the '+FMT+' roster'); } return; }

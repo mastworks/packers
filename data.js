@@ -27,6 +27,7 @@ const PA=(()=>{
     set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} },
     del(k){ try{ localStorage.removeItem(k); }catch(e){} }
   };
+  try{ const q=new URLSearchParams(location.search).get('code'); if(q&&/^[A-Za-z0-9-]{3,40}$/.test(q)&&!store.get('pa_code')) store.set('pa_code',q.toUpperCase()); }catch(e){}   // invite link: …/packers/?code=PACKER
   const code=()=>store.get('pa_code',''), nick=()=>store.get('pa_nick','');
   const mine=()=>store.get('pa_mine',[]);                                  // ids of ideas this device submitted
 
@@ -154,52 +155,77 @@ const PA=(()=>{
   const gmail=(bcc,subject,body)=>'https://mail.google.com/mail/?authuser='+encodeURIComponent(COACH_EMAIL)+'&view=cm&fs=1&tf=1'
     +(bcc&&bcc.length?'&bcc='+encodeURIComponent(bcc.join(',')):'')+'&su='+encodeURIComponent(subject||'')+'&body='+encodeURIComponent(body||'');
 
-  // first-time setup: PLAYER (name + team → roster spot) · PARENT / FAN (view; optional link to a child + optional email) · COACH (sign-in)
+  // first-time setup, one question per screen: who → (team code) → name + team → all set
+  //   PLAYER: joins the roster, or claims the spot a parent / Coach already added · PARENT: adds or finds their child and links this phone
+  //   FAN: view only · COACH: sign-in (never on the roster)
+  async function familyAdd(fmt,child,email){ const g=await rpc('pa_family_add',{code:code(),fmt,child,email:email||null});
+    store.set('pa_links',[...links().filter(x=>x.member_id!==g.member_id),{...g,email:email||''}]); store.set('pa_role','parent'); return g; }
+  async function claim(fmt,name){ const m=await rpc('pa_claim',{code:code(),fmt,name});
+    store.set('pa_members',[...members().filter(x=>x.id!==m.id),m]); store.set('pa_role','player'); if(!nick()) store.set('pa_nick',m.name); return m; }
   function setupDialog(withCode,fmtDefault,startRole){
     return new Promise(res=>{
       const d=document.createElement('dialog'); d.className='join'; document.body.appendChild(d);
-      let fmt=fmtDefault==='6v6'?'6v6':'5v5', who=startRole||'';
-      const m=()=>d.querySelector('#jm'), done=v=>{ d.close(); d.remove(); res(v); };
-      const teamSeg=()=>`<label>TEAM</label><div class=seg id=jt style="background:#e9eeec"><button type=button data-f=5v5 class="${fmt==='5v5'?'on':''}">5V5</button><button type=button data-f=6v6 class="${fmt==='6v6'?'on':''}">6V6 SENIOR</button></div>`;
-      const codeField=()=>withCode?`<label>TEAM CODE</label><input id=jc autocapitalize=characters autocomplete=off value="${esc(code())}" placeholder="ask your coach">`:'';
-      const msg='<div id=jm style="color:var(--warn);font-size:13px;min-height:18px;margin-top:8px"></div>';
+      let fmt=fmtDefault==='6v6'?'6v6':fmtDefault==='5v5'?'5v5':'', who=startRole||'', step=who?'name':'who', names=[], result=null, added=[];
+      const I=n=>window.ICON?window.ICON(n):'', m=()=>d.querySelector('#jm'), done=v=>{ d.close(); d.remove(); res(v); };
+      const needCode=()=>withCode&&!code();
+      const back=`<button class="jback" id=jback aria-label="Back">${I('left')} ${startRole?'Cancel':'Back'}</button>`;
+      const msg='<div id=jm class=jmsg role=status></div>';
+      const team=()=>`<div class=jlab>${who==='parent'?"Your child's team":'Your team'}</div><div class=jteams id=jt>
+          <button type=button data-f=5v5 class="jteam ${fmt==='5v5'?'on':''}"><b>5v5</b><span>5 on the field</span></button>
+          <button type=button data-f=6v6 class="jteam ${fmt==='6v6'?'on':''}"><b>6v6</b><span>Senior · 6 on the field</span></button></div>`;
+      const sugg=()=>{ const l=names.filter(x=>x.fmt===fmt&&x.kind==='player'&&(who==='parent'||!x.claimed)); if(!fmt||!l.length) return '';
+        return `<div class=jsug><span>${who==='parent'?'Already on the team · tap if it\'s your child':'Already added by a parent or Coach · tap if it\'s you'}</span><div>${l.map(x=>`<button type=button data-nm="${esc(x.name)}">${esc(x.name)}</button>`).join('')}</div></div>`; };
       function paint(){
-        if(!who){ d.innerHTML=`<h2>Welcome to Packer Army</h2><p>Who is using this phone?</p>
-          <div class=row style="flex-direction:column"><button class="btn gold" data-who=player>I'M A PLAYER</button><button class="btn" data-who=parent>I'M A PARENT / FAN</button><button class="btn ghost" data-who=coach>I'M THE COACH</button></div>`; return; }
-        if(who==='player') d.innerHTML=`<h2>Player setup</h2><p>Your name goes on the team roster so you can say if you're coming to each game and message Coach.</p>${codeField()}
-          <label>YOUR NAME</label><input id=jn maxlength=24 autocomplete=off placeholder="first name (add a last initial if needed)">${teamSeg()}${msg}
-          <div class=row><button class="btn ghost" id=jback>Back</button><button class="btn gold" id=jgo>Join</button></div>`;
-        else if(who==='coach') d.innerHTML=`<h2>Coach</h2><p>Enter the team code, then sign in with the coach account. Coaches are not added to the player roster.</p>${codeField()}${msg}
-          <div class=row><button class="btn ghost" id=jback>Back</button><button class="btn gold" id=jgo>Next: sign in</button></div>`;
-        else d.innerHTML=`<h2>Parent / fan</h2><p>You can view everything. Link your child to answer attendance and message Coach.</p>${codeField()}
-          ${teamSeg()}<label>YOUR CHILD <span style="font-weight:400">(optional; they must have joined first)</span></label><select class=f id=jchild><option value="">— just watching —</option></select>
-          <label>YOUR EMAIL <span style="font-weight:400">(optional; for emails from Coach, only Coach sees it)</span></label><input type=email id=je autocomplete=email autocapitalize=off>${msg}
-          <div class=row><button class="btn ghost" id=jback>Back</button><button class="btn gold" id=jgo>Done</button></div>`;
+        if(step==='who') d.innerHTML=`<div class=jhead><div class=jlogo>PA</div><h2>Welcome to Packer Army</h2><p>Who's using this phone?</p></div>
+          <div class=jroles><button class=jrole data-who=player>${I('user')}<div><b>I'm a player</b><span>Join your team</span></div>${I('right')}</button>
+          <button class=jrole data-who=parent>${I('users')}<div><b>I'm a parent</b><span>Follow your child's team</span></div>${I('right')}</button></div>
+          <div class=jsmall><button data-who=fan>Just watching</button><span>·</span><button data-who=coach>Coach sign-in</button></div>`;
+        else if(step==='code') d.innerHTML=`${back}<h2>Team code</h2><p>Coach sent it in the invite (text or email).</p>
+          <input id=jc autocapitalize=characters autocomplete=off placeholder="Team code" value="${esc(code())}">${msg}<div class=row><button class="btn gold" id=jgo>Next</button></div>`;
+        else if(step==='name') d.innerHTML=`${back}<h2>${who==='parent'?'Add your child':'Join your team'}</h2>
+          <div class=jlab>${who==='parent'?"Your child's first name":'Your first name'}</div><input id=jn maxlength=24 autocomplete=off autocapitalize=words placeholder="${who==='parent'?'e.g. Riley':'e.g. Sam'}">
+          ${team()}<div id=jsugw class=jsugw>${sugg()}</div>
+          ${who==='parent'?`<div class=jlab>Your email <span>optional · only Coach sees it</span></div><input type=email id=je autocomplete=email autocapitalize=off placeholder="you@example.com">`:''}
+          ${msg}<div class=row><button class="btn gold" id=jgo>${who==='parent'?'Add my child':'Join the team'}</button></div>`;
+        else if(step==='done'){ const kid=who==='parent';
+          d.innerHTML=`<div class=jhead><div class="jlogo ok">${I('check')}</div><h2>${kid?`${esc(added.join(' & '))} ${added.length>1?'are':'is'} linked`:`You're on the team, ${esc(result.name)}!`}</h2>
+            <p>${kid?'You can now answer for them. Two quick things on the Home screen:':'Two quick things on the Home screen:'}</p></div>
+            <ol class=jnext><li>${I('check')} Say if ${kid?'they are':"you're"} coming to the next game</li><li>${I('calendar')} Tap the times ${kid?'they':'you'} can practice</li></ol>
+            <div class=row style="flex-direction:column">${kid?'<button class="btn ghost" id=jmore>Add another child</button>':''}<button class="btn gold" id=jfin>Go to Home</button></div>`; }
+        const n=d.querySelector('#jn'); if(n) setTimeout(()=>n.focus(),60); const je=d.querySelector('#je'); if(je&&!je.value) je.value=(links().find(l=>l.email)||{}).email||'';
       }
-      async function fillChildren(){ const sel=d.querySelector('#jchild'); if(!sel||!code()) return;
-        try{ const r=await roster(), keep=sel.value; sel.innerHTML='<option value="">— just watching —</option>'+r.filter(x=>x.fmt===fmt&&x.kind==='player').map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
-          if(keep&&[...sel.options].some(o=>o.value===keep)) sel.value=keep; }catch(e){} }   // a refresh never undoes the parent's pick
-      async function checkCode(){ if(!withCode) return true; const c=d.querySelector('#jc').value.trim();
-        try{ await rpc('pa_plays',{code:c}); store.set('pa_code',c); return true; }catch(e){ m().style.color='var(--warn)'; m().textContent=badCode(e)?'That team code is not right.':e.message; return false; } }
+      async function loadNames(){ try{ names=await rpc('pa_roster2',{code:code()}); }catch(e){ names=[]; } const w=d.querySelector('#jsugw'); if(w) w.innerHTML=sugg(); }
+      async function checkCode(c){ try{ await rpc('pa_plays',{code:c}); store.set('pa_code',c); return true; }
+        catch(e){ m().textContent=badCode(e)?"That code isn't right. Check Coach's message.":e.message; return false; } }
+      const go=s=>{ step=s; paint(); if(s==='name') loadNames(); };
+      const afterWho=()=>{ if(who==='coach'||who==='fan'){ if(needCode()) return go('code'); store.set('pa_role',who==='fan'?'fan':'coach'); return done(who==='fan'?'parent':'coach'); }
+        go(needCode()?'code':'name'); };
       d.onclick=async e=>{
-        const w=e.target.closest('[data-who]'); if(w){ who=w.dataset.who; if(who==='coach'&&!withCode){ store.set('pa_role','coach'); return done('coach'); } paint(); if(who==='parent'&&code()) fillChildren(); return; }
-        const f=e.target.closest('#jt [data-f]'); if(f){ fmt=f.dataset.f; d.querySelectorAll('#jt button').forEach(b=>b.classList.toggle('on',b.dataset.f===fmt)); if(who==='parent') fillChildren(); return; }
-        if(e.target.id==='jback'){ who=''; paint(); return; }
-        if(e.target.id!=='jgo') return;
-        m().style.color='var(--g)'; m().textContent='Checking…'; if(!await checkCode()) return;
+        const w=e.target.closest('[data-who]'); if(w){ who=w.dataset.who; return afterWho(); }
+        const f=e.target.closest('#jt [data-f]'); if(f){ fmt=f.dataset.f; d.querySelectorAll('#jt button').forEach(b=>b.classList.toggle('on',b.dataset.f===fmt)); const sw=d.querySelector('#jsugw'); if(sw) sw.innerHTML=sugg(); return; }
+        const nm=e.target.closest('[data-nm]'); if(nm){ d.querySelector('#jn').value=nm.dataset.nm; d.querySelectorAll('[data-nm]').forEach(b=>b.classList.toggle('on',b===nm)); const g=d.querySelector('#jgo'); if(g) g.textContent=who==='parent'?`Link ${nm.dataset.nm}`:`That's me · continue`; return; }
+        if(e.target.closest('#jback')){ if(startRole&&step==='name') return done(null); go(step==='name'&&needCode()?'code':'who'); return; }
+        if(e.target.closest('#jmore')){ const em=(links().find(l=>l.email)||{}).email||''; fmt=''; go('name'); d.querySelector('#jn').value=''; const je=d.querySelector('#je'); if(je) je.value=em; return; }
+        if(e.target.closest('#jfin')) return done(result);
+        if(!e.target.closest('#jgo')) return;
+        const btn=d.querySelector('#jgo'); m().textContent='';
+        if(step==='code'){ const c=d.querySelector('#jc').value.trim(); if(!c){ m().textContent='Enter the team code.'; return; } btn.disabled=true; const ok=await checkCode(c); btn.disabled=false; if(!ok) return;
+          if(who==='coach'||who==='fan'){ store.set('pa_role',who==='fan'?'fan':'coach'); return done(who==='fan'?'parent':'coach'); } return go('name'); }
+        const n=d.querySelector('#jn').value.trim();
+        if(!n){ m().textContent=who==='parent'?"Type your child's first name.":'Type your first name.'; return; }
+        if(!fmt){ m().textContent='Tap a team: 5v5 or 6v6.'; return; }
+        btn.disabled=true;
         try{
-          if(who==='player'){ const n=d.querySelector('#jn').value.trim(); if(!n) throw new Error('Enter your name');
-            const mem=await joinRoster(fmt,n); store.set('pa_nick',mem.name); done(mem); }
-          else if(who==='coach'){ store.set('pa_role','coach'); done('coach'); }
-          else { const child=d.querySelector('#jchild').value, em=(d.querySelector('#je').value||'').trim();
-            if(em&&!okEmail(em)) throw new Error('That email does not look right (or leave it empty)');
-            store.set('pa_role',child?'parent':'fan'); if(child) await linkChild(child,em); done('parent'); }
-        }catch(err){ m().style.color='var(--warn)'; m().textContent=err.message; }
+          if(who==='player'){
+            const taken=names.find(x=>x.fmt===fmt&&x.kind==='player'&&x.name.toLowerCase()===n.toLowerCase());
+            result=taken&&!taken.claimed?await claim(fmt,n):await joinRoster(fmt,n); store.set('pa_nick',result.name); go('done'); }
+          else { const em=(d.querySelector('#je').value||'').trim(); if(em&&!okEmail(em)) throw new Error("That email doesn't look right (or leave it empty).");
+            const g=await familyAdd(fmt,n,em); added.push(g.child); result='parent'; go('done'); }
+        }catch(err){ m().textContent=err.message.replace(/ Add a last initial, or ask Coach\./,' If that\'s you, tap your name above. Otherwise add a last initial.'); }
+        btn.disabled=false;
       };
-      let tmr=null;   // parent: fill the child list as soon as the typed code is right (no need to leave the field)
-      d.addEventListener('input',e=>{ if(e.target.id!=='jc'||who!=='parent') return; clearTimeout(tmr); const c=e.target.value.trim(); if(c.length<4) return;
-        tmr=setTimeout(async()=>{ try{ await rpc('pa_plays',{code:c}); store.set('pa_code',c); m().textContent=''; fillChildren(); }catch(err){} },450); });
-      d.addEventListener('change',async e=>{ if(e.target.id==='jc'&&who==='parent'){ if(await checkCode()) fillChildren(); } });
+      d.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); const b=d.querySelector('#jgo'); if(b) b.click(); } });
+      if(step==='name') loadNames();
       paint(); d.showModal(); d.addEventListener('cancel',e=>e.preventDefault());
     });
   }
@@ -216,7 +242,7 @@ const PA=(()=>{
   let setupResult=null;
   async function join(needPlayer){
     if(window.PA_INTRO) await window.PA_INTRO;
-    if(!code()){ if(role()) await codeOnlyDialog(); else setupResult=await setupDialog(true,store.get('pa_fmt')); }
+    if(!code()){ if(role()) await codeOnlyDialog(); else setupResult=await setupDialog(true); }
     if(needPlayer&&!members().length){ say(isParent()||role()==='coach'?'Only players can send ideas, vote or comment.':'Join the roster as a player first (Schedule → + ADD A PLAYER ON THIS PHONE).'); return false; }
     return true;
   }
@@ -224,14 +250,14 @@ const PA=(()=>{
   const addPlayer=(fmt)=>setupDialog(false,fmt,'player');
   const addChildLink=(fmt)=>setupDialog(false,fmt,'parent');
   const setup=(fmt)=>setupDialog(false,fmt);
-  const CATS=[['throw','THROW'],['run','RUN'],['redzone','RED ZONE'],['trick','TRICK']];
+  const CATS=[['throw','Throw'],['run','Run'],['redzone','Red zone'],['trick','Trick']];
   const SUBS=['VS MAN','VS ZONE','VS RUSH','SHORT YARDAGE','OPEN FIELD','GOAL LINE'];
-  const DCATS=[['throw','VS PASS'],['run','VS RUN'],['redzone','RED ZONE'],['trick','TRICK / DISGUISE']];   // defense: color = what it stops
+  const DCATS=[['throw','vs pass'],['run','vs run'],['redzone','Red zone'],['trick','Trick / disguise']];   // defense: color = what it stops
   const DSUBS=['VS LONG THROWS','VS SHORT PASSES','VS RUNS','VS FAKE HAND-OFFS','RED ZONE','3RD DOWN'];
   const catsFor=p=>p&&p.side==='D'?DCATS:CATS, subsFor=p=>p&&p.side==='D'?DSUBS:SUBS;
   const catOf=p=>CATS.some(c=>c[0]===p.cat)?p.cat:'throw';
-  const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>S1 S2 SAFETIES · F1 F2 FLATS · R1 RUSHER · 6V6: R2 / F3 / S3 (BY JOB)</span>':'');
+  const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>S1 S2 safeties · F1 F2 flats · R1 rusher · 6v6: R2 / F3 / S3 (by job)</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {analyzeRows,ruleGuard,say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  return {familyAdd,claim,analyzeRows,ruleGuard,say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

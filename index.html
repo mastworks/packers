@@ -307,6 +307,12 @@ dialog.me .mlink{background:none;border:0;color:var(--sub);text-decoration:under
 header,.bnav{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 #ovnote .dlinks{color:var(--g)!important}.otop .n small.ovform{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
 .jback{min-height:44px}
+.rdiv{background:#fff!important;color:var(--ink)!important;border-radius:14px!important;box-shadow:var(--shadow);border-top:4px solid var(--gold);padding:14px!important;font-size:14px!important}
+.rdiv b{color:var(--g)!important;font-size:16px!important;margin-bottom:8px!important}
+.rdiv>div{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.rdiv span{color:var(--sub)!important;font-size:13px!important;min-width:0!important}
+.fieldlbl{display:inline-block;background:#eef0f2;color:var(--sub);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin:0 6px 6px 0}
+.seg button{min-height:44px!important}.jsmall button{min-height:44px}dialog.me .mlink{min-height:44px}.cards .seg button{min-height:44px}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>Packer <span>Army</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">Game day</button><button id=meBtn aria-label="My profile" style="display:none"></button><button id=coachBtn aria-label="Coach sign-in">Coach</button></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -320,7 +326,7 @@ header,.bnav{background:#fff!important;-webkit-backdrop-filter:none!important;ba
     <div class=oside>
       <div class=ocue id=ovcue></div>
       <button class="btn" id=deepBtn style="display:none">If they all go deep</button>
-      <div class=ctl id=ctl><button class=btn id=anim>Animate</button><button class=btn id=sl aria-label="Slow motion">Slow</button><input id=sc type=range min=0 max=1000 value=0 aria-label="scrub"></div>
+      <div class=ctl id=ctl><button class=btn id=anim>Animate</button><button class=btn id=sl aria-label="Slow motion">Slow</button><input id=sc type=range min=0 max=1000 value=0 aria-label="Play position"></div>
       <div class=acts><button class=btn id=edit>Edit</button><button class="btn gold" id=send>Send to Coach</button><button class=btn id=sync>Sync</button></div>
       <div class=note id=ovnote></div>
       <div class=oideas id=ovideas></div>
@@ -370,7 +376,7 @@ function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(t
     return `<button data-t="${t}" class="${on?'on':''}" aria-current="${on?'page':'false'}">${ICON(ic)}<span>${l}</span>${t===MSG&&UNREAD?`<b class=nbadge>${UNREAD}</b>`:''}</button>`; }).join('');
   const gd=$('#gdBtn'); gd.style.display=isCoach()?'':'none'; gd.classList.toggle('on',tab===GAME); }
 function goTab(t){ if(t!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=t===SCHED&&tab!==SCHED; tab=t; draw(); window.scrollTo(0,0);
-  if(toSched){ const nx=document.querySelector('.game.next'); if(nx) nx.scrollIntoView({block:'center'}); } }   // practice returns to the next game; schedule opens at the next game
+}   // practice returns to the next game; schedule opens at the next game
 $('#tabs').onclick=e=>{ const b=e.target.closest('button[data-t]'); if(!b) return; const t=b.dataset.t; goTab(t==='plays'?PLAYMODE:+t); };
 $('#gdBtn').onclick=()=>goTab(GAME);
 function tagFor(p){ if(PA.recent(p,14)) return '<span class="tag up">Updated</span>'; return p.status==='new'?'<span class="tag">New</span>':''; }
@@ -406,7 +412,7 @@ function draw(){
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${isDef&&p.warn?`<span class=dwarn>${ICON('info')} ${PA.esc(nice(p.warn))}</span>`:''}${isDef?teamNotes(p,true):''}${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}${coachBadge(p)}`;
     { const sn=isDef?{form:'',name:p.name}:shortName(p.name); t.querySelector('.nm').textContent=nice(sn.name); if(sn.form) t.querySelector('.nm').insertAdjacentHTML('afterend',`<span class=fm>${PA.esc(sn.form)}</span>`); t.title=p.name; } t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
     });
-  $('#legend').innerHTML=PA.legend(isDef);
+  $('#legend').innerHTML=PA.legend(isDef)+(isDef?'':'<span>Q quarterback · C center · X Y Z H receivers · ★ first read</span>');
 }
 function show(f){ const one=oneTeam(); if(one) f=one; FMT=f; PA.store.set('pa_fmt',f); plays=BY[f]||[]; band=PA.band(plays); defs=PA.defense(plays); for(const k in TL) delete TL[k]; buildFmts(); buildTabs(); draw(); }
 
@@ -504,7 +510,7 @@ async function attClick(e){ const at=e.target.closest('[data-att]');
 function rosterPanel(){
   if(!ROSTER_OK) return ''; const team=teamRoster(), pl=team.filter(m=>m.kind==='player'), co=team.filter(m=>m.kind==='coach'), mine=new Set(team.filter(m=>PA.canAnswer(m.id)).map(m=>m.id)), E=PA.esc;
   const chip=m=>`<span class="rname ${m.kind==='coach'?'coach':''} ${mine.has(m.id)?'me':''}">${m.kind==='coach'?'COACH ':''}${E(m.name)}${isCoach()?`<button data-rren="${m.id}" aria-label="rename">✏️</button><button data-rdel="${m.id}" aria-label="remove">✕</button>`:''}</span>`;
-  return `<details class=roster ${isCoach()?'open':''}><summary><b>Team roster</b><span>${isCoach()?`${pl.length}/12 players · ${co.length}/2 coaches`:`${pl.length} players`}</span></summary>
+  return `<details class=roster ${isCoach()?'open':''}><summary><b>Team roster</b><span>${isCoach()?`${pl.length}/12 players · ${co.length}/2 coaches`:`${pl.length} player${pl.length===1?'':'s'}`}</span></summary>
     <div class=rlist>${[...co,...pl].map(chip).join('')||'<span style="font-size:12px;color:#44524d">No one yet.</span>'}</div>
     <div class=rbtns>${pl.length<12&&!PA.isParent()&&!isCoach()?'<button class="btn ghost" data-radd=me>+ Add A player on this phone</button>':''}${PA.isParent()&&pl.length?'<button class="btn ghost" data-radd=child>+ Link my child (attendance)</button>':''}${isCoach()&&pl.length<12?'<button class="btn ghost" data-radd=player>+ Player (coach)</button>':''}${isCoach()&&co.length<2?'<button class="btn ghost" data-radd=coach>+ Coach</button>':''}</div></details>`;
 }
@@ -535,7 +541,7 @@ function drawSchedule(){
   const box=document.createElement('div'); box.className='sched';
   box.innerHTML=`<div class=shead><b>${E(nice((reg[0]||po[0]||{}).division||FMT))}</b><span>${reg.some(result)?'Record '+tally(reg):''}</span></div>`+contactHTML()+availGrid([...reg,...po])+rosterPanel()+fieldMapHTML()+
     (()=>{ const past=g=>!!result(g)||(!g.postponed&&g.gdate&&dOf(g.gdate)<todayISO()), up=reg.filter(g=>!past(g)), done=reg.filter(past), pr=upPracs();
-      const key=x=>(x.gdate||x.orig_gdate||'9999')+String(PAFinder.parseTime(x.gtime)||0).padStart(4,'0'), all=up.concat(pr).sort((a,b)=>key(a)<key(b)?-1:key(a)>key(b)?1:0);
+      const key=x=>(x.postponed?'9998':(x.gdate||x.orig_gdate||'9999'))+String(PAFinder.parseTime(x.gtime)||0).padStart(4,'0'), all=up.concat(pr).sort((a,b)=>key(a)<key(b)?-1:key(a)>key(b)?1:0);
       RSVP_FULL=(all.find(x=>x.gdate&&!x.postponed)||{}).id||null;
       return (all.length?all.map(x=>isPrac(x)?pracCard(x):card(x)).join(''):'<p class=hmsg>No more regular-season games.</p>')+(pr.length?'':'<p class=hnote>No practices scheduled yet. Coach adds them here and on Home.</p>')+(done.length?`<details class=pastg ${PAST_OPEN||openGame&&done.some(g=>g.id===openGame)?'open':''}><summary>Past games (${done.length})${done.some(result)?' · '+tally(reg):''}</summary>${done.map(card).join('')}</details>`:''); })()+
     (po.length?`<div class=shead style="margin-top:8px"><b>Playoffs</b><span>${po.some(result)?'Playoffs '+tally(po):''}</span></div>`+po.map(card).join(''):'')+
@@ -937,8 +943,9 @@ function openOv(i){ DEEP=false; cur=i; stop(); endEdit(); $('#ov').classList.add
 function paintOv(){ const p=editing?work:P();
   $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; { const sn=p.side==='D'?{form:'',name:p.name}:shortName(p.name); $('#ovt').innerHTML=PA.esc(nice(sn.name))+(sn.form?` <small class=ovform>${PA.esc(sn.form)}</small>`:''); }
   const deep=DEEP&&!editing&&P().deep; $('#deepBtn').style.display=P().deep&&!editing?'':'none'; $('#deepBtn').classList.toggle('on',!!deep); $('#deepBtn').textContent=deep?'Back to the play':'If they all go deep';
-  $('#ovcue').innerHTML=(P().warn&&!editing?`<span class=ovwarn>${ICON('info')} ${PA.esc(nice(P().warn))}</span> `:'')+cueHTML(p);
-  if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes>${oneTeam()!=='6v6'?`<p class=n5><b>5v5</b> ${PA.esc((P().deep5||'').replace(/ALL DEEP/g,'all deep'))}</p>`:''}${oneTeam()!=='5v5'?`<p class=n6><b>6v6</b> ${PA.esc((P().deep6||'').replace(/ALL DEEP/g,'all deep'))}</p>`:''}<p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=isCoach()?(p.note||''):(/^H:/.test(p.note||'')?p.note.split(/ 5v5 note:/)[0]:'');   // transcription notes are for Coach
+  const fpl=deep?P().deep:p, flb=fpl.field&&fpl.field.label&&!editing?`<div class=fieldlbl>${PA.esc(nice(fpl.field.label))}</div>`:'';
+  $('#ovcue').innerHTML=flb+(P().warn&&!editing?`<span class=ovwarn>${ICON('info')} ${PA.esc(nice(P().warn))}</span> `:'')+cueHTML(p);
+  if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes>${oneTeam()!=='6v6'?`<p class=n5><b>5v5</b> ${PA.esc((P().deep5||'').replace(/^ALL DEEP/,'All deep').replace(/ALL DEEP/g,'all deep'))}</p>`:''}${oneTeam()!=='5v5'?`<p class=n6><b>6v6</b> ${PA.esc((P().deep6||'').replace(/^ALL DEEP/,'All deep').replace(/ALL DEEP/g,'all deep'))}</p>`:''}<p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=isCoach()?(p.note||''):(/^H:/.test(p.note||'')?p.note.split(/ 5v5 note:/)[0].replace(/\s*\(SFX rule [^)]*\)/g,'').replace(/^H: /,'H (6v6): '):'');   // transcription notes are for Coach
   if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3,los:LOS(),big:true});
   $('#send').textContent=isCoach()?'Save to team':'Send to Coach';
   const ro=PA.isParent()&&!isCoach(); if(ro) ['#edit','#send','#newfrom'].forEach(k=>$(k).style.display='none');

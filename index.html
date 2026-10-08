@@ -291,6 +291,22 @@ dialog.me .mlink{background:none;border:0;color:var(--sub);text-decoration:under
 .fgrid thead th{box-shadow:0 1px 0 var(--line)}
 .tile .dwarn{position:static!important;margin:8px 9px 0;width:max-content;max-width:calc(100% - 18px)}
 .rsec summary small{display:none}
+.tile .b{flex-wrap:wrap}.tile .b .fm{flex-basis:100%;margin-left:31px;margin-top:-1px;font-size:11px;color:var(--muted);font-weight:500}
+/* full-screen play: light like the rest of the app */
+#ov{background:var(--paper)!important}.otop{height:56px!important;border-bottom:1px solid var(--line);background:#fff;padding:0 6px 0 12px!important}
+.otop .n{color:var(--ink)!important;font-size:16px!important;font-weight:600}.otop button{color:var(--sub)!important}
+.oside{color:var(--ink)!important}.ocue{color:var(--sub)!important;font-size:14px!important}.ocue em{color:var(--g)!important}
+.stage{box-shadow:var(--shadow);border:1px solid var(--line)}.obody{padding:12px 12px 16px!important}
+.ctl .btn{background:#fff;border:1px solid var(--line2);color:var(--ink);min-height:44px}.ctl .btn.on{background:var(--gold)!important;color:var(--ink)!important;border-color:var(--gold)}
+.ctl input[type=range]{height:32px;accent-color:var(--g)!important}
+.oside .note{color:var(--sub)!important;font-size:13px!important}#ovnote .tnotes .n5,#ovnote .tnotes .n6{color:var(--sub)!important}#ovnote .tnotes .n5 b,#ovnote .tnotes .n6 b{color:var(--g)!important}
+.onav button{color:var(--g)!important;font-weight:600;font-size:15px!important}.oideas a{background:#fff!important;color:var(--ink)!important;border:1px solid var(--line)}.oideas h4{color:var(--g)!important}
+.acts .btn{background:#fff;border:1px solid var(--line2);color:var(--ink)}.acts .btn.gold{background:var(--g);color:#fff;border-color:var(--g)}
+#deepBtn{background:#fff;border:1px solid var(--line2);color:var(--ink)}#deepBtn.on{background:var(--gold-soft);border-color:var(--gold)}
+@media (orientation:landscape) and (max-height:520px){.otop{height:40px!important}.obody{padding:6px 8px 8px!important}}
+header,.bnav{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#ovnote .dlinks{color:var(--g)!important}.otop .n small.ovform{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
+.jback{min-height:44px}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>Packer <span>Army</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">Game day</button><button id=meBtn aria-label="My profile" style="display:none"></button><button id=coachBtn aria-label="Coach sign-in">Coach</button></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -368,6 +384,8 @@ function coachBadge(p){ if(!isCoach()||!window.PAAnalyzePanel) return '';
   if(ANALYSIS_KEY!==SEEN){ try{ ANALYSIS=PA.analyzeRows(analysisRows()); PAAnalyzePanel.css(); }catch(e){ ANALYSIS=null; } ANALYSIS_KEY=SEEN; }
   const b=ANALYSIS?PAAnalyzePanel.badge(ANALYSIS,FMT,p.n):''; return b?`<span class=abadge>${b}</span>`:''; }
 const KEEPW=/^(QB|LOS|SFX|NFL|AFC|NFC|SG|UC|[A-Z]\d?|\d+[A-Z]?|\d+V\d+)$/;   // codes stay as written: QB, R1, S2, 6v6, X, Y…
+const FORM_RE=/^(Wishbone Triple Option|SG Trips (?:Left|Right)|SG Twins (?:Left|Right)|SG (?:Left|Right)|SG|UC Twins (?:Left|Right)|UC|Bunch (?:Left|Right))\s+(.+)$/i;
+const shortName=n=>{ const m=String(n||'').match(FORM_RE); return m?{form:m[1],name:m[2]}:{form:'',name:n}; };   // "Wishbone Triple Option Flare Pass" → Flare Pass (Wishbone)
 const nice=s=>{ s=String(s||''); if(/[a-z]/.test(s)) return s; return s.split(' · ').map(seg=>seg.split(' ').map((w,i)=>{ const c=w.replace(/[^A-Za-z0-9]/g,''); if(KEEPW.test(c)) return w.replace(/V(\d)/,'v$1'); const l=w.toLowerCase(); return i?l:l.charAt(0).toUpperCase()+l.slice(1); }).join(' ')).join(' · '); };
 function cueHTML(p){ return (p.sub?`<em>${PA.esc(nice(p.sub))}</em> · `:'')+PA.esc(nice(p.cue||'')); }
 function draw(){
@@ -386,7 +404,7 @@ function draw(){
   if(isDef&&isCoach()&&window.PAAnalyzePanel){ grid.insertAdjacentHTML('beforeend','<div class=cards><button class="btn gold" id=analyzeBtn2 style="padding:6px 10px;font-size:11px">Analyze</button></div>'); grid.querySelector('#analyzeBtn2').onclick=()=>PAAnalyzePanel.open(analysisRows()); }
   list.forEach(p=>{ const t=document.createElement('div'); t.className='tile'; const oi=openIdeas(p).length;
     t.innerHTML=`<div class="b cat-${PA.catOf(p)}"><span class=num>${p.n}</span><span class=nm></span></div><div class=t>${cueHTML(p)}</div><div class=d>${PB.staticSVG(p,{aspect:1.3})}</div>${isDef&&p.warn?`<span class=dwarn>${ICON('info')} ${PA.esc(nice(p.warn))}</span>`:''}${isDef?teamNotes(p,true):''}${tagFor(p)}${oi?`<span class=ib>💡 ${oi}</span>`:''}${coachBadge(p)}`;
-    t.querySelector('.nm').textContent=nice(p.name); t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
+    { const sn=isDef?{form:'',name:p.name}:shortName(p.name); t.querySelector('.nm').textContent=nice(sn.name); if(sn.form) t.querySelector('.nm').insertAdjacentHTML('afterend',`<span class=fm>${PA.esc(sn.form)}</span>`); t.title=p.name; } t.onclick=()=>openOv(VIEW.indexOf(p)); grid.appendChild(t);
     });
   $('#legend').innerHTML=PA.legend(isDef);
 }
@@ -917,11 +935,11 @@ const LOS=()=>isCoach()?'full':true;   // players see the clean line of scrimmag
 function stop(){ if(stopA){ stopA(); stopA=null; } $('#anim').textContent='Animate'; }
 function openOv(i){ DEEP=false; cur=i; stop(); endEdit(); $('#ov').classList.add('show'); $('#ov').scrollTop=0; paintOv(); runAnim(); }   // new play: back to the top so the whole field shows
 function paintOv(){ const p=editing?work:P();
-  $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; $('#ovt').textContent=nice(p.name);
+  $('#ovn').className='badge cat-'+PA.catOf(p); $('#ovn').textContent=p.n; { const sn=p.side==='D'?{form:'',name:p.name}:shortName(p.name); $('#ovt').innerHTML=PA.esc(nice(sn.name))+(sn.form?` <small class=ovform>${PA.esc(sn.form)}</small>`:''); }
   const deep=DEEP&&!editing&&P().deep; $('#deepBtn').style.display=P().deep&&!editing?'':'none'; $('#deepBtn').classList.toggle('on',!!deep); $('#deepBtn').textContent=deep?'Back to the play':'If they all go deep';
   $('#ovcue').innerHTML=(P().warn&&!editing?`<span class=ovwarn>${ICON('info')} ${PA.esc(nice(P().warn))}</span> `:'')+cueHTML(p);
-  if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes><p class=n5><b>5v5</b> ${PA.esc(P().deep5||'')}</p><p class=n6><b>6v6</b> ${PA.esc(P().deep6||'')}</p><p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=isCoach()?(p.note||''):(/^H:/.test(p.note||'')?p.note.split(/ 5v5 note:/)[0]:'');   // transcription notes are for Coach
-  if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3,los:LOS()});
+  if(p.side==='D'&&!editing){ $('#ovnote').innerHTML=deep?`<div class=tnotes>${oneTeam()!=='6v6'?`<p class=n5><b>5v5</b> ${PA.esc((P().deep5||'').replace(/ALL DEEP/g,'all deep'))}</p>`:''}${oneTeam()!=='5v5'?`<p class=n6><b>6v6</b> ${PA.esc((P().deep6||'').replace(/ALL DEEP/g,'all deep'))}</p>`:''}<p class=dlinks>${(P().deep.links||[]).map(l=>PA.esc(l.t)).join(' · ')}</p></div>`:teamNotes(p); } else $('#ovnote').textContent=isCoach()?(p.note||''):(/^H:/.test(p.note||'')?p.note.split(/ 5v5 note:/)[0]:'');   // transcription notes are for Coach
+  if(!editing) $('#stage').innerHTML=PB.staticSVG(deep?P().deep:p,{aspect:1.3,los:LOS(),big:true});
   $('#send').textContent=isCoach()?'Save to team':'Send to Coach';
   const ro=PA.isParent()&&!isCoach(); if(ro) ['#edit','#send','#newfrom'].forEach(k=>$(k).style.display='none');
   $('#edit').textContent=editing?'Done':(isCoach()?'Edit':'Suggest a change'); $('#sync').style.display=isCoach()?'':'none'; $('#newfrom').style.display=isCoach()?'':'none'; $('#send').style.display=isCoach()||editing?'':'none'; $('#edit').classList.toggle('on',editing);
@@ -932,13 +950,13 @@ function paintOv(){ const p=editing?work:P();
 }
 function runAnim(){ stop(); if(editing) return; const p=DEEP&&P().deep?P().deep:P(); $('#anim').textContent='Stop';
   const T=tl(p), vb=PB.viewBox(p,1.3), t0=performance.now(), speed=slow?0.5:1; let raf=0, dead=false;
-  const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb,los:LOS()}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
-    if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='Animate'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:LOS()}); } },700); };
-  raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:LOS()}); }; }
+  const step=now=>{ if(dead) return; const t=(now-t0)/1000*speed; $('#stage').innerHTML=PB.animSVG(p,T,Math.min(t,T.dur),{aspect:1.3,vb,los:LOS(),big:true}); $('#sc').value=Math.round(Math.min(t/T.dur,1)*1000);
+    if(t<T.dur) raf=requestAnimationFrame(step); else setTimeout(()=>{ if(!dead){ stopA=null; $('#anim').textContent='Animate'; $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:LOS(),big:true}); } },700); };
+  raf=requestAnimationFrame(step); stopA=()=>{ dead=true; cancelAnimationFrame(raf); $('#stage').innerHTML=PB.staticSVG(p,{aspect:1.3,los:LOS(),big:true}); }; }
 $('#deepBtn').onclick=()=>{ DEEP=!DEEP; stop(); paintOv(); runAnim(); };
 $('#anim').onclick=()=>{ if(stopA) stop(); else runAnim(); };
 $('#sl').onclick=e=>{ slow=!slow; e.target.classList.toggle('on',slow); };
-$('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3,los:LOS()}); };
+$('#sc').oninput=e=>{ stop(); const p=P(),T=tl(p); $('#stage').innerHTML=PB.animSVG(p,T,T.dur*e.target.value/1000,{aspect:1.3,los:LOS(),big:true}); };
 $('#ovc').onclick=async()=>{ if(editing&&!await PA.ask('Close? Your edit is saved on this phone for next time.')) return; stop(); endEdit(); $('#ov').classList.remove('show'); };
 $('#pv').onclick=()=>{ if(!editing) openOv((cur+VIEW.length-1)%VIEW.length); };
 $('#nx').onclick=()=>{ if(!editing) openOv((cur+1)%VIEW.length); };

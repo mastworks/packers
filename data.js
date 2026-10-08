@@ -221,7 +221,7 @@ const PA=(()=>{
             result=taken&&!taken.claimed?await claim(fmt,n):await joinRoster(fmt,n); store.set('pa_nick',result.name); go('done'); }
           else { const em=(d.querySelector('#je').value||'').trim(); if(em&&!okEmail(em)) throw new Error("That email doesn't look right (or leave it empty).");
             const g=await familyAdd(fmt,n,em); added.push(g.child); result='parent'; go('done'); }
-        }catch(err){ m().textContent=err.message.replace(/ Add a last initial, or ask Coach\./,' If that\'s you, tap your name above. Otherwise add a last initial.'); }
+        }catch(err){ m().textContent=/already on the/.test(err.message)?`Someone named ${n} already joined that team. Not you? Add your last initial (like ${n} T). It's you on a new phone? Ask Coach to reset your spot.`:err.message; }
         btn.disabled=false;
       };
       d.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); const b=d.querySelector('#jgo'); if(b) b.click(); } });

@@ -317,6 +317,7 @@ body.onboarding #grid,body.onboarding #fmts,body.onboarding #legend,body.onboard
 .pkey{grid-column:1/-1;max-width:760px;width:100%;margin:0 auto}.pkey>summary{cursor:pointer;list-style:none;color:var(--sub);font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;min-height:44px}.pkey>summary::-webkit-details-marker{display:none}
 .pkey p{margin:0 0 8px;background:#fff;border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--sub);box-shadow:var(--shadow)}.nowrap{white-space:nowrap}
 .gwhen{white-space:normal}.gwhen>b{white-space:nowrap}@media(max-width:430px){body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1{font-size:0;width:28px;flex:none}body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1::before{content:"PA";font-size:15px;color:var(--g)}}
+.coachnm{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>Packer <span>Army</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">Game day</button><button id=meBtn aria-label="My profile" style="display:none"></button><button id=coachBtn aria-label="Coach sign-in">Coach</button></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -538,7 +539,7 @@ function drawSchedule(){
     const moved=!g.postponed&&g.orig_gdate&&g.gdate&&g.orig_gdate!==g.gdate;
     return `<div class="game ${r||''} ${ppd?'ppd':''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
       <div class=grow><div class=gwhen>${g.label?`<b class=glabel>${E(nice(g.label))}</b>`:''}<b>${ppd?'Date TBD':d?`${DOW[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`:'Date TBD'}</b>${ppd?`${g.orig_gdate?'was '+short(g.orig_gdate)+'<br>':''}`:''}<span class=nowrap>${E(g.gtime||'')}</span>${g.week!=null&&!g.label?'<span class=nowrap> · Week '+g.week+'</span>':''}</div>
-        <div class=gmid><div class=gopp>${tbd?'':(home?'vs ':'@ ')}${E(opp)}</div><div class=gsub>${E(FIELD(g.field)||'Field TBD')}${tbd?'':' · '+(home?'Home':'Away')}${moved?' · moved from '+short(g.orig_gdate):''}${g.recap?' · recap':''}${g.notes&&!r?' · notes':''}</div></div>
+        <div class=gmid><div class=gopp>${tbd?'':(home?'vs ':'@ ')}${tbd?E(opp):teamHTML(opp)}</div><div class=gsub>${E(FIELD(g.field)||'Field TBD')}${tbd?'':' · '+(home?'Home':'Away')}${moved?' · moved from '+short(g.orig_gdate):''}${g.recap?' · recap':''}${g.notes&&!r?' · notes':''}</div></div>
         ${res?`<span class=gres>${res}</span>`:''}</div>
       ${g.stage!=='playoff'||!(!g.home||!g.away)?attRow(g):''}
       <div class=gx>${openGame===g.id&&g.gdate&&!g.postponed?gameDetail(g,true):''}<div><b>Home</b> ${E(g.home||'TBD')} &nbsp; <b>Away</b> ${E(g.away||'TBD')}</div><div><b>Field</b> ${E(g.field||'TBD')} &nbsp; <b>Time</b> ${E(g.gtime||'TBD')}</div>
@@ -623,7 +624,9 @@ function pracCard(p){ const E=PA.esc, d=dOf(p.gdate), open=openGame===p.id;
     <div class=gmid><div class=gopp>Practice</div><div class=gsub>${E(FIELD(p.field)||'Field TBD')}${p.notes?' · 📌 NOTES':''}</div></div><span class=gres>Practice</span></div>${attRow(p)}
     <div class=gx>${open?gameDetail(p,true):''}${p.notes?`<h5>Notes</h5><p>${E(p.notes)}</p>`:''}${attList(p)}${isCoach()?`<button class="btn gold" data-pedit="${p.id}">Change / cancel practice</button>`:''}</div></div>`; }
 /* ---------- HOME ---------- */
-function eventCard(g,kind){ const E=PA.esc, d=dOf(g.gdate), prac=isPrac(g), home=PA.isUs(g.home), opp=prac?'Practice':(home?'vs ':'@ ')+E(home?g.away:g.home), c=attCounts(g);
+/* league team names are "Mascot Coachname" (e.g. Cardinals Lilly): show the mascot, coach in small text, so a coach's name never reads like a kid's */
+const teamHTML=t=>{ const m=String(t||'').trim().match(/^(\S+)\s+(.+)$/); return m?`${PA.esc(m[1])} <small class=coachnm>Coach ${PA.esc(m[2])}</small>`:PA.esc(t||''); };
+function eventCard(g,kind){ const E=PA.esc, d=dOf(g.gdate), prac=isPrac(g), home=PA.isUs(g.home), opp=prac?'Practice':(home?'vs ':'@ ')+teamHTML(home?g.away:g.home), c=attCounts(g);
   const days=Math.round((d-todayISO())/864e5), when=days===0?'Today':days===1?'Tomorrow':`In ${days} days`;
   return `<div class="hcard ${prac?'prac':'next'}"><h4><span>${kind}</span><span>${when}</span></h4>
     <div class=hbig><div class=hdate><small>${DOW[d.getDay()]}</small><b>${d.getDate()}</b><small>${MON[d.getMonth()]}</small></div>

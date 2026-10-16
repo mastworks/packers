@@ -372,13 +372,13 @@ const isCoach=()=>!!PA.coachEmail();
 const myTeams=()=>[...new Set(PA.members().map(m=>m.fmt).concat(PA.links().map(l=>l.fmt)))].filter(f=>FMTS.includes(f));
 const oneTeam=()=>!isCoach()&&!window.PA_ALL_TEAMS&&myTeams().length===1?myTeams()[0]:null;   // a player / parent with one team never sees the 5v5 · 6v6 switch
 function buildFmts(){ const one=oneTeam(); $('#fmts').style.display=one?'none':''; const fam=!isCoach()&&myTeams().length>1;
-  $('#fmts').innerHTML=FMTS.map(f=>{ const nm=fam?ROSTER.filter(m=>m.fmt===f&&PA.canAnswer(m.id)).map(m=>m.name).join(' & '):''; return `<button data-f="${f}" class="${f===FMT?'on':''}">${nm?PA.esc(nm):f}</button>`; }).join(''); }
+  $('#fmts').innerHTML=FMTS.map(f=>{ const nm=fam?ROSTER.filter(m=>m.fmt===f&&PA.canAnswer(m.id)).map(m=>m.name).join(' & '):''; return `<button data-f="${f}" class="${f===FMT&&!(fam&&tab===HOME)?'on':''}">${nm?PA.esc(nm):f}</button>`; }).join(''); }
 $('#fmts').onclick=e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.f||b.textContent); };
 const NAV=[[7,'Home','home'],[3,'Schedule','calendar'],[4,'Messages','chat'],['plays','Plays','football'],[2,'Practice','whistle'],[5,'Rules','book']];
 function buildTabs(){ const n=Math.ceil(band.length/8); if(CARD>=n) CARD=0; if(tab===GAME&&!isCoach()) tab=HOME;   // bottom bar: HOME · SCHEDULE · MESSAGES · PLAYS · PRACTICE · RULES; GAME DAY = coach button up top
   $('#tabs').innerHTML=NAV.map(([t,l,ic])=>{ const on=t==='plays'?(tab===PLAYS||tab===DEF):tab===t;
     return `<button data-t="${t}" class="${on?'on':''}" aria-current="${on?'page':'false'}">${ICON(ic)}<span>${l}</span>${t===MSG&&UNREAD?`<b class=nbadge>${UNREAD}</b>`:''}</button>`; }).join('');
-  const gd=$('#gdBtn'); gd.style.display=isCoach()?'':'none'; gd.classList.toggle('on',tab===GAME); }
+  const gd=$('#gdBtn'); gd.style.display=isCoach()?'':'none'; gd.classList.toggle('on',tab===GAME); if(FMTS.length) buildFmts(); }
 function goTab(t){ if(t!==PRAC){ PRAC_WK=null; PRAC_GAME=null; } const toSched=t===SCHED&&tab!==SCHED; tab=t; draw(); window.scrollTo(0,0);
 }   // practice returns to the next game; schedule opens at the next game
 $('#tabs').onclick=e=>{ const b=e.target.closest('button[data-t]'); if(!b) return; const t=b.dataset.t; goTab(t==='plays'?PLAYMODE:+t); };
@@ -537,7 +537,7 @@ function drawSchedule(){
     const ppd=g.postponed&&!r, res=r?`${r.toUpperCase()} ${g.ours}–${g.theirs}`:ppd?'Postponed':(g===next?'Next':'');
     const moved=!g.postponed&&g.orig_gdate&&g.gdate&&g.orig_gdate!==g.gdate;
     return `<div class="game ${r||''} ${ppd?'ppd':''} ${g===next?'next':''} ${openGame===g.id?'open':''}" data-id="${g.id}">
-      <div class=grow><div class=gwhen>${g.label?`<b class=glabel>${E(nice(g.label))}</b>`:''}<b>${ppd?'Date TBD':d?`${DOW[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`:'Date TBD'}</b>${ppd?`${g.orig_gdate?'was '+short(g.orig_gdate)+'<br>':''}`:''}${E(g.gtime||'')}${g.week!=null&&!g.label?'<span class=nowrap> · Week '+g.week+'</span>':''}</div>
+      <div class=grow><div class=gwhen>${g.label?`<b class=glabel>${E(nice(g.label))}</b>`:''}<b>${ppd?'Date TBD':d?`${DOW[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`:'Date TBD'}</b>${ppd?`${g.orig_gdate?'was '+short(g.orig_gdate)+'<br>':''}`:''}<span class=nowrap>${E(g.gtime||'')}</span>${g.week!=null&&!g.label?'<span class=nowrap> · Week '+g.week+'</span>':''}</div>
         <div class=gmid><div class=gopp>${tbd?'':(home?'vs ':'@ ')}${E(opp)}</div><div class=gsub>${E(FIELD(g.field)||'Field TBD')}${tbd?'':' · '+(home?'Home':'Away')}${moved?' · moved from '+short(g.orig_gdate):''}${g.recap?' · recap':''}${g.notes&&!r?' · notes':''}</div></div>
         ${res?`<span class=gres>${res}</span>`:''}</div>
       ${g.stage!=='playoff'||!(!g.home||!g.away)?attRow(g):''}
@@ -684,7 +684,7 @@ function familyAvailHTML(){ const kids=teamRoster().filter(m=>PA.canAnswer(m.id)
     <div class=pchips>${PAFinder.PRESETS.map(chip).join('')}</div>
     ${PAFinder.gridHTML({mode:'edit',week:wk,ws,blocked})}
     <div class=fleg><span><i class=lg-on></i>works</span><span><i class=lg-off></i>not free</span>${wk?'<span><i class=lg-bl></i>game</span>':''}</div>
-    <div class=hrowb>${changed?'<button class="btn ghost" data-freset=1>Use my normal week</button>':''}<button class="btn ghost" data-fnone=1>Clear all</button></div></div>`; }
+    <div class=hrowb><button class="btn gold" data-fdone=1>${ICON('check')} Done</button>${changed?'<button class="btn ghost" data-freset=1>Use my normal week</button>':''}<button class="btn ghost" data-fnone=1>Clear all</button></div></div>`; }
 function coachFinderHTML(){ const E=PA.esc;
   if(!AVC){ loadCoachAvail(); return `<div class=hcard id=finder><h4><span>Find a practice time</span></h4><p>Loading everyone's times…</p></div>`; }
   const wk=PAFinder.weekOf(FWEEK), events=EVENTS(), blocked=PAFinder.blocks(events,wk), bz=AVC.busy||{}, busy=new Set((bz.weeks&&bz.weeks[wk])||bz.typical||[]);
@@ -719,7 +719,8 @@ async function setPractice(p){ const E=PA.esc, d=document.createElement('dialog'
     try{ await PA.coachRpc('pa_coach_session_save',{p:q}); await PA.coachRpc('pa_coach_announce',{fmt:q.fmt,title:(edit?'Practice changed: ':'Practice: ')+pLabel(q),body:[q.field,q.notes].filter(Boolean).join(' · '),audience:'all'}).catch(()=>{});
       d.close(); await loadGames(); draw(); PA.toast(edit?'Practice updated. The team got a message.':'Practice set. The team got a message.'); }catch(e){ PA.say(e.message); } }; }
 const pLabel=p=>{ const d=dOf(p.gdate); return `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()} · ${p.gtime}`; };
-async function inPersonClick(e){ const t=e.target.closest('[data-preset],[data-day],[data-fv],[data-fk],[data-freset],[data-fall],[data-fnone],[data-fw],[data-fb],[data-setp],[data-setb],[data-pedit],[data-favremind]'); if(!t) return false; e.stopPropagation();
+async function inPersonClick(e){ if(e.target.closest('[data-fdone]')){ PA.toast('Practice times saved · Coach can see them'); goTab(HOME); return true; }
+  const t=e.target.closest('[data-preset],[data-day],[data-fv],[data-fk],[data-freset],[data-fall],[data-fnone],[data-fw],[data-fb],[data-setp],[data-setb],[data-pedit],[data-favremind]'); if(!t) return false; e.stopPropagation();
   const d=t.dataset, a=()=>{ AVF[FKID]=AVF[FKID]||{typical:[],weeks:{}}; return AVF[FKID]; }, wk=FVIEW==='typical'?null:PAFinder.weekOf(+FVIEW);
   const setKeys=(ks,on)=>{ const A=a(), base=new Set(wk?(A.weeks&&A.weeks[wk]||A.typical||[]):(A.typical||[])); ks.forEach(k=>on?base.add(k):base.delete(k)); if(wk) A.weeks={...(A.weeks||{}),[wk]:[...base]}; else A.typical=[...base]; saveMyAvail(FKID); };
   if(d.preset||d.day){ const bl=wk?PAFinder.blocks(EVENTS(),wk):{}, ks=(d.preset?PAFinder.presetKeys(d.preset):PAFinder.dayKeys(+d.day)).filter(k=>!bl[k]), A=a(), cur=new Set(wk?(A.weeks&&A.weeks[wk]||A.typical||[]):(A.typical||[]));

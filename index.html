@@ -318,6 +318,7 @@ body.onboarding #grid,body.onboarding #fmts,body.onboarding #legend,body.onboard
 .pkey p{margin:0 0 8px;background:#fff;border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--sub);box-shadow:var(--shadow)}.nowrap{white-space:nowrap}
 .gwhen{white-space:normal}.gwhen>b{white-space:nowrap}@media(max-width:430px){body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1{font-size:0;width:28px;flex:none}body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1::before{content:"PA";font-size:15px;color:var(--g)}}
 .coachnm{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px}
+.pchip.done{background:var(--g);border-color:var(--g);color:#fff}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>Packer <span>Army</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">Game day</button><button id=meBtn aria-label="My profile" style="display:none"></button><button id=coachBtn aria-label="Coach sign-in">Coach</button></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -625,7 +626,7 @@ function pracCard(p){ const E=PA.esc, d=dOf(p.gdate), open=openGame===p.id;
     <div class=gx>${open?gameDetail(p,true):''}${p.notes?`<h5>Notes</h5><p>${E(p.notes)}</p>`:''}${attList(p)}${isCoach()?`<button class="btn gold" data-pedit="${p.id}">Change / cancel practice</button>`:''}</div></div>`; }
 /* ---------- HOME ---------- */
 /* league team names are "Mascot Coachname" (e.g. Cardinals Lilly): show the mascot, coach in small text, so a coach's name never reads like a kid's */
-const teamHTML=t=>{ const m=String(t||'').trim().match(/^(\S+)\s+(.+)$/); return m?`${PA.esc(m[1])} <small class=coachnm>Coach ${PA.esc(m[2])}</small>`:PA.esc(t||''); };
+const teamHTML=t=>{ const m=String(t||'').trim().match(/^(\S+)\s+(.+)$/); return m?`${PA.esc(m[1])} <small class=coachnm>their coach: ${PA.esc(m[2])}</small>`:PA.esc(t||''); };
 function eventCard(g,kind){ const E=PA.esc, d=dOf(g.gdate), prac=isPrac(g), home=PA.isUs(g.home), opp=prac?'Practice':(home?'vs ':'@ ')+teamHTML(home?g.away:g.home), c=attCounts(g);
   const days=Math.round((d-todayISO())/864e5), when=days===0?'Today':days===1?'Tomorrow':`In ${days} days`;
   return `<div class="hcard ${prac?'prac':'next'}"><h4><span>${kind}</span><span>${when}</span></h4>
@@ -684,7 +685,7 @@ function familyAvailHTML(){ const kids=teamRoster().filter(m=>PA.canAnswer(m.id)
     ${kids.length>1?`<div class=afilt>${kids.map(m=>`<button class="${m.id===FKID?'on':''}" data-fk="${m.id}">${E(m.name)}</button>`).join('')}</div>`:''}
     <div class=seg style="display:inline-flex;margin:2px 0 8px">${tabs}</div>
     <p class=fhelp>${wk?(changed?(FVIEW==='1'?'Changed for next week only. ':'Changed for this week only. '):'Same as your normal week. ')+'Tap to change just this week. Striped = a game.':'Tap what usually works. Fine-tune by tapping boxes, or tap a day name for the whole day.'}</p>
-    <div class=pchips>${PAFinder.PRESETS.map(chip).join('')}</div>
+    <div class=pchips>${PAFinder.PRESETS.map(chip).join('')}<button class="pchip done" data-fdone=1>${ICON('check')} Done</button></div>
     ${PAFinder.gridHTML({mode:'edit',week:wk,ws,blocked})}
     <div class=fleg><span><i class=lg-on></i>works</span><span><i class=lg-off></i>not free</span>${wk?'<span><i class=lg-bl></i>game</span>':''}</div>
     <div class=hrowb><button class="btn gold" data-fdone=1>${ICON('check')} Done</button>${changed?'<button class="btn ghost" data-freset=1>Use my normal week</button>':''}<button class="btn ghost" data-fnone=1>Clear all</button></div></div>`; }

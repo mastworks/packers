@@ -189,7 +189,7 @@ const PA=(()=>{
           ${who==='parent'?`<div class=jlab>Your email <span>optional · only Coach sees it</span></div><input type=email id=je autocomplete=email autocapitalize=off placeholder="you@example.com">`:''}
           ${msg}<div class=row><button class="btn gold" id=jgo>${who==='parent'?'Add my child':'Join the team'}</button></div>`;
         else if(step==='done'){ const kid=who==='parent';
-          d.innerHTML=`<div class=jhead><div class="jlogo ok">${I('check')}</div><h2>${kid?`${esc(added.join(' & '))} ${added.length>1?'are':'is'} ${addedNew?'added':'linked'}`:`You're on the team, ${esc(result.name)}!`}</h2>
+          d.innerHTML=`<div class=jhead><div class="jlogo ok">${I('check')}</div><h2>${kid?`${esc(added.join(' & '))} ${added.length>1?'are':'is'} ${addedNew?'added':'connected'}`:`You're on the team, ${esc(result.name)}!`}</h2>
             <p>${kid?'You can now answer for them. Two quick things on the Home screen:':'Two quick things on the Home screen:'}</p></div>
             <ol class=jnext><li>${I('check')} Say if ${kid?'they are':"you're"} coming to the next game</li><li>${I('calendar')} Tap the times ${kid?'they':'you'} can practice</li></ol>
             <div class=row style="flex-direction:column">${kid?'<button class="btn ghost" id=jmore>Add another child</button>':''}<button class="btn gold" id=jfin>Go to Home</button></div>`; }
@@ -204,7 +204,7 @@ const PA=(()=>{
       d.onclick=async e=>{
         const w=e.target.closest('[data-who]'); if(w){ who=w.dataset.who; return afterWho(); }
         const f=e.target.closest('#jt [data-f]'); if(f){ fmt=f.dataset.f; d.querySelectorAll('#jt button').forEach(b=>b.classList.toggle('on',b.dataset.f===fmt)); const sw=d.querySelector('#jsugw'); if(sw) sw.innerHTML=sugg(); return; }
-        const nm=e.target.closest('[data-nm]'); if(nm){ d.querySelector('#jn').value=nm.dataset.nm; d.querySelectorAll('[data-nm]').forEach(b=>b.classList.toggle('on',b===nm)); const g=d.querySelector('#jgo'); if(g) g.textContent=who==='parent'?`Link ${nm.dataset.nm}`:`That's me · continue`; return; }
+        const nm=e.target.closest('[data-nm]'); if(nm){ d.querySelector('#jn').value=nm.dataset.nm; d.querySelectorAll('[data-nm]').forEach(b=>b.classList.toggle('on',b===nm)); const g=d.querySelector('#jgo'); if(g) g.textContent=who==='parent'?`Connect ${nm.dataset.nm}`:`That's me · continue`; return; }
         if(e.target.closest('#jback')){ if(startRole&&step==='name') return done(null); go(step==='name'&&needCode()?'code':'who'); return; }
         if(e.target.closest('#jmore')){ const em=(links().find(l=>l.email)||{}).email||''; fmt=''; go('name'); d.querySelector('#jn').value=''; const je=d.querySelector('#je'); if(je) je.value=em; return; }
         if(e.target.closest('#jfin')) return done(result);

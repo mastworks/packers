@@ -165,7 +165,7 @@ const PA=(()=>{
   function setupDialog(withCode,fmtDefault,startRole){
     return new Promise(res=>{
       const d=document.createElement('dialog'); d.className='join'; document.body.appendChild(d);
-      let fmt=fmtDefault==='6v6'?'6v6':fmtDefault==='5v5'?'5v5':'', who=startRole||'', step=who?'name':'who', names=[], result=null, added=[];
+      let addedNew=false, fmt=fmtDefault==='6v6'?'6v6':fmtDefault==='5v5'?'5v5':'', who=startRole||'', step=who?'name':'who', names=[], result=null, added=[];
       document.body.classList.add('onboarding');   // keep the team screen out of sight until we know who this is
       const I=n=>window.ICON?window.ICON(n):'', m=()=>d.querySelector('#jm'), done=v=>{ document.body.classList.remove('onboarding'); d.close(); d.remove(); res(v); };
       const needCode=()=>withCode&&!code();
@@ -173,7 +173,7 @@ const PA=(()=>{
       const msg='<div id=jm class=jmsg role=status></div>';
       const team=()=>`<div class=jlab>${who==='parent'?"Your child's team":'Your team'}</div><div class=jteams id=jt>
           <button type=button data-f=5v5 class="jteam ${fmt==='5v5'?'on':''}"><b>5v5</b><span>5 on the field</span></button>
-          <button type=button data-f=6v6 class="jteam ${fmt==='6v6'?'on':''}"><b>6v6</b><span>Senior · 6 on the field</span></button></div>`;
+          <button type=button data-f=6v6 class="jteam ${fmt==='6v6'?'on':''}"><b>6v6</b><span>6 on the field</span></button></div>`;
       const sugg=()=>{ const l=names.filter(x=>x.fmt===fmt&&x.kind==='player'&&(who==='parent'||!x.claimed)); if(!fmt||!l.length) return '';
         return `<div class=jsug><span>${who==='parent'?'Already on the team · tap if it\'s your child':'Already added by a parent or Coach · tap if it\'s you'}</span><div>${l.map(x=>`<button type=button data-nm="${esc(x.name)}">${esc(x.name)}</button>`).join('')}</div></div>`; };
       function paint(){
@@ -189,7 +189,7 @@ const PA=(()=>{
           ${who==='parent'?`<div class=jlab>Your email <span>optional · only Coach sees it</span></div><input type=email id=je autocomplete=email autocapitalize=off placeholder="you@example.com">`:''}
           ${msg}<div class=row><button class="btn gold" id=jgo>${who==='parent'?'Add my child':'Join the team'}</button></div>`;
         else if(step==='done'){ const kid=who==='parent';
-          d.innerHTML=`<div class=jhead><div class="jlogo ok">${I('check')}</div><h2>${kid?`${esc(added.join(' & '))} ${added.length>1?'are':'is'} linked`:`You're on the team, ${esc(result.name)}!`}</h2>
+          d.innerHTML=`<div class=jhead><div class="jlogo ok">${I('check')}</div><h2>${kid?`${esc(added.join(' & '))} ${added.length>1?'are':'is'} ${addedNew?'added':'linked'}`:`You're on the team, ${esc(result.name)}!`}</h2>
             <p>${kid?'You can now answer for them. Two quick things on the Home screen:':'Two quick things on the Home screen:'}</p></div>
             <ol class=jnext><li>${I('check')} Say if ${kid?'they are':"you're"} coming to the next game</li><li>${I('calendar')} Tap the times ${kid?'they':'you'} can practice</li></ol>
             <div class=row style="flex-direction:column">${kid?'<button class="btn ghost" id=jmore>Add another child</button>':''}<button class="btn gold" id=jfin>Go to Home</button></div>`; }
@@ -215,15 +215,15 @@ const PA=(()=>{
         const n=d.querySelector('#jn').value.trim();
         if(!n){ m().textContent=who==='parent'?"Type your child's first name.":'Type your first name.'; return; }
         if(!fmt){ m().textContent='Tap a team: 5v5 or 6v6.'; return; }
-        btn.disabled=true;
+        btn.disabled=true; const label=btn.textContent; btn.textContent=who==='parent'?'Adding…':'Joining…';
         try{
           if(who==='player'){
             const taken=names.find(x=>x.fmt===fmt&&x.kind==='player'&&x.name.toLowerCase()===n.toLowerCase());
             result=taken&&!taken.claimed?await claim(fmt,n):await joinRoster(fmt,n); store.set('pa_nick',result.name); go('done'); }
           else { const em=(d.querySelector('#je').value||'').trim(); if(em&&!okEmail(em)) throw new Error("That email doesn't look right (or leave it empty).");
-            const g=await familyAdd(fmt,n,em); added.push(g.child); result='parent'; go('done'); }
+            const g=await familyAdd(fmt,n,em); added.push(g.child); addedNew=addedNew||g.created; result='parent'; go('done'); }
         }catch(err){ m().textContent=/already on the/.test(err.message)?`Someone named ${n} already joined that team. Not you? Add your last initial (like ${n} T). It's you on a new phone? Ask Coach to reset your spot.`:err.message; }
-        btn.disabled=false;
+        btn.disabled=false; if(d.querySelector('#jgo')===btn) btn.textContent=label;
       };
       d.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); const b=d.querySelector('#jgo'); if(b) b.click(); } });
       if(step==='name') loadNames();

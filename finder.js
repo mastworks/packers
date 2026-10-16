@@ -61,7 +61,7 @@
       return `<div class=ftable><div class=ftitle>${title}</div><table><thead><tr><th class=ft></th>${days.map(d=>`<th ${mode==='edit'?`data-day="${d}" class=dayh`:''}>${DAYS[d-1]}${week?`<small>${dayDate(week,d).getDate()}</small>`:''}</th>`).join('')}</tr></thead><tbody>${sl.map(m=>`<tr><th class="ft ${m%60?'half':''}">${label(m)}</th>${days.map(d=>cellHTML(d,m)).join('')}</tr>`).join('')}</tbody></table></div>`; };
     return `<div class=fgrid>${table([1,2,3,4,5],'Weekdays · after school')}${table([6,7],'Weekend')}</div>`; }
   // one-tap presets for families
-  const PRESETS=[['wk4','Weekdays 4–7:30pm',[1,2,3,4,5],16*60,19*60+30],['wk5','Weekdays 5–7:30pm',[1,2,3,4,5],17*60,19*60+30],['satam','Sat 9am–noon',[6],9*60,12*60],['satpm','Sat noon–7pm',[6],12*60,19*60],['sunam','Sun 9am–noon',[7],9*60,12*60],['sunpm','Sun noon–7pm',[7],12*60,19*60]];
+  const PRESETS=[['wk4','Weekdays 4–7:30pm',[1,2,3,4,5],16*60,19*60+30],['wk5','Weekdays 5–7:30pm',[1,2,3,4,5],17*60,19*60+30],['satam','Sat morning (9–12)',[6],9*60,12*60],['satpm','Sat afternoon (12–7)',[6],12*60,19*60],['sunam','Sun morning (9–12)',[7],9*60,12*60],['sunpm','Sun afternoon (12–7)',[7],12*60,19*60]];
   const presetKeys=id=>{ const p=PRESETS.find(x=>x[0]===id); return [].concat(...p[2].map(d=>DAYSLOTS(d).filter(m=>m>=p[3]&&m<p[4]).map(m=>key(d,m)))); };
   const dayKeys=d=>DAYSLOTS(d).map(m=>key(d,m));
   // drag-to-paint on a grid: first touched cell decides on/off

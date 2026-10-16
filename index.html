@@ -1018,8 +1018,8 @@ async function openMe(){ const E=PA.esc, d=document.createElement('dialog'); d.c
   if(RENAME_OK===null){ try{ await PA.rpc('pa_rename_me',{code:PA.code(),member:'00000000-0000-0000-0000-000000000000',token:'00000000-0000-0000-0000-000000000000',name:'x'}); RENAME_OK=true; }catch(e){ RENAME_OK=e.status!==404; } }
   const paint=()=>{ const ms=PA.members(), ls=PA.links(), parent=PA.isParent();
     d.innerHTML=`<h2>${parent?'Parent':ms.length?'Player':'Fan'} profile</h2><p>This phone is set up for:</p>
-      ${ms.map(m=>`<div class=mrow>${ICON('user')}<div><b>${E(m.name)}</b><small>Player · ${E(m.fmt)}</small></div>${RENAME_OK?`<button class=mx data-ren="${m.id}" aria-label="Change name">${ICON('edit')}</button>`:''}</div>`).join('')}
-      ${ls.map(l=>`<div class=mrow>${ICON('users')}<div><b>${E(l.child)}</b><small>Your child · ${E(l.fmt)}</small></div>${RENAME_OK?`<button class=mx data-ren="${l.member_id}" aria-label="Change ${E(l.child)}'s name">${ICON('edit')}</button>`:''}<button class=mx data-unlink="${l.member_id}" aria-label="Remove ${E(l.child)} from this phone">${ICON('x')}</button></div>`).join('')}
+      ${ms.map(m=>`<div class=mrow>${ICON('user')}<div><b>${E(m.name)}</b><small>Player · ${E(m.fmt)}</small></div><button class=mx data-ren="${m.id}" aria-label="Change name">${ICON('edit')}</button></div>`).join('')}
+      ${ls.map(l=>`<div class=mrow>${ICON('users')}<div><b>${E(l.child)}</b><small>Your child · ${E(l.fmt)}</small></div><button class=mx data-ren="${l.member_id}" aria-label="Change ${E(l.child)}'s name">${ICON('edit')}</button><button class=mx data-unlink="${l.member_id}" aria-label="Remove ${E(l.child)} from this phone">${ICON('x')}</button></div>`).join('')}
       ${!ms.length&&!ls.length?'<p>Just watching (no player linked).</p>':''}
       ${ls.length?`<label>Your email <span style="font-weight:400;color:var(--muted)">for team emails · only Coach sees it</span></label><input type=email id=meEm autocapitalize=off value="${E((ls.find(l=>l.email)||{}).email||'')}" placeholder="you@example.com"><div id=meMsg class=jmsg></div>`:''}
       <div class=row style="flex-direction:column">${ls.length?'<button class="btn gold" id=meSave>Save email</button>':''}
@@ -1033,7 +1033,8 @@ async function openMe(){ const E=PA.esc, d=document.createElement('dialog'); d.c
     if(t.id==='meAdd'){ d.close(); const r=await PA.addChildLink(); if(r){ await loadRoster(); tab=HOME; show(FMT); meUI(); } return; }
     if(t.dataset.ren){ const cur=(PA.members().find(m=>m.id===t.dataset.ren)||{}).name||(PA.links().find(l=>l.member_id===t.dataset.ren)||{}).child||'';
       const n=await PA.input('First name (add a last initial if two kids share it)',cur); if(n===null||!n.trim()||n.trim()===cur) return;
-      try{ await PA.renameMe(t.dataset.ren,n.trim()); await loadRoster(); paint(); meUI(); draw(); PA.toast('Name changed'); }catch(err){ PA.say(/pa_rename_me|404|Could not find/i.test(String(err.message)+(err.status||''))?'Changing your name is switching on soon. For now, message Coach and Coach will fix it.':err.message); } return; }
+      if(!RENAME_OK){ try{ await PA.send(t.dataset.ren,`Please change the name "${cur}" to "${n.trim()}" on the roster. (sent from Profile)`); PA.toast('Sent to Coach · Coach will update the name'); }catch(err){ PA.say(err.message); } return; }   // until 017 is run, Coach renames on the roster
+      try{ await PA.renameMe(t.dataset.ren,n.trim()); await loadRoster(); paint(); meUI(); draw(); PA.toast('Name changed'); }catch(err){ PA.say(err.message); } return; }
     if(t.dataset.unlink){ const l=PA.links().find(x=>x.member_id===t.dataset.unlink); if(!await PA.ask(`Remove ${l.child} from this phone? You can add them again later.`)) return;
       PA.store.set('pa_links',PA.links().filter(x=>x.member_id!==l.member_id)); if(!PA.links().length&&!PA.members().length) PA.store.set('pa_role','fan'); paint(); draw(); return; }
     if(t.id==='meReset'){ if(!await PA.ask('Set up this phone again? It forgets who this phone is for (answers already sent stay).')) return;

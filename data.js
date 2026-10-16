@@ -166,7 +166,8 @@ const PA=(()=>{
     return new Promise(res=>{
       const d=document.createElement('dialog'); d.className='join'; document.body.appendChild(d);
       let fmt=fmtDefault==='6v6'?'6v6':fmtDefault==='5v5'?'5v5':'', who=startRole||'', step=who?'name':'who', names=[], result=null, added=[];
-      const I=n=>window.ICON?window.ICON(n):'', m=()=>d.querySelector('#jm'), done=v=>{ d.close(); d.remove(); res(v); };
+      document.body.classList.add('onboarding');   // keep the team screen out of sight until we know who this is
+      const I=n=>window.ICON?window.ICON(n):'', m=()=>d.querySelector('#jm'), done=v=>{ document.body.classList.remove('onboarding'); d.close(); d.remove(); res(v); };
       const needCode=()=>withCode&&!code();
       const back=`<button class="jback" id=jback aria-label="Back">${I('left')} ${startRole?'Cancel':'Back'}</button>`;
       const msg='<div id=jm class=jmsg role=status></div>';
@@ -179,7 +180,7 @@ const PA=(()=>{
         if(step==='who') d.innerHTML=`<div class=jhead><div class=jlogo>PA</div><h2>Welcome to Packer Army</h2><p>Who's using this phone?</p></div>
           <div class=jroles><button class=jrole data-who=player>${I('user')}<div><b>I'm a player</b><span>Join your team</span></div>${I('right')}</button>
           <button class=jrole data-who=parent>${I('users')}<div><b>I'm a parent</b><span>Follow your child's team</span></div>${I('right')}</button></div>
-          <div class=jsmall><button data-who=fan>Just watching</button><span>·</span><button data-who=coach>Coach sign-in</button></div>`;
+          <div class=jsmall><button data-who=fan>Just watching</button><button data-who=coach>Coach sign-in</button></div>`;
         else if(step==='code') d.innerHTML=`${back}<h2>Team code</h2><p>Coach sent it in the invite (text or email).</p>
           <input id=jc autocapitalize=characters autocomplete=off placeholder="Team code" value="${esc(code())}">${msg}<div class=row><button class="btn gold" id=jgo>Next</button></div>`;
         else if(step==='name') d.innerHTML=`${back}<h2>${who==='parent'?'Add your child':'Join your team'}</h2>
@@ -259,5 +260,7 @@ const PA=(()=>{
   const legend=(d)=>(d?DCATS:CATS).map(([v,l])=>`<span><i class="cat-${v}"></i>${l}</span>`).join('')+(d?'<span>S1 S2 safeties · F1 F2 flats · R1 rusher · 6v6: R2 / F3 / S3 (by job)</span>':'');
   // shrink a one-line label until it fits (min size), then ellipsis
   function fit(el,max,min){ let s=max; el.style.fontSize=s+'px'; while(el.scrollWidth>el.clientWidth+0.5&&s>min){ s-=0.5; el.style.fontSize=s+'px'; } }
-  return {familyAdd,claim,analyzeRows,ruleGuard,say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
+  async function renameMe(memberId,name){ const r=await rpc('pa_rename_me',{code:code(),member:memberId,token:tokenFor(memberId),name});
+    store.set('pa_members',members().map(m=>m.id===r.id?{...m,name:r.name}:m)); store.set('pa_links',links().map(l=>l.member_id===r.id?{...l,child:r.name}:l)); if(members().some(m=>m.id===r.id)) store.set('pa_nick',r.name); return r; }
+  return {renameMe,familyAdd,claim,analyzeRows,ruleGuard,say,ask,input,lastSetup,tokenFor,myNotes,threadIds,threadName,thread,send,setMyEmail,practiceData,gmail,COACH_EMAIL,links,role,isParent,player,canAnswer,linkChild,announcements,addChildLink,setup,okEmail,members,joinRoster,roster,attendance,setAtt,addPlayer,defense,DCATS,DSUBS,catsFor,subsFor,games,isUs,badCode,norm,CATS,SUBS,catOf,legend,fit,configured,store,code,nick,mine,rpc,coachRpc,login,logout,coachEmail,loadPlays,coachPlays,ideas,propose,comments,comment,vote,band,recent,esc,toast,ago,animate,join};
 })();

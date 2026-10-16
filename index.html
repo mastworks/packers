@@ -319,6 +319,7 @@ body.onboarding #grid,body.onboarding #fmts,body.onboarding #legend,body.onboard
 .gwhen{white-space:normal}.gwhen>b{white-space:nowrap}@media(max-width:430px){body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1{font-size:0;width:28px;flex:none}body:has(#fmts:not([style*="none"]) button:nth-child(2)) header h1::before{content:"PA";font-size:15px;color:var(--g)}}
 .coachnm{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px}
 .pchip.done{background:var(--g);border-color:var(--g);color:#fff}
+.wait{color:#7a5a00;font-weight:600}
 </style></head><body>
 <header><div class=hrow><h1 id=ttl>Packer <span>Army</span></h1><div class=seg id=fmts></div><button id=gdBtn style="display:none" aria-label="Game day">Game day</button><button id=meBtn aria-label="My profile" style="display:none"></button><button id=coachBtn aria-label="Coach sign-in">Coach</button></div></header>
 <a id=inbox href="coach.html#review"></a>
@@ -684,7 +685,7 @@ function familyAvailHTML(){ const kids=teamRoster().filter(m=>PA.canAnswer(m.id)
   return `<div class="hcard fam"><h4><span>${me?'When can you practice?':`When can ${E(kid.name)} practice?`}</span><span>${a?`${ws.size?ICON('check')+' Saved':''}`:'Not filled in yet'}</span></h4>
     ${kids.length>1?`<div class=afilt>${kids.map(m=>`<button class="${m.id===FKID?'on':''}" data-fk="${m.id}">${E(m.name)}</button>`).join('')}</div>`:''}
     <div class=seg style="display:inline-flex;margin:2px 0 8px">${tabs}</div>
-    <p class=fhelp>${wk?(changed?(FVIEW==='1'?'Changed for next week only. ':'Changed for this week only. '):'Same as your normal week. ')+'Tap to change just this week. Striped = a game.':'Tap what usually works. Fine-tune by tapping boxes, or tap a day name for the whole day.'}</p>
+    <p class=fhelp>${!wk?'<b>Normal week</b> = what usually works, every week. <b>This week</b> / <b>Next week</b> = changes for just that week. ':''}${wk?(changed?(FVIEW==='1'?'Changed for next week only. ':'Changed for this week only. '):'Same as your normal week. ')+'Tap to change just this week. Striped = a game.':'Tap what usually works. Fine-tune by tapping boxes, or tap a day name for the whole day.'}</p>
     <div class=pchips>${PAFinder.PRESETS.map(chip).join('')}<button class="pchip done" data-fdone=1>${ICON('check')} Done</button></div>
     ${PAFinder.gridHTML({mode:'edit',week:wk,ws,blocked})}
     <div class=fleg><span><i class=lg-on></i>works</span><span><i class=lg-off></i>not free</span>${wk?'<span><i class=lg-bl></i>game</span>':''}</div>
@@ -1016,10 +1017,13 @@ function meUI(){ const b=$('#meBtn'); if(isCoach()||PA.role()==='coach'||!PA.rol
 let RENAME_OK=null;
 async function openMe(){ const E=PA.esc, d=document.createElement('dialog'); d.className='me';
   if(RENAME_OK===null){ try{ await PA.rpc('pa_rename_me',{code:PA.code(),member:'00000000-0000-0000-0000-000000000000',token:'00000000-0000-0000-0000-000000000000',name:'x'}); RENAME_OK=true; }catch(e){ RENAME_OK=e.status!==404; } }
-  const paint=()=>{ const ms=PA.members(), ls=PA.links(), parent=PA.isParent();
+  const paint=()=>{ const ms=PA.members(), ls=PA.links(), parent=PA.isParent(), pend=PA.store.get('pa_rename_pending',{})||{};
+    for(const id of Object.keys(pend)){ const r=ROSTER.find(x=>x.id===id); if(r&&r.name.toLowerCase()===String(pend[id]).toLowerCase()){ delete pend[id]; PA.store.set('pa_rename_pending',pend);
+      PA.store.set('pa_members',PA.members().map(m=>m.id===id?{...m,name:r.name}:m)); PA.store.set('pa_links',PA.links().map(l=>l.member_id===id?{...l,child:r.name}:l)); } }   // Coach renamed it: done
+    const waitTxt=id=>pend[id]?` · <span class=wait>${E(pend[id])} (waiting for Coach)</span>`:'';
     d.innerHTML=`<h2>${parent?'Parent':ms.length?'Player':'Fan'} profile</h2><p>This phone is set up for:</p>
-      ${ms.map(m=>`<div class=mrow>${ICON('user')}<div><b>${E(m.name)}</b><small>Player · ${E(m.fmt)}</small></div><button class=mx data-ren="${m.id}" aria-label="Change name">${ICON('edit')}</button></div>`).join('')}
-      ${ls.map(l=>`<div class=mrow>${ICON('users')}<div><b>${E(l.child)}</b><small>Your child · ${E(l.fmt)}</small></div><button class=mx data-ren="${l.member_id}" aria-label="Change ${E(l.child)}'s name">${ICON('edit')}</button><button class=mx data-unlink="${l.member_id}" aria-label="Remove ${E(l.child)} from this phone">${ICON('x')}</button></div>`).join('')}
+      ${ms.map(m=>`<div class=mrow>${ICON('user')}<div><b>${E(m.name)}</b><small>Player · ${E(m.fmt)}${waitTxt(m.id)}</small></div><button class=mx data-ren="${m.id}" aria-label="Change name">${ICON('edit')}</button></div>`).join('')}
+      ${ls.map(l=>`<div class=mrow>${ICON('users')}<div><b>${E(l.child)}</b><small>Your child · ${E(l.fmt)}${waitTxt(l.member_id)}</small></div><button class=mx data-ren="${l.member_id}" aria-label="Change ${E(l.child)}'s name">${ICON('edit')}</button><button class=mx data-unlink="${l.member_id}" aria-label="Remove ${E(l.child)} from this phone">${ICON('x')}</button></div>`).join('')}
       ${!ms.length&&!ls.length?'<p>Just watching (no player linked).</p>':''}
       ${ls.length?`<label>Your email <span style="font-weight:400;color:var(--muted)">for team emails · only Coach sees it</span></label><input type=email id=meEm autocapitalize=off value="${E((ls.find(l=>l.email)||{}).email||'')}" placeholder="you@example.com"><div id=meMsg class=jmsg></div>`:''}
       <div class=row style="flex-direction:column">${ls.length?'<button class="btn gold" id=meSave>Save email</button>':''}
@@ -1033,7 +1037,7 @@ async function openMe(){ const E=PA.esc, d=document.createElement('dialog'); d.c
     if(t.id==='meAdd'){ d.close(); const r=await PA.addChildLink(); if(r){ await loadRoster(); tab=HOME; show(FMT); meUI(); } return; }
     if(t.dataset.ren){ const cur=(PA.members().find(m=>m.id===t.dataset.ren)||{}).name||(PA.links().find(l=>l.member_id===t.dataset.ren)||{}).child||'';
       const n=await PA.input('First name (add a last initial if two kids share it)',cur); if(n===null||!n.trim()||n.trim()===cur) return;
-      if(!RENAME_OK){ try{ await PA.send(t.dataset.ren,`Please change the name "${cur}" to "${n.trim()}" on the roster. (sent from Profile)`); PA.toast('Sent to Coach · Coach will update the name'); }catch(err){ PA.say(err.message); } return; }   // until 017 is run, Coach renames on the roster
+      if(!RENAME_OK){ try{ await PA.send(t.dataset.ren,`Please change the name "${cur}" to "${n.trim()}" on the roster. (sent from Profile)`); PA.store.set('pa_rename_pending',{...(PA.store.get('pa_rename_pending',{})||{}),[t.dataset.ren]:n.trim()}); paint(); PA.toast('Sent to Coach · Coach will update the name'); }catch(err){ PA.say(err.message); } return; }   // until 017 is run, Coach renames on the roster
       try{ await PA.renameMe(t.dataset.ren,n.trim()); await loadRoster(); paint(); meUI(); draw(); PA.toast('Name changed'); }catch(err){ PA.say(err.message); } return; }
     if(t.dataset.unlink){ const l=PA.links().find(x=>x.member_id===t.dataset.unlink); if(!await PA.ask(`Remove ${l.child} from this phone? You can add them again later.`)) return;
       PA.store.set('pa_links',PA.links().filter(x=>x.member_id!==l.member_id)); if(!PA.links().length&&!PA.members().length) PA.store.set('pa_role','fan'); paint(); draw(); return; }
